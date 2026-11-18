@@ -1,0 +1,53 @@
+{
+  "name": "diamond-co",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "payload generate:importmap && payload generate:types",
+    "dev": "pnpm generate && tsx scripts/with-database.ts next dev",
+    "build": "pnpm generate && next build",
+    "start": "tsx scripts/with-database.ts next start",
+    "lint": "eslint .",
+    "typecheck": "pnpm generate && next typegen && tsc --noEmit",
+    "seed": "tsx scripts/with-database.ts tsx scripts/seed.ts",
+    "uploads:prune": "tsx scripts/with-database.ts tsx scripts/prune-uploads.ts"
+  },
+  "dependencies": {
+    "@next/env": "16.4.6",
+    "@payloadcms/db-mongodb": "3.94.0",
+    "@payloadcms/email-resend": "3.94.0",
+    "@payloadcms/next": "3.94.0",
+    "@payloadcms/richtext-lexical": "3.94.0",
+    "@payloadcms/ui": "3.94.0",
+    "graphql": "16.15.0",
+    "next": "16.4.6",
+    "payload": "3.94.0",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "sharp": "0.35.5",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.6",
+    "mongodb-memory-server": "11.3.0",
+    "tsx": "4.23.15",
+    "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": "24.22.3",
+    "pnpm": "12.21.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.22.3",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.21.0"
+}
