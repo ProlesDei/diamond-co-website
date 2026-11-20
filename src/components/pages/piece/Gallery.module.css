@@ -1,0 +1,209 @@
+.gallery {
+  position: sticky;
+  top: var(--space-6);
+}
+
+.track {
+  display: grid;
+}
+
+/* Desktop: the photos stack in one cell and cross-fade. The hidden ones leave the page at the end of the fade. */
+.slide {
+  grid-area: 1 / 1;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 0s linear 200ms;
+}
+
+.on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 200ms ease, visibility 0s;
+}
+
+.still,
+.still.on {
+  transition: none;
+}
+
+/* A studio photo is shot on black and sits on Deep green with the screen blend, as on /commissions. */
+.plate {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--stage);
+  isolation: isolate;
+}
+
+.plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  filter: contrast(1.06);
+}
+
+.plate.day img {
+  object-fit: cover;
+  mix-blend-mode: normal;
+  filter: none;
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-6);
+  color: var(--on-evergreen-muted);
+  font: 400 13px/1.5 var(--font-sans);
+}
+
+/* The photo and its "Zoom" tag are one button. */
+.zoom {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 100%;
+  padding: var(--space-4);
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.zoom:focus-visible {
+  outline: 2px solid var(--on-evergreen);
+  outline-offset: -6px;
+}
+
+.tag {
+  padding: 8px 12px;
+  background: rgba(12, 54, 42, 0.82);
+  color: var(--on-evergreen);
+  font: 500 13px/1 var(--font-sans);
+  letter-spacing: 0.02em;
+}
+
+.thumbs {
+  display: flex;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.thumb {
+  display: block;
+  width: 72px;
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  border: 1px solid transparent;
+  background: var(--stage);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  outline-offset: 3px;
+  color: var(--on-evergreen-muted);
+  font: 400 10px/1.2 var(--font-sans);
+  text-align: center;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: screen;
+}
+
+.thumb.day img {
+  mix-blend-mode: normal;
+}
+
+.thumb[aria-current='true'] {
+  border: 2px solid var(--ink);
+}
+
+.count,
+.dots {
+  display: none;
+}
+
+/* Phone: the gallery runs edge to edge as one row of full-width photos that swipes and snaps. */
+@media (max-width: 899px) {
+  .gallery {
+    position: static;
+  }
+}
+
+@media (max-width: 759px) {
+  .gallery {
+    margin-inline: calc(var(--gut) * -1);
+  }
+
+  .track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slide,
+  .on {
+    flex: 0 0 100%;
+    opacity: 1;
+    visibility: visible;
+    scroll-snap-align: start;
+    grid-area: auto;
+  }
+
+  .thumbs {
+    display: none;
+  }
+
+  .bar {
+    position: relative;
+  }
+
+  .count {
+    display: block;
+    position: absolute;
+    z-index: 3;
+    left: var(--gut);
+    top: var(--space-4);
+    margin: 0;
+    padding: 6px 10px;
+    background: rgba(12, 54, 42, 0.82);
+    color: var(--on-evergreen);
+    font: 500 13px/1 var(--font-sans);
+    pointer-events: none;
+  }
+
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .dots li {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--ink);
+  }
+
+  .dots .dotOn {
+    background: var(--ink);
+  }
+}

@@ -1,0 +1,202 @@
+.section {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gut) var(--space-32);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-4);
+  font: 400 15px/1.4 var(--font-sans);
+  color: var(--ink-muted);
+}
+
+.heading {
+  margin: 0 0 var(--space-6);
+  font: 400 clamp(40px, 5vw, 72px) / 1.02 var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.heading em {
+  font-style: italic;
+}
+
+.lede {
+  margin: 0;
+  max-width: 30em;
+  font: 300 clamp(18px, 1.45vw, 21px) / 1.6 var(--font-sans);
+}
+
+.confirm {
+  font: 500 11px/1 var(--font-sans);
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  vertical-align: 0.15em;
+}
+
+.steps {
+  list-style: none;
+  margin: var(--space-12) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-8);
+  counter-reset: step;
+}
+
+.step {
+  counter-increment: step;
+  border-top: 1px solid var(--ink);
+  padding-top: var(--space-6);
+}
+
+.step::before {
+  content: counter(step);
+  display: block;
+  margin-bottom: var(--space-4);
+  font: italic 400 48px/1 var(--font-display);
+  color: var(--evergreen);
+}
+
+.stepName {
+  margin: 0 0 var(--space-2);
+  font: 400 26px/1.2 var(--font-display);
+}
+
+.time {
+  margin: 0 0 var(--space-2);
+  font: 500 14px/1.4 var(--font-sans);
+  color: var(--evergreen);
+}
+
+.time .confirm {
+  color: var(--evergreen);
+}
+
+.stepText {
+  margin: 0;
+  max-width: 22em;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.worries {
+  margin-top: var(--space-16);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.worry {
+  background: var(--surface-sunken);
+  padding: var(--space-8);
+}
+
+.worryName {
+  margin: 0 0 var(--space-2);
+  font: 400 26px/1.2 var(--font-display);
+}
+
+.worryText {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+@media (max-width: 899px) {
+  .section {
+    padding-bottom: var(--space-24);
+  }
+
+  .steps {
+    grid-template-columns: 1fr 1fr;
+    row-gap: var(--space-12);
+  }
+}
+
+@media (max-width: 759px) {
+  .worries {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    margin-top: var(--space-12);
+  }
+
+  .worry {
+    padding: var(--space-6);
+  }
+}
+
+@media (max-width: 459px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The Bench page lists the steps as ruled rows: numeral, name and timing, then text. */
+.steps.rows {
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1px solid var(--ink);
+}
+
+.rows .step {
+  display: grid;
+  grid-template-columns: 2fr 4fr 6fr;
+  grid-template-areas:
+    'num name text'
+    'num time text';
+  grid-template-rows: auto 1fr;
+  column-gap: var(--space-8);
+  align-items: start;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  padding: var(--space-8) 0;
+}
+
+.rows .step::before {
+  grid-area: num;
+  margin: 0;
+  font-size: 64px;
+}
+
+.rows .stepName {
+  grid-area: name;
+  margin: 0 0 var(--space-2);
+  font-size: 32px;
+  line-height: 1.15;
+}
+
+.rows .time {
+  grid-area: time;
+  margin: 0;
+}
+
+.rows .stepText {
+  grid-area: text;
+  max-width: 34em;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--ink);
+}
+
+@media (max-width: 759px) {
+  .rows .step {
+    grid-template-columns: 52px 1fr;
+    grid-template-areas:
+      'num name'
+      'num time'
+      'num text';
+    grid-template-rows: auto;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .rows .step::before {
+    font-size: 44px;
+  }
+
+  .rows .stepName {
+    margin: 0;
+    font-size: 26px;
+  }
+}

@@ -1,0 +1,29 @@
+.facts {
+  --ink-muted: var(--on-evergreen-muted);
+  background: var(--evergreen);
+  color: var(--on-evergreen);
+}
+
+.list {
+  list-style: none;
+  margin: 0 auto;
+  max-width: var(--page-max);
+  padding: 26px var(--gut);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-6);
+  font: 400 18px / 1.4 var(--font-sans);
+}
+
+.list b {
+  font-weight: 500;
+}
+
+@media (max-width: 759px) {
+  .list {
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-block: var(--space-8);
+    font-size: 17px;
+  }
+}

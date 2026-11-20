@@ -1,0 +1,52 @@
+:root {
+  --surface: #E6E2D7;
+  --surface-sunken: #DED6C9;
+  --surface-raised: #F1EEE6;
+  --ink: #1C1A16;
+  --ink-muted: #5A554B;
+  --line: #C9C0B0;
+  --control-border: #7D7668;
+  --evergreen: #0F4C3A;
+  --stage: #0C362A;
+  --on-evergreen: #E6E2D7;
+  --on-evergreen-muted: #B9C7BF;
+  --action: #0F4C3A;
+  --action-hover: #0C362A;
+  --on-action: #E6E2D7;
+  --gold: #E2C27A;
+  --focus-ring: #0F4C3A;
+  --error: #9E2B25;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+  --gut: clamp(20px, 5vw, 72px);
+  --page-max: 1440px;
+  --ease: cubic-bezier(.2, .7, .1, 1);
+  --hdr: 112px;
+}
+
+@media (max-width: 759px) {
+  :root {
+    --hdr: 64px;
+  }
+}
+
+[data-theme="stage"] {
+  --surface: #0C362A;
+  --ink: #E6E2D7;
+  --ink-muted: #C3CCC4;
+  --control-border: #8FA79B;
+  --action: #E6E2D7;
+  --action-hover: #FFFFFF;
+  --on-action: #0C362A;
+  --focus-ring: #E6E2D7;
+  --error: #F2948A;
+}
