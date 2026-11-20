@@ -5,6 +5,7 @@ import type { Payload } from 'payload'
 
 import { readBlobToken } from '../lib/blob'
 import { abortAfterTimeout, INQUIRY_BLOB_PREFIX, pathnameOf } from './storage'
+import { claimUploads, UPLOAD_LINKS, uploadIdsOf } from './submit'
 
 export const UNLINKED_UPLOAD_MAX_AGE_MS = 24 * 60 * 60 * 1000
 
@@ -22,6 +23,44 @@ async function step<T>(name: string, run: () => Promise<T>): Promise<T> {
     throw new Error(`${name} failed, so the prune stopped and deleted nothing more: ${(error as Error).message}`, {
       cause: error,
     })
+  }
+}
+
+async function releaseAfterFailure(
+  payload: Payload,
+  release: () => Promise<void>,
+  id: string,
+  failure: unknown,
+): Promise<void> {
+  let recordKept: boolean
+  try {
+    const record = await payload.findByID({
+      collection: 'inquiry-uploads',
+      id,
+      depth: 0,
+      disableErrors: true,
+      overrideAccess: true,
+    })
+    recordKept = record !== null
+  } catch (error) {
+    throw new Error(
+      `${(failure as Error).message}. Checking whether upload ${id}'s record is still there also failed, so the prune kept its claim: requests naming it are refused until its row (_id ${id}) is removed from ${UPLOAD_LINKS}. Remove that row only if upload ${id} is still in inquiry-uploads: ${(error as Error).message}`,
+      { cause: failure },
+    )
+  }
+  if (!recordKept) {
+    throw new Error(
+      `${(failure as Error).message}. Upload ${id}'s record is already deleted, so the prune kept its claim: its row (_id ${id}) stays in ${UPLOAD_LINKS}, and requests naming the upload are refused.`,
+      { cause: failure },
+    )
+  }
+  try {
+    await release()
+  } catch (error) {
+    throw new Error(
+      `${(failure as Error).message}. Releasing the prune's claim on upload ${id} also failed, so requests naming it are refused until its row (_id ${id}) is removed from ${UPLOAD_LINKS}: ${(error as Error).message}`,
+      { cause: failure },
+    )
   }
 }
 
@@ -56,13 +95,7 @@ async function linkedIds(payload: Payload, ids: string[]): Promise<Set<string>> 
     select: { upload: true, uploads: true },
     overrideAccess: true,
   })
-  const linked = new Set<string>()
-  for (const inquiry of docs) {
-    for (const upload of [inquiry.upload, ...(inquiry.uploads ?? [])]) {
-      if (upload) linked.add(typeof upload === 'string' ? upload : upload.id)
-    }
-  }
-  return linked
+  return new Set(docs.flatMap(uploadIdsOf))
 }
 
 async function blobsUnderPrefix(token: string): Promise<ListBlobResultBlob[]> {
@@ -146,13 +179,22 @@ export async function pruneUnlinkedUploads(
 
     for (const doc of old) {
       if (linked.has(doc.id)) continue
-      const gone = await step(`checking upload ${doc.id}'s file`, () => fileGone(doc.filename))
-      if (!dryRun) {
-        await step(`deleting upload ${doc.id}`, () =>
-          payload.delete({ collection: 'inquiry-uploads', id: doc.id, overrideAccess: true }),
-        )
+      const claim = dryRun
+        ? undefined
+        : await step(`claiming upload ${doc.id} in ${UPLOAD_LINKS}`, () => claimUploads(payload, [doc.id]))
+      if (claim && !claim.ok) continue
+      try {
+        const gone = await step(`checking upload ${doc.id}'s file`, () => fileGone(doc.filename))
+        if (claim) {
+          await step(`deleting upload ${doc.id}`, () =>
+            payload.delete({ collection: 'inquiry-uploads', id: doc.id, overrideAccess: true }),
+          )
+        }
+        uploads.push({ id: doc.id, fileGone: gone })
+      } catch (error) {
+        if (claim) await releaseAfterFailure(payload, claim.release, doc.id, error)
+        throw error
       }
-      uploads.push({ id: doc.id, fileGone: gone })
     }
   }
 

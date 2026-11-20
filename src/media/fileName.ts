@@ -18,7 +18,7 @@ const isStemTaken = async (req: PayloadRequest, stem: string) => {
   const nameFields = ['filename', ...sizeNames.map((name) => `sizes.${name}.filename`)]
   const { docs } = await req.payload.find({
     collection: 'media',
-    where: { or: nameFields.map((field) => ({ [field]: { contains: stem } })) },
+    where: { or: nameFields.map((field) => ({ [field]: { like: stem } })) },
     select: { filename: true, sizes: true },
     depth: 0,
     pagination: false,

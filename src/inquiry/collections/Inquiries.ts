@@ -1,4 +1,6 @@
-import type { CollectionBeforeChangeHook, CollectionConfig, Condition } from 'payload'
+import type { CollectionAfterDeleteHook, CollectionBeforeChangeHook, CollectionConfig, Condition } from 'payload'
+
+import type { Inquiry } from '@/payload-types'
 
 import { nextReference } from '../reference'
 import {
@@ -10,6 +12,7 @@ import {
   MAX_UPLOADS,
   NAME_MAX_LENGTH,
 } from '../schema'
+import { releaseUploadLinks, uploadIdsOf } from '../submit'
 import { adminOnly, neverUpdated, nobody, signedIn } from './access'
 
 const stampOnCreate: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
@@ -23,6 +26,10 @@ const stampOnCreate: CollectionBeforeChangeHook = async ({ data, operation, req 
     newsOptInAt: newsOptIn ? now.toISOString() : null,
     privacyConsentAt: data.form === 'book' ? now.toISOString() : null,
   }
+}
+
+const releaseLinksOnDelete: CollectionAfterDeleteHook<Inquiry> = async ({ doc, req }) => {
+  await releaseUploadLinks(req.payload, uploadIdsOf(doc))
 }
 
 const submitted = { access: { update: neverUpdated } }
@@ -50,6 +57,7 @@ export const Inquiries: CollectionConfig = {
   },
   hooks: {
     beforeChange: [stampOnCreate],
+    afterDelete: [releaseLinksOnDelete],
   },
   fields: [
     { name: 'reference', type: 'text', unique: true, index: true, ...submitted },

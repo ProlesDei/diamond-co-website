@@ -6,7 +6,7 @@ import type { Inquiry } from '@/payload-types'
 
 import type { BookInquiryInput, InquiryInput } from './schema'
 
-const UPLOAD_LINKS = 'inquiry-upload-links'
+export const UPLOAD_LINKS = 'inquiry-upload-links'
 const DUPLICATE_KEY = 11000
 
 type UploadLink = { _id: string; linkedAt: Date; claim: string }
@@ -25,9 +25,20 @@ function isDuplicateKey(error: unknown): boolean {
   return code === DUPLICATE_KEY || (writeErrors ?? []).some((writeError) => writeError.code === DUPLICATE_KEY)
 }
 
+export function uploadIdsOf(inquiry: Pick<Inquiry, 'upload' | 'uploads'>): string[] {
+  return [inquiry.upload, ...(inquiry.uploads ?? [])].flatMap((upload) =>
+    upload ? [typeof upload === 'string' ? upload : upload.id] : [],
+  )
+}
+
+export async function releaseUploadLinks(payload: Payload, uploadIds: string[]): Promise<void> {
+  if (uploadIds.length === 0) return
+  await uploadLinks(payload).deleteMany({ _id: { $in: uploadIds } })
+}
+
 type Claim = { ok: true; release: () => Promise<void> } | { ok: false }
 
-async function claimUploads(payload: Payload, uploadIds: string[]): Promise<Claim> {
+export async function claimUploads(payload: Payload, uploadIds: string[]): Promise<Claim> {
   if (uploadIds.length === 0) return { ok: true, release: async () => {} }
 
   const { totalDocs } = await payload.count({ collection: 'inquiry-uploads', where: { id: { in: uploadIds } } })
