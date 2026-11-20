@@ -1,10 +1,8 @@
 import config from '@payload-config'
-import { after } from 'next/server'
 import { getPayload } from 'payload'
 import type { Payload } from 'payload'
 import { z } from 'zod'
 
-import { sendInquiryEmails } from '@/inquiry/email'
 import { clientIp, rateLimit, rateLimitUnavailable, refuse, verifyTurnstile } from '@/inquiry/guard'
 import { getBookOptions } from '@/inquiry/options'
 import type { BookOptions } from '@/inquiry/options'
@@ -12,6 +10,7 @@ import { bookInquirySchema, inquirySchema } from '@/inquiry/schema'
 import type { BookInquiryInput, InquiryInput } from '@/inquiry/schema'
 import { submitBookInquiry, submitInquiry } from '@/inquiry/submit'
 import type { SubmitResult } from '@/inquiry/submit'
+import { turnstileParked } from '@/inquiry/turnstileParked'
 
 const SUBMITS_PER_HOUR = 5
 const HOUR_MS = 60 * 60 * 1000
@@ -119,9 +118,11 @@ export async function POST(request: Request): Promise<Response> {
     return saveFailed(error)
   }
 
-  const token = (body as { turnstileToken?: unknown }).turnstileToken
-  const turnstile = await verifyTurnstile(typeof token === 'string' ? token : '', ip)
-  if (!turnstile.ok) return refuse(403, 'turnstile_failed', 'We could not check that this came from a person. Reload the page and send again.')
+  if (!turnstileParked()) {
+    const token = (body as { turnstileToken?: unknown }).turnstileToken
+    const turnstile = await verifyTurnstile(typeof token === 'string' ? token : '', ip)
+    if (!turnstile.ok) return refuse(403, 'turnstile_failed', 'We could not check that this came from a person. Reload the page and send again.')
+  }
 
   let result: SubmitResult
   try {
@@ -133,9 +134,5 @@ export async function POST(request: Request): Promise<Response> {
     return refuse(400, result.reason, 'We could not find that photo or sketch. Choose it again and send.')
   }
 
-  const { inquiry } = result
-  const adminUrl = new URL(`/admin/collections/inquiries/${inquiry.id}`, request.url).toString()
-  after(() => sendInquiryEmails(payload, inquiry, adminUrl))
-
-  return Response.json({ reference: inquiry.reference }, { status: 201 })
+  return Response.json({ reference: result.inquiry.reference }, { status: 201 })
 }

@@ -6,12 +6,14 @@ import type { HomeImage, HomePiece } from '@/components/home/pieces'
 import { mediaSrc } from '@/media/loader'
 import type { Piece } from '@/payload-types'
 
-const firstImage = (gallery: Piece['gallery']): HomeImage | null => {
-  const media = gallery[0]
+import { photoLead } from '../piece/materials'
+
+export const firstImage = (piece: Piece): HomeImage | null => {
+  const media = piece.gallery[0]
   if (typeof media !== 'object' || !media.width || !media.height) return null
   return {
     src: mediaSrc(media),
-    alt: media.alt,
+    alt: `${photoLead(piece)}. ${media.alt}`,
     width: media.width,
     height: media.height,
     shot: media.shot,
@@ -34,6 +36,6 @@ export async function getCommissionPieces(): Promise<HomePiece[]> {
     metals: piece.metals,
     stones: piece.stones,
     setting: piece.setting,
-    image: firstImage(piece.gallery),
+    image: firstImage(piece),
   }))
 }

@@ -22,6 +22,12 @@ export const stoneNames = (piece: Piece): string[] => [
   ...new Set((piece.stones ?? []).map(stoneName)),
 ]
 
+// A photo's alt text opens with this, then the editor's alt text, which describes the view.
+export const photoLead = (piece: Piece): string =>
+  [piece.title, metalNames(piece).join(' and '), stoneNames(piece).join(' and ')]
+    .filter(Boolean)
+    .join(', ')
+
 // One line per stone for the Stone row: its name, its carat weight and whether it is lab-grown.
 export const stoneLines = (piece: Piece): string[] =>
   (piece.stones ?? []).map((stone) =>

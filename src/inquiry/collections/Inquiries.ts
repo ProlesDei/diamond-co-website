@@ -47,6 +47,7 @@ export const Inquiries: CollectionConfig = {
   admin: {
     useAsTitle: 'reference',
     defaultColumns: ['reference', 'status', 'form', 'name', 'contact', 'pieceType', 'interests', 'createdAt'],
+    listSearchableFields: ['reference', 'email', 'contact'],
   },
   defaultSort: '-createdAt',
   access: {

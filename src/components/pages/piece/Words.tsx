@@ -37,6 +37,7 @@ export function Words({ piece }: { piece: Piece }) {
                   <span key={metal} className={styles.line}>
                     <MetalSwatch metal={metal} />
                     {metalLooks[metal].label}
+                    {metal === 'platinum' ? <Confirm /> : null}
                   </span>
                 ))}
               </dd>
