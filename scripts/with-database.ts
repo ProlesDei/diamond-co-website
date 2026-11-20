@@ -33,8 +33,6 @@ const envLog = {
 
 const production = command === 'next' && args[0] !== 'dev'
 nextEnv.loadEnvConfig(root, !production, envLog)
-// FALLBACK (chief of staff, Nov 19, 2026): Vercel's MongoDB add-on sets MONGODB_URI; delete this to read DATABASE_URL only.
-if (!process.env.DATABASE_URL && process.env.MONGODB_URI) process.env.DATABASE_URL = process.env.MONGODB_URI
 
 const productionSiteEnv = (): string | undefined => {
   const runEnv = { ...process.env }
@@ -49,6 +47,11 @@ const productionSiteEnv = (): string | undefined => {
 }
 
 const siteEnvs = [process.env.SITE_ENV, productionSiteEnv()]
+// FALLBACK (chief of staff, Nov 19, 2026): Vercel's MongoDB add-on sets MONGODB_URI; delete this to read DATABASE_URL only.
+// Only for production: preview and local builds use the in-memory database on purpose.
+if (siteEnvs.includes('production') && !process.env.DATABASE_URL && process.env.MONGODB_URI) {
+  process.env.DATABASE_URL = process.env.MONGODB_URI
+}
 
 if (unreadableEnvFiles.size > 0) {
   const files = [...unreadableEnvFiles].join(', ')

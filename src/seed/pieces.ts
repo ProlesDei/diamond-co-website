@@ -110,7 +110,7 @@ const placeholderImage = async (payload: Payload, piece: SamplePiece, view: numb
     data: { alt, source: 'placeholder', shot: 'daylight' },
     file: { data, mimetype: 'image/jpeg', name: `placeholder-${piece.slug}-${view}.jpg`, size: data.length },
     overrideAccess: true,
-    context: seedContext,
+    context: { ...seedContext },
   })
   return media.id
 }
