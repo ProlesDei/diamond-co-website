@@ -1,0 +1,174 @@
+.section {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-32) var(--gut);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: var(--space-6);
+  margin-bottom: var(--space-12);
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-4);
+  font: 400 15px / 1.4 var(--font-sans);
+  color: var(--ink-muted);
+}
+
+.heading {
+  margin: 0;
+  font: 400 clamp(40px, 5vw, 72px) / 1.02 var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.all {
+  font: 500 15px / 1.4 var(--font-sans);
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--control-border);
+  text-underline-offset: 6px;
+}
+
+.all:hover {
+  text-decoration-color: var(--ink);
+}
+
+.pieces {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.piece {
+  display: block;
+  text-decoration: none;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--stage);
+  isolation: isolate;
+}
+
+.studio,
+.daylight {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.studio {
+  mix-blend-mode: screen;
+  filter: contrast(1.06);
+}
+
+.zoom .studio,
+.zoom .daylight {
+  transition: transform 600ms var(--ease);
+}
+
+.zoom:hover .studio,
+.zoom:hover .daylight {
+  transform: scale(1.03);
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-4);
+  color: var(--on-evergreen-muted);
+  font: 400 12px / 1.5 var(--font-sans);
+}
+
+.name {
+  margin: var(--space-4) 0 var(--space-2);
+  font: 400 24px / 1.25 var(--font-display);
+}
+
+.materials {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.dot {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: -1px;
+  box-shadow: inset 0 0 0 1px rgba(28, 26, 22, 0.2);
+}
+
+@media (max-width: 899px) {
+  .section {
+    padding-block: var(--space-24);
+  }
+
+  .pieces {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Phone: one row that swipes sideways with the next card peeking. */
+@media (max-width: 759px) {
+  .pieces {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 76%;
+    gap: var(--space-4);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gut);
+    margin-inline: calc(var(--gut) * -1);
+    padding: 4px var(--gut) var(--space-4);
+    scrollbar-width: thin;
+  }
+
+  .pieces > li {
+    scroll-snap-align: start;
+  }
+
+  .name {
+    font-size: 22px;
+  }
+}
+
+/* The /commissions grid: larger names, and a smaller dot and details on a phone. */
+.grid .name {
+  font-size: 26px;
+}
+
+@media (max-width: 759px) {
+  .grid .name {
+    margin-top: var(--space-3);
+    font-size: 19px;
+  }
+
+  .grid .materials {
+    font-size: 13px;
+  }
+
+  .grid .dot {
+    width: 9px;
+    height: 9px;
+    margin-right: 6px;
+  }
+}

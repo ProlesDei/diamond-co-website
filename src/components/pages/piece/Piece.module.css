@@ -1,0 +1,145 @@
+/* The link back to the grid sits above the page: gallery left, words right. */
+.back {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-16) var(--gut) 0;
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  margin-bottom: var(--space-6);
+  color: var(--ink);
+  font: 400 14px/1.4 var(--font-sans);
+  text-decoration: underline;
+  text-decoration-color: var(--control-border);
+  text-underline-offset: 5px;
+}
+
+.layout {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-8) var(--gut) var(--space-24);
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: var(--space-16);
+  align-items: start;
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-3);
+  font: 400 15px/1.4 var(--font-sans);
+  color: var(--ink-muted);
+}
+
+.name {
+  margin: 0 0 var(--space-8);
+  font: 400 clamp(40px, 4.2vw, 60px) / 1.05 var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.materials {
+  margin: 0 0 var(--space-8);
+  padding: 0;
+  border-top: 1px solid var(--ink);
+}
+
+.materials > div {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.materials dt {
+  font: 500 14px/1.6 var(--font-sans);
+  color: var(--ink-muted);
+}
+
+.materials dd {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.line {
+  display: block;
+}
+
+.story {
+  margin: 0 0 var(--space-8);
+}
+
+.story p {
+  margin: 0 0 var(--space-4);
+  max-width: 32em;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.story p:first-child {
+  font: 300 20px/1.6 var(--font-sans);
+}
+
+.cta {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.story + .cta {
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--line);
+}
+
+.cta .book {
+  width: 100%;
+}
+
+.micro {
+  margin: 0;
+  font: 400 14px/1.5 var(--font-sans);
+  color: var(--ink-muted);
+}
+
+.all {
+  justify-self: start;
+  margin-top: var(--space-2);
+  font: 500 15px/1.4 var(--font-sans);
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--control-border);
+  text-underline-offset: 6px;
+}
+
+.all:hover {
+  text-decoration-color: var(--ink);
+}
+
+@media (max-width: 899px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 759px) {
+  .back {
+    padding-top: var(--space-12);
+  }
+
+  .crumb {
+    margin-bottom: var(--space-2);
+  }
+
+  .name {
+    font-size: 40px;
+    margin-bottom: var(--space-6);
+  }
+
+  .materials > div {
+    grid-template-columns: 88px 1fr;
+  }
+}

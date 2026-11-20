@@ -1,0 +1,64 @@
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+import { Button } from './Button'
+import { bookHref, currentPage, links } from './nav'
+import styles from './PhoneMenu.module.css'
+import { useReducedMotion } from './useReducedMotion'
+
+type PhoneMenuProps = {
+  id: string
+  open: boolean
+  onNavigate: () => void
+}
+
+export function PhoneMenu({ id, open, onNavigate }: PhoneMenuProps) {
+  const pathname = usePathname()
+  const reduceMotion = useReducedMotion()
+  const className = [styles.menu, open && styles.open, reduceMotion && styles.instant]
+    .filter(Boolean)
+    .join(' ')
+
+  return (
+    <div id={id} className={className}>
+      <Link
+        className={styles.link}
+        href={links.commissions}
+        aria-current={currentPage(pathname, links.commissions)}
+        onClick={onNavigate}
+      >
+        Commissions
+      </Link>
+      <Link
+        className={styles.link}
+        href={links.bench}
+        aria-current={currentPage(pathname, links.bench)}
+        onClick={onNavigate}
+      >
+        The Bench
+      </Link>
+      <div className={styles.small}>
+        <Link
+          href={links.visit}
+          aria-current={currentPage(pathname, links.visit)}
+          onClick={onNavigate}
+        >
+          Visit
+        </Link>
+        <Link
+          href={links.questions}
+          aria-current={currentPage(pathname, links.questions)}
+          onClick={onNavigate}
+        >
+          Questions
+        </Link>
+      </div>
+      <Button variant="primary" href={bookHref(pathname)} className={styles.book} onClick={onNavigate}>
+        Book a free consultation
+      </Button>
+      <p className={styles.micro}>
+        Reply within one business day<span className={styles.confirm}>[confirm]</span>
+      </p>
+    </div>
+  )
+}

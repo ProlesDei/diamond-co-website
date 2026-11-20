@@ -1,0 +1,13 @@
+/* Out of the form's grid and clipped until Cloudflare asks for a check, so no gap shows for an empty slot
+   and a solved widget doesn't move over the top of the form. Clipped, not display: none, so the widget still runs. */
+.unasked {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.asked {
+  min-height: 65px;
+}

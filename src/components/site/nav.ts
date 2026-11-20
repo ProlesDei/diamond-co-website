@@ -1,0 +1,15 @@
+export const links = {
+  commissions: '/commissions',
+  bench: '/the-bench',
+  visit: '/visit',
+  questions: '/faq',
+  privacy: '/privacy',
+} as const
+
+export function currentPage(pathname: string, href: string): 'page' | undefined {
+  return pathname === href || pathname.startsWith(`${href}/`) ? 'page' : undefined
+}
+
+export function bookHref(pathname: string): string {
+  return pathname === '/' ? '#book' : '/book'
+}
