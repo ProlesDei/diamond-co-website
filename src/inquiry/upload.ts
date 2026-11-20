@@ -11,6 +11,7 @@ import { MAX_UPLOAD_BYTES } from './collections/InquiryUploads'
 import { PENDING_PREFIX, UPLOAD_CONTENT_TYPES } from './directUpload'
 import type { UploadWay } from './directUpload'
 import { clientIp, rateLimit, rateLimitUnavailable, refuse, verifyTurnstile } from './guard'
+import { turnstileParked } from './turnstileParked'
 
 const UPLOADS_PER_HOUR = 20
 const HOUR_MS = 60 * 60 * 1000
@@ -83,6 +84,7 @@ async function guardUpload(request: Request): Promise<Response | undefined> {
   const ip = clientIp(request)
   const limited = await limitUploads(`inquiry-upload:${ip}`)
   if (limited) return limited
+  if (turnstileParked()) return undefined
 
   const turnstile = await verifyTurnstile(request.headers.get('x-turnstile-token') ?? '', ip)
   if (!turnstile.ok) {

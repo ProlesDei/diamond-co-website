@@ -77,10 +77,9 @@ function loadScript(): Promise<TurnstileApi> {
 
 async function nextToken(): Promise<string> {
   const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
-  if (!sitekey) {
-    console.error('turnstile: NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set, so no booking request can be sent. Set it in .env.')
-    throw new Error('NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set.')
-  }
+  // PARKED (owner, Nov 20, 2026): with no site key the server skips the check (src/inquiry/turnstileParked.ts),
+  // so there is no token to get. Set both Turnstile keys and redeploy to turn the check back on.
+  if (!sitekey) return ''
   const turnstile = await loadScript()
   if (!slot) throw new Error('The Turnstile slot is not on the page.')
 
@@ -133,6 +132,7 @@ export function Turnstile() {
     () => asked,
     () => false,
   )
+  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) return null
   return <div ref={attach} className={isAsked ? styles.asked : styles.unasked} />
 }
 
