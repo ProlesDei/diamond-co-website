@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 
 import { studio } from '@/components/site/studio'
 import { getBookOptions } from '@/inquiry/options'
+import { calendlyUrl } from '@/lib/calendly'
 
 import { pageMetadata } from '../metadata'
 import styles from './book.module.css'
@@ -16,11 +17,17 @@ const [openHours] = hours
 
 const STEPS = [
   { title: 'You send this form', text: "Two minutes. Photos help but aren't needed." },
-  {
-    title: 'We reply within one business day',
-    mark: 'confirm',
-    text: 'By the way you choose, to set a time.',
-  },
+  calendlyUrl
+    ? {
+        title: 'You pick a time on this page',
+        mark: 'confirm',
+        text: 'Right after the form, from our open consultation times.',
+      }
+    : {
+        title: 'We reply within one business day',
+        mark: 'confirm',
+        text: 'By the way you choose, to set a time.',
+      },
   { title: 'You sit down with us', text: 'Bring the stone or piece if you have one.' },
 ]
 

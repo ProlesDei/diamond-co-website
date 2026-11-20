@@ -5,11 +5,15 @@ import type { ChangeEvent, FormEvent } from 'react'
 import { flushSync } from 'react-dom'
 import { z } from 'zod'
 
+import { CalendlyStep } from '@/components/booking/calendly/CalendlyStep'
+import { joinAnswers } from '@/components/booking/calendly/prefill'
+import type { CalendlyPrefill } from '@/components/booking/calendly/prefill'
 import { Button } from '@/components/site/Button'
 import { isEmailOrPhone } from '@/inquiry/contact'
 import { sendFile } from '@/inquiry/directUpload'
 import { INTEREST_LABELS, INTERESTS } from '@/inquiry/schema'
 import type { InquiryInput } from '@/inquiry/schema'
+import { calendlyUrl } from '@/lib/calendly'
 
 import styles from './booking.module.css'
 import { Field } from './Field'
@@ -55,13 +59,16 @@ async function uploadFile(file: File, token: string): Promise<string> {
   return result.uploadId
 }
 
-async function sendInquiry(input: InquiryInput, token: string): Promise<void> {
+const sentAnswer = z.object({ reference: z.string().min(1) })
+
+async function sendInquiry(input: InquiryInput, token: string): Promise<string> {
   const response = await fetch('/api/inquiry', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ ...input, turnstileToken: token }),
   })
   if (!response.ok) throw new Error(`The inquiry route answered HTTP ${response.status}.`)
+  return sentAnswer.parse(await response.json()).reference
 }
 
 function megabytes(file: File): string {
@@ -115,6 +122,7 @@ export function BookingForm() {
   const [summaryShown, setSummaryShown] = useState(false)
   const [sendState, setSendState] = useState<SendState>('idle')
   const [sentName, setSentName] = useState<string | undefined>()
+  const [prefill, setPrefill] = useState<CalendlyPrefill | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const sentRef = useRef<HTMLDivElement>(null)
   const sendingRef = useRef(false)
@@ -136,10 +144,12 @@ export function BookingForm() {
     return uploadId
   }
 
+  // Only a send that saved opens the time step, so every booking has a saved request behind it.
   async function send(input: Omit<InquiryInput, 'uploadId'>, chosen: File | undefined) {
+    let reference: string
     try {
       const uploadId = chosen ? await uploadIdFor(chosen) : undefined
-      await sendInquiry({ ...input, uploadId }, await getToken())
+      reference = await sendInquiry({ ...input, uploadId }, await getToken())
     } catch {
       flushSync(() => setSendState('failed'))
       summaryRef.current?.focus()
@@ -147,8 +157,25 @@ export function BookingForm() {
     } finally {
       sendingRef.current = false
     }
-    flushSync(() => setSentName(input.name.trim().split(/\s+/)[0]))
-    sentRef.current?.focus()
+
+    if (!calendlyUrl) {
+      flushSync(() => setSentName(input.name.trim().split(/\s+/)[0]))
+      sentRef.current?.focus()
+      return
+    }
+
+    // The contact passed isEmailOrPhone, and only an email address holds an @.
+    const email = input.contact.includes('@') ? input.contact.trim() : undefined
+    setSendState('idle')
+    setPrefill({
+      reference,
+      name: input.name,
+      email,
+      a1: joinAnswers([
+        (input.interests ?? []).map((interest) => INTEREST_LABELS[interest]).join(', '),
+        email ? undefined : `Phone ${input.contact.trim()}`,
+      ]),
+    })
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -207,13 +234,21 @@ export function BookingForm() {
     )
   }
 
-  return (
-    <form className={styles.form} method="post" noValidate onSubmit={submit}>
+  const form = (
+    <form className={styles.form} method="post" noValidate onSubmit={submit} hidden={prefill !== null}>
       <h3 className={styles.formHeading}>Book a free consultation</h3>
-      <p className={styles.formIntro}>
-        Tell us a little and [GOLDSMITH]<span className={styles.confirm}>[client supplies]</span>{' '}
-        will reply to set a time. Two fields are all we need.
-      </p>
+      {calendlyUrl ? (
+        <p className={styles.formIntro}>
+          Tell us a little, then pick a time with [GOLDSMITH]
+          <span className={styles.confirm}>[client supplies]</span> on this page
+          <span className={styles.confirm}>[confirm]</span>. Two fields are all we need.
+        </p>
+      ) : (
+        <p className={styles.formIntro}>
+          Tell us a little and [GOLDSMITH]<span className={styles.confirm}>[client supplies]</span>{' '}
+          will reply to set a time. Two fields are all we need.
+        </p>
+      )}
 
       {sendState === 'failed' && (
         <div className={styles.summary} role="alert" tabIndex={-1} ref={summaryRef}>
@@ -341,17 +376,33 @@ export function BookingForm() {
       <Turnstile />
 
       <Button variant="primary" type="submit" className={styles.submit}>
-        {sendState === 'sending' ? 'Sending...' : 'Request my consultation'}
+        {sendState === 'sending' ? 'Sending...' : calendlyUrl ? 'Choose a time' : 'Request my consultation'}
       </Button>
 
-      <p className={styles.after}>
-        [GOLDSMITH] replies within one business day<span className={styles.confirm}>[confirm]</span>
-        . Nothing is booked or charged until you agree.
-      </p>
+      {calendlyUrl ? (
+        <p className={styles.after}>
+          Next, you pick a consultation time on this page
+          <span className={styles.confirm}>[confirm]</span>. Nothing is charged until you agree.
+        </p>
+      ) : (
+        <p className={styles.after}>
+          [GOLDSMITH] replies within one business day<span className={styles.confirm}>[confirm]</span>
+          . Nothing is booked or charged until you agree.
+        </p>
+      )}
       <p className={styles.call}>
         Rather talk? Call <span className={styles.phone}>[PHONE]</span>
         <span className={styles.confirm}>[client supplies]</span>
       </p>
     </form>
+  )
+
+  return (
+    <>
+      {form}
+      {calendlyUrl && prefill && (
+        <CalendlyStep link={calendlyUrl} heading="h3" prefill={prefill} onBack={() => setPrefill(null)} />
+      )}
+    </>
   )
 }

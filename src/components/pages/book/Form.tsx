@@ -6,10 +6,13 @@ import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { flushSync } from 'react-dom'
 
+import { CalendlyStep } from '@/components/booking/calendly/CalendlyStep'
+import { joinAnswers } from '@/components/booking/calendly/prefill'
+import type { CalendlyPrefill } from '@/components/booking/calendly/prefill'
 import { Field } from '@/components/home/booking/Field'
 import { Button } from '@/components/site/Button'
 import { studio } from '@/components/site/studio'
-import type { BookOptions } from '@/inquiry/options'
+import type { BookOption, BookOptions } from '@/inquiry/options'
 import {
   bookInquirySchema,
   CONTACT_WAY_LABELS,
@@ -18,6 +21,7 @@ import {
   type BookInquiryInput,
   type ContactWay,
 } from '@/inquiry/schema'
+import { calendlyUrl } from '@/lib/calendly'
 
 import { saveSent } from '../thanks/sent'
 
@@ -30,6 +34,7 @@ import type { PhotosChange } from './photos'
 import { PieceCard } from './piece'
 import type { BookPiece } from './piece'
 import { sendBook } from './send'
+import type { BookSendResult } from './send'
 import { Turnstile, useTurnstile } from './turnstile'
 import { BOOK_FIELDS, validateBook } from './validate'
 import type { BookErrors, BookField } from './validate'
@@ -62,14 +67,19 @@ const SUMMARY_LABELS: Record<BookField, string> = {
 
 type SendState = 'idle' | 'sending' | 'rate-limited' | 'failed'
 
+const SUBMIT_LABEL = calendlyUrl ? 'Choose a time' : 'Request my consultation'
+
 const SUBMIT_LABELS: Record<SendState, string> = {
-  idle: 'Request my consultation',
+  idle: SUBMIT_LABEL,
   sending: 'Sending…',
-  'rate-limited': 'Request my consultation',
+  'rate-limited': SUBMIT_LABEL,
   failed: 'Try again',
 }
 
 const formatCount = (count: number) => count.toLocaleString('en-CA')
+
+const optionLabel = (choices: BookOption[], value: string) =>
+  choices.find((option) => option.value === value)?.label
 
 export function Form({ options, piece, initialPieceType }: FormProps) {
   const [pieceType, setPieceType] = useState(initialPieceType ?? '')
@@ -86,6 +96,7 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
 
   const [errors, setErrors] = useState<BookErrors>({})
   const [sendState, setSendState] = useState<SendState>('idle')
+  const [prefill, setPrefill] = useState<CalendlyPrefill | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const noticeRef = useRef<HTMLDivElement>(null)
   const sendingRef = useRef(false)
@@ -115,18 +126,44 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
     }
   }
 
-  async function post(input: BookInquiryInput) {
+  async function send(input: BookInquiryInput): Promise<BookSendResult> {
     // Offline, Turnstile takes about 40 seconds to give up on a token.
-    if (!navigator.onLine) return refused('failed')
+    if (!navigator.onLine) return { outcome: 'failed' }
     let token: string
     try {
       token = await getToken()
     } catch (error) {
       console.error('book: no Turnstile token for the send', error)
-      return refused('failed')
+      return { outcome: 'failed' }
     }
-    const result = await sendBook({ ...input, uploadIds: photosRef.current.ids }, token)
+    return sendBook({ ...input, uploadIds: photosRef.current.ids }, token)
+  }
+
+  // Only a send that saved opens the time step, so every booking has a saved request behind it.
+  async function post(input: BookInquiryInput) {
+    const result = await send(input)
     if (result.outcome !== 'sent') return refused(result.outcome)
+
+    if (calendlyUrl) {
+      sendingRef.current = false
+      setSendState('idle')
+      setPrefill({
+        reference: result.reference,
+        name: input.name,
+        email: input.email,
+        a1: joinAnswers(
+          [
+            optionLabel(options.pieceTypes, input.pieceType),
+            optionLabel(options.budgetRanges, input.budget),
+            input.needBy && `Need by ${input.needBy}`,
+            input.phone && `Phone ${input.phone}`,
+            `Reach by ${CONTACT_WAY_LABELS[input.contactWay].toLowerCase()}`,
+          ],
+          input.description,
+        ),
+      })
+      return
+    }
 
     const sentPiece = input.piece && piece?.photo ? { slug: piece.slug, name: piece.name, photoUrl: piece.photo } : null
     saveSent({
@@ -174,13 +211,21 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
     else void post(parsed.data)
   }
 
-  return (
-    <form className={styles.form} method="post" noValidate onSubmit={submit}>
+  const form = (
+    <form className={styles.form} method="post" noValidate onSubmit={submit} hidden={prefill !== null}>
       <h2 className={styles.formHeading}>Book a free consultation</h2>
-      <p className={styles.formIntro}>
-        One short form. [GOLDSMITH]
-        <Mark note="client supplies" /> reads it and replies to set a time.
-      </p>
+      {calendlyUrl ? (
+        <p className={styles.formIntro}>
+          One short form, then you pick a time with [GOLDSMITH]
+          <Mark note="client supplies" /> on this page
+          <Mark note="confirm" />.
+        </p>
+      ) : (
+        <p className={styles.formIntro}>
+          One short form. [GOLDSMITH]
+          <Mark note="client supplies" /> reads it and replies to set a time.
+        </p>
+      )}
 
       {summaryItems.length > 0 && <ErrorSummary items={summaryItems} ref={summaryRef} />}
 
@@ -417,6 +462,11 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
 
       {sendState === 'sending' ? (
         <p className={styles.after}>Sending your photos and answers. Keep this page open.</p>
+      ) : calendlyUrl ? (
+        <p className={styles.after}>
+          Next, you pick a consultation time on this page
+          <Mark note="confirm" />. Nothing is charged until you agree.
+        </p>
       ) : (
         <p className={styles.after}>
           [GOLDSMITH] replies within one business day
@@ -428,5 +478,14 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
         <Mark note={studio.phone.marker} />
       </p>
     </form>
+  )
+
+  return (
+    <>
+      {form}
+      {calendlyUrl && prefill && (
+        <CalendlyStep link={calendlyUrl} heading="h2" prefill={prefill} onBack={() => setPrefill(null)} />
+      )}
+    </>
   )
 }

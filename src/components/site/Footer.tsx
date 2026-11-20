@@ -52,6 +52,7 @@ export function Footer() {
             <Confirm note={studio.hours[0].marker} />
             <br />
             {studio.appointment.text}
+            <Confirm note={studio.appointment.marker} />
           </p>
           <p className={styles.fact}>
             <a className={styles.phone} href={studio.phone.href}>

@@ -229,7 +229,8 @@
   font: 400 17px/1.4 var(--font-sans);
 }
 
-.control:focus-visible {
+.control:focus-visible,
+.control:focus-within {
   outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
@@ -370,6 +371,11 @@
   height: 24px;
   margin: 0;
   accent-color: var(--evergreen);
+}
+
+.check input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
 }
 
 .check b {

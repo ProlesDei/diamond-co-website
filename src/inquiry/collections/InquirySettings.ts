@@ -20,14 +20,6 @@ export const InquirySettings: GlobalConfig = {
     update: adminOnly,
   },
   fields: [
-    {
-      name: 'alertRecipients',
-      label: 'Staff alert recipients',
-      type: 'array',
-      fields: [{ name: 'email', type: 'email', required: true }],
-    },
-    { name: 'autoReply', label: 'Auto-reply text', type: 'textarea' },
-    { name: 'responseTime', label: 'Expected response time', type: 'text' },
     choices('pieceTypes', 'Piece types (/book)', [
       ['Engagement ring', 'engagement-ring'],
       ['Wedding band', 'wedding-band'],
