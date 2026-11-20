@@ -14,6 +14,13 @@ const productionVariables = [
   'INQUIRY_BLOB_READ_WRITE_TOKEN',
 ]
 
+const fallbackVariables: Record<string, string> = {
+  // FALLBACK (chief of staff, Nov 19, 2026): Vercel's MongoDB add-on sets MONGODB_URI; delete this to read DATABASE_URL only.
+  DATABASE_URL: 'MONGODB_URI',
+  // FALLBACK (chief of staff, Nov 19, 2026): Vercel's inquiries store connection sets INQUIRY_READ_WRITE_TOKEN; delete this to read INQUIRY_BLOB_READ_WRITE_TOKEN only.
+  INQUIRY_BLOB_READ_WRITE_TOKEN: 'INQUIRY_READ_WRITE_TOKEN',
+}
+
 // PARKED (owner, Nov 19, 2026): online booking and email are off for the .vercel.app run, so these
 // only warn when unset. Move them back into productionVariables to turn the refusal back on.
 const parkedVariables = [
@@ -28,7 +35,9 @@ if (process.env.SITE_ENV === 'production') {
   for (const name of parkedVariables.filter((name) => !process.env[name])) {
     console.warn(`SITE_ENV is production and ${name} is unset; it is parked, so the build goes on.`)
   }
-  const missing = productionVariables.filter((name) => !process.env[name])
+  const missing = productionVariables.filter(
+    (name) => !process.env[name] && !(name in fallbackVariables && process.env[fallbackVariables[name]]),
+  )
   if (missing.length > 0) {
     console.error(
       `SITE_ENV is production, so these variables must be set: ${missing.join(', ')}. Set each one, or unset SITE_ENV to run locally.`,

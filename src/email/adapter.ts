@@ -3,6 +3,8 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type { EmailAdapter } from 'payload'
 
+import { isProduction } from '../lib/site'
+
 const outboxDir = path.resolve(process.cwd(), '.outbox')
 let outboxCount = 0
 
@@ -39,13 +41,25 @@ const outboxAdapter =
     },
   })
 
+const parkedAdapter =
+  (defaultFromAddress: string, defaultFromName: string): EmailAdapter =>
+  ({ payload }) => ({
+    name: 'parked',
+    defaultFromAddress,
+    defaultFromName,
+    sendEmail: async () => {
+      payload.logger.warn('email: mail is parked (SITE_ENV is production and RESEND_API_KEY is unset), so one message was not sent.')
+    },
+  })
+
 export const emailAdapter = (): EmailAdapter => {
   const apiKey = process.env.RESEND_API_KEY
   const fromAddress = process.env.EMAIL_FROM_ADDRESS
   const fromName = process.env.EMAIL_FROM_NAME
 
   if (!apiKey) {
-    return outboxAdapter(fromAddress || 'no-reply@example.test', fromName || 'Diamond & Co')
+    const adapter = isProduction ? parkedAdapter : outboxAdapter
+    return adapter(fromAddress || 'no-reply@example.test', fromName || 'Diamond & Co')
   }
   if (!fromAddress || !fromName) {
     throw new Error(

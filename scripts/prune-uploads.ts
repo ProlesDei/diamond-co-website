@@ -2,7 +2,7 @@ import { getPayload } from 'payload'
 import { parseArgs } from 'node:util'
 
 import { pruneUnlinkedUploads } from '../src/inquiry/prune'
-import { blobTokenVariables } from '../src/lib/blob'
+import { blobTokenFallbackVariables, blobTokenVariables } from '../src/lib/blob'
 import config from '../src/payload.config'
 
 const usage = 'usage: pnpm uploads:prune [--dry-run]'
@@ -22,10 +22,16 @@ if (process.env.SITE_ENV === 'production') {
   process.exit(2)
 }
 
-const tokenVariable = blobTokenVariables['inquiry-uploads']
-if (process.env.DATABASE_IS_LOCAL && !process.env.VERCEL_BLOB_API_URL && process.env[tokenVariable]) {
+const BLOB_MOCK_HOSTS = new Set(['127.0.0.1', 'localhost', '[::1]'])
+const blobApiUrl = process.env.VERCEL_BLOB_API_URL
+const onBlobMock = blobApiUrl !== undefined && URL.canParse(blobApiUrl) && BLOB_MOCK_HOSTS.has(new URL(blobApiUrl).hostname)
+const realStoreTokens = [...Object.values(blobTokenVariables), ...Object.values(blobTokenFallbackVariables)].filter(
+  (variable) => process.env[variable],
+)
+if (realStoreTokens.length > 0 && !onBlobMock) {
+  const names = realStoreTokens.join(' and ')
   console.error(
-    `uploads:prune: refused because ${tokenVariable} opens a real Blob store but DATABASE_URL is unset, so the prune would read the local database, whose uploads are not that store's. Set DATABASE_URL to the database that store's uploads are recorded in, or unset ${tokenVariable} to prune the local files.`,
+    `uploads:prune: refused because ${names} ${realStoreTokens.length > 1 ? 'are' : 'is'} set and VERCEL_BLOB_API_URL is not the blob mock, so the prune would reach a real Blob store; until the owner's call on pairing a store with its database, it runs only on the blob mock or on local files. Unset ${names} to prune the local files, or start tools/blob-mock and export the VERCEL_BLOB_API_URL it prints.`,
   )
   process.exit(2)
 }
