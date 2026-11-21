@@ -1,3 +1,4 @@
+import { Hinge } from '@/components/home/bench/Hinge'
 import { type Metal, metalLooks } from '@/components/home/commissions/metals'
 import { MetalSwatch } from '@/components/home/commissions/MetalSwatch'
 import {
@@ -10,7 +11,6 @@ import { Confirm } from '../Confirm'
 import { ConsultationBand } from '../ConsultationBand'
 import { pageMetadata } from '../metadata'
 import styles from './Bench.module.css'
-import { Hinge } from './Hinge'
 
 export function generateMetadata() {
   return pageMetadata('The Bench')
@@ -92,7 +92,7 @@ export default function BenchPage() {
               then make it here, by hand, in the metal you choose.
             </p>
           </div>
-          <Hinge />
+          <Hinge large />
         </div>
       </section>
 

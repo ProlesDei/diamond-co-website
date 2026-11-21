@@ -18,9 +18,8 @@ export type HomePiece = Pick<Piece, 'title' | 'slug' | 'metals' | 'stones' | 'se
   image: HomeImage | null
 }
 
-const firstImage = (gallery: Piece['gallery']): HomeImage | null => {
-  const media = gallery[0]
-  if (typeof media !== 'object' || !media.width || !media.height) return null
+export const toHomeImage = (media: string | Media | null | undefined): HomeImage | null => {
+  if (!media || typeof media !== 'object' || !media.width || !media.height) return null
   return {
     src: mediaSrc(media),
     alt: media.alt,
@@ -46,6 +45,6 @@ export const getHomePieces = cache(async (): Promise<HomePiece[]> => {
     metals: piece.metals,
     stones: piece.stones,
     setting: piece.setting,
-    image: firstImage(piece.gallery),
+    image: toHomeImage(piece.gallery[0]),
   }))
 })

@@ -1,4 +1,5 @@
-import type { GlobalConfig } from 'payload'
+import type { GlobalConfig, UploadField } from 'payload'
+import { upload } from 'payload/shared'
 
 import { adminOnly } from './access'
 import { revalidateGlobalAfterChange } from './revalidate'
@@ -10,6 +11,24 @@ const isHttpsUrl = (value: string | null | undefined): true | string => {
     return 'Use a full link that starts with https://'
   }
 }
+
+const homeSources = (): string[] =>
+  process.env.SITE_ENV === 'production' ? ['client-photo'] : ['client-photo', 'placeholder']
+
+const homeImage = (name: string, label: string, description: string): UploadField => ({
+  name,
+  label,
+  type: 'upload',
+  relationTo: 'media',
+  admin: { description },
+  filterOptions: () => ({ source: { in: homeSources() } }),
+  validate: async (value, options) => {
+    if ((await upload(value, options)) === true) return true
+    return process.env.SITE_ENV === 'production'
+      ? `${label}: choose a client photo that is in the Media library. Atmosphere (generated) and placeholder (sample) images can’t show on the site.`
+      : `${label}: choose a client photo or a placeholder that is in the Media library. Atmosphere (generated) images can’t show on the site.`
+  },
+})
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
@@ -53,5 +72,23 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
     { name: 'defaultShareImage', type: 'upload', relationTo: 'media' },
+    {
+      name: 'home',
+      label: 'Home page images',
+      type: 'group',
+      fields: [
+        homeImage('heroImage', 'Hero image', 'The large photo beside the headline at the top of the home page.'),
+        homeImage(
+          'benchDaylightImage',
+          'Bench daylight image',
+          'The “Your idea, in daylight” photo, on the home page and The Bench.',
+        ),
+        homeImage(
+          'benchStudioImage',
+          'Bench studio image',
+          'The “Made at our bench in White Rock” photo, on the home page and The Bench.',
+        ),
+      ],
+    },
   ],
 }
