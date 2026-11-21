@@ -47,6 +47,7 @@ if (process.env.SITE_ENV === 'production') {
 }
 
 const turnstile = 'https://challenges.cloudflare.com'
+const calendly = 'https://calendly.com'
 
 const readBlobApiOrigin = (): string => {
   const value = process.env.NEXT_PUBLIC_VERCEL_BLOB_API_URL
@@ -66,7 +67,7 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
   `connect-src 'self' ${turnstile} ${blobApi}`,
-  `frame-src ${turnstile}`,
+  `frame-src ${turnstile} ${calendly}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

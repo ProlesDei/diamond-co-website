@@ -1,7 +1,16 @@
-import { BookingForm } from './BookingForm'
+import config from '@payload-config'
+import { connection } from 'next/server'
+import { getPayload } from 'payload'
+
+import { Form } from '@/components/pages/book/Form'
+import { getBookOptions } from '@/inquiry/options'
+
 import styles from './booking.module.css'
 
-export function Booking() {
+export async function Booking() {
+  await connection()
+  const options = await getBookOptions(await getPayload({ config }))
+
   return (
     <section className={styles.book} id="book" aria-labelledby="book-heading">
       <div className={styles.inner}>
@@ -37,7 +46,7 @@ export function Booking() {
           </dl>
         </div>
         <div className={styles.panel}>
-          <BookingForm />
+          <Form heading="h3" options={options} piece={null} initialPieceType={null} />
         </div>
       </div>
     </section>

@@ -19,7 +19,7 @@ export function Thanks() {
   if (sent === undefined) return null
   if (sent === null) redirect('/book')
 
-  const { firstName, reference, email, piece } = sent
+  const { firstName, reference, piece } = sent
 
   return (
     <div className={styles.page}>
@@ -33,7 +33,7 @@ export function Thanks() {
           <b>{reference}</b>
         </p>
         <p className={styles.lede}>
-          We&apos;ve emailed a copy to {email}. Quote the reference if you call.
+          Quote the reference if you call.
         </p>
         <ol className={styles.steps}>
           <li>

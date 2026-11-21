@@ -45,6 +45,11 @@ const sections: Section[] = [
           <li>whether you asked for our news by email, and when.</li>
         </ul>
         <p>
+          When you choose a consultation time on this site, the booking goes through Calendly, which
+          keeps your name, email address, the answers you send it and the time you choose
+          <Confirm />.
+        </p>
+        <p>
           We also keep basic, anonymous counts of visits to improve the site. We don&rsquo;t use
           advertising trackers.
         </p>

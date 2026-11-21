@@ -75,9 +75,14 @@
   cursor: zoom-in;
 }
 
+/* The plate clips its button, so the plate shows the button's ring. */
 .zoom:focus-visible {
-  outline: 2px solid var(--on-evergreen);
-  outline-offset: -6px;
+  outline: none;
+}
+
+.plate:has(.zoom:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
 }
 
 .tag {
@@ -154,6 +159,12 @@
 
   .track::-webkit-scrollbar {
     display: none;
+  }
+
+  /* The swipe row clips anything outside a photo, so the ring sits inside it. */
+  .plate:has(.zoom:focus-visible) {
+    outline-color: var(--on-evergreen);
+    outline-offset: -6px;
   }
 
   .slide,

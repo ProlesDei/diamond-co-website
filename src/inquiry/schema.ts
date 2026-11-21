@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { calendlyUrl } from '../lib/calendly'
 import { isEmailOrPhone } from './contact'
 
 export const INTERESTS = ['engagement-ring', 'redesign', 'wedding-band', 'not-sure'] as const
@@ -14,7 +15,6 @@ export const INTEREST_LABELS: Record<Interest, string> = {
 }
 
 export const NAME_MAX_LENGTH = 120
-export const DESCRIPTION_MIN_LENGTH = 20
 export const DESCRIPTION_MAX_LENGTH = 2000
 export const MAX_UPLOADS = 5
 
@@ -54,30 +54,27 @@ export type InquiryInput = z.infer<typeof inquirySchema>
 
 const requiredChoice = (message: string) => z.string({ error: message }).trim().min(1, message)
 
+const bookEmail = z
+  .string({ error: 'Add your email address so we can reply.' })
+  .trim()
+  .min(1, { error: 'Add your email address so we can reply.', abort: true })
+  .max(CONTACT_MAX_LENGTH, { error: `Keep your email address to ${CONTACT_MAX_LENGTH} characters.`, abort: true })
+  .refine(
+    (email) => email.includes('@') && isEmailOrPhone(email),
+    'That doesn’t look like an email address. Check it and try again.',
+  )
+
 export const bookInquirySchema = z.object({
   form: z.literal('book'),
   pieceType: requiredChoice('Choose the kind of piece, or "Something else".'),
   budget: requiredChoice('Choose a range, or "Not sure yet". It helps us suggest stones and metals.'),
-  description: z
-    .string({ error: 'Add a few words about the piece so we can prepare.' })
-    .trim()
-    .min(1, { error: 'Add a few words about the piece so we can prepare.', abort: true })
-    .min(DESCRIPTION_MIN_LENGTH, 'Add a few more words, at least 20 characters, so we can prepare.')
-    .max(DESCRIPTION_MAX_LENGTH, 'Keep the description to 2,000 characters.'),
+  description: z.string().trim().max(DESCRIPTION_MAX_LENGTH, 'Keep the description to 2,000 characters.').optional(),
   name: z
     .string({ error: 'Add your name so we know who to reply to.' })
     .trim()
     .min(1, 'Add your name so we know who to reply to.')
     .max(NAME_MAX_LENGTH, `Keep your name to ${NAME_MAX_LENGTH} characters.`),
-  email: z
-    .string({ error: 'Add your email address so we can reply.' })
-    .trim()
-    .min(1, { error: 'Add your email address so we can reply.', abort: true })
-    .max(CONTACT_MAX_LENGTH, { error: `Keep your email address to ${CONTACT_MAX_LENGTH} characters.`, abort: true })
-    .refine(
-      (email) => email.includes('@') && isEmailOrPhone(email),
-      'That doesn’t look like an email address. Check it and try again.',
-    ),
+  email: calendlyUrl ? bookEmail.optional() : bookEmail,
   phone: z
     .string()
     .trim()
@@ -87,7 +84,6 @@ export const bookInquirySchema = z.object({
     )
     .optional(),
   contactWay: z.enum(CONTACT_WAYS, { error: 'Choose how we should reach you.' }),
-  privacyConsent: z.literal(true, { error: 'Tick this so we can use your details to reply.' }),
   uploadIds: z
     .array(uploadId)
     .max(MAX_UPLOADS, "That's 5, our limit. Remove one to add another, or bring the rest to your consultation.")
