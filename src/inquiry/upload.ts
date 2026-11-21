@@ -15,7 +15,7 @@ import { turnstileParked } from './turnstileParked'
 
 const UPLOADS_PER_HOUR = 20
 const HOUR_MS = 60 * 60 * 1000
-const CLIENT_TOKEN_MS = 5 * 60 * 1000
+export const CLIENT_TOKEN_MS = 5 * 60 * 1000
 const PENDING_PATHNAME = new RegExp(`^${PENDING_PREFIX}[a-f0-9]{32}$`)
 const FORM_OVERHEAD_BYTES = 64 * 1024
 const MAX_BODY_BYTES = MAX_UPLOAD_BYTES + FORM_OVERHEAD_BYTES

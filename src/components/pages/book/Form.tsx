@@ -1,15 +1,17 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { flushSync } from 'react-dom'
 
+import { CalendlyStep } from '@/components/booking/calendly/CalendlyStep'
+import { joinAnswers } from '@/components/booking/calendly/prefill'
+import type { CalendlyPrefill } from '@/components/booking/calendly/prefill'
 import { Field } from '@/components/home/booking/Field'
 import { Button } from '@/components/site/Button'
 import { studio } from '@/components/site/studio'
-import type { BookOptions } from '@/inquiry/options'
+import type { BookOption, BookOptions } from '@/inquiry/options'
 import {
   bookInquirySchema,
   CONTACT_WAY_LABELS,
@@ -18,6 +20,7 @@ import {
   type BookInquiryInput,
   type ContactWay,
 } from '@/inquiry/schema'
+import { calendlyUrl } from '@/lib/calendly'
 
 import { saveSent } from '../thanks/sent'
 
@@ -30,11 +33,13 @@ import type { PhotosChange } from './photos'
 import { PieceCard } from './piece'
 import type { BookPiece } from './piece'
 import { sendBook } from './send'
+import type { BookSendResult } from './send'
 import { Turnstile, useTurnstile } from './turnstile'
 import { BOOK_FIELDS, validateBook } from './validate'
 import type { BookErrors, BookField } from './validate'
 
 type FormProps = {
+  heading: 'h2' | 'h3'
   options: BookOptions
   piece: BookPiece | null
   initialPieceType: string | null
@@ -48,7 +53,6 @@ const FIELD_IDS: Record<BookField, string> = {
   description: 'book-description',
   name: 'book-name',
   email: 'book-email',
-  privacyConsent: 'book-privacyConsent',
 }
 
 const SUMMARY_LABELS: Record<BookField, string> = {
@@ -57,21 +61,25 @@ const SUMMARY_LABELS: Record<BookField, string> = {
   description: 'Tell us about the piece',
   name: 'Add your name',
   email: 'Add your email address',
-  privacyConsent: 'Agree to the privacy policy',
 }
 
 type SendState = 'idle' | 'sending' | 'rate-limited' | 'failed'
 
+const SUBMIT_LABEL = calendlyUrl ? 'Choose a time' : 'Request my consultation'
+
 const SUBMIT_LABELS: Record<SendState, string> = {
-  idle: 'Request my consultation',
+  idle: SUBMIT_LABEL,
   sending: 'Sending…',
-  'rate-limited': 'Request my consultation',
+  'rate-limited': SUBMIT_LABEL,
   failed: 'Try again',
 }
 
 const formatCount = (count: number) => count.toLocaleString('en-CA')
 
-export function Form({ options, piece, initialPieceType }: FormProps) {
+const optionLabel = (choices: BookOption[], value: string) =>
+  choices.find((option) => option.value === value)?.label
+
+export function Form({ heading: Heading, options, piece, initialPieceType }: FormProps) {
   const [pieceType, setPieceType] = useState(initialPieceType ?? '')
   const [budget, setBudget] = useState('')
   const [description, setDescription] = useState('')
@@ -81,11 +89,11 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [contactWay, setContactWay] = useState<ContactWay>('email')
-  const [privacyConsent, setPrivacyConsent] = useState(false)
   const [newsOptIn, setNewsOptIn] = useState(false)
 
   const [errors, setErrors] = useState<BookErrors>({})
   const [sendState, setSendState] = useState<SendState>('idle')
+  const [prefill, setPrefill] = useState<CalendlyPrefill | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const noticeRef = useRef<HTMLDivElement>(null)
   const sendingRef = useRef(false)
@@ -115,24 +123,49 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
     }
   }
 
-  async function post(input: BookInquiryInput) {
+  async function send(input: BookInquiryInput): Promise<BookSendResult> {
     // Offline, Turnstile takes about 40 seconds to give up on a token.
-    if (!navigator.onLine) return refused('failed')
+    if (!navigator.onLine) return { outcome: 'failed' }
     let token: string
     try {
       token = await getToken()
     } catch (error) {
       console.error('book: no Turnstile token for the send', error)
-      return refused('failed')
+      return { outcome: 'failed' }
     }
-    const result = await sendBook({ ...input, uploadIds: photosRef.current.ids }, token)
+    return sendBook({ ...input, uploadIds: photosRef.current.ids }, token)
+  }
+
+  // Only a send that saved opens the time step, so every booking has a saved request behind it.
+  async function post(input: BookInquiryInput) {
+    const result = await send(input)
     if (result.outcome !== 'sent') return refused(result.outcome)
+
+    if (calendlyUrl) {
+      sendingRef.current = false
+      setSendState('idle')
+      setPrefill({
+        reference: result.reference,
+        name: input.name,
+        email: input.email,
+        a1: joinAnswers(
+          [
+            optionLabel(options.pieceTypes, input.pieceType),
+            optionLabel(options.budgetRanges, input.budget),
+            input.needBy && `Need by ${input.needBy}`,
+            input.phone && `Phone ${input.phone}`,
+            `Reach by ${CONTACT_WAY_LABELS[input.contactWay].toLowerCase()}`,
+          ],
+          input.description,
+        ),
+      })
+      return
+    }
 
     const sentPiece = input.piece && piece?.photo ? { slug: piece.slug, name: piece.name, photoUrl: piece.photo } : null
     saveSent({
       firstName: input.name.split(/\s+/)[0],
       reference: result.reference,
-      email: input.email,
       piece: sentPiece,
     })
     router.push('/book/thanks')
@@ -142,7 +175,7 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
     event.preventDefault()
     if (sendingRef.current) return
 
-    const found = validateBook({ pieceType, budget, description, name, email, privacyConsent })
+    const found = validateBook({ pieceType, budget, description, name, email: email || undefined })
     flushSync(() => {
       setErrors(found)
       setSendState('idle')
@@ -158,10 +191,9 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
       budget,
       description,
       name,
-      email,
+      email: email || undefined,
       phone: phone.trim() || undefined,
       contactWay,
-      privacyConsent,
       needBy: needBy || undefined,
       newsOptIn,
       piece: piece && !pieceRemoved ? piece.slug : undefined,
@@ -174,13 +206,21 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
     else void post(parsed.data)
   }
 
-  return (
-    <form className={styles.form} method="post" noValidate onSubmit={submit}>
-      <h2 className={styles.formHeading}>Book a free consultation</h2>
-      <p className={styles.formIntro}>
-        One short form. [GOLDSMITH]
-        <Mark note="client supplies" /> reads it and replies to set a time.
-      </p>
+  const form = (
+    <form className={styles.form} method="post" noValidate onSubmit={submit} hidden={prefill !== null}>
+      <Heading className={styles.formHeading}>Book a free consultation</Heading>
+      {calendlyUrl ? (
+        <p className={styles.formIntro}>
+          One short form, then you pick a time with [GOLDSMITH]
+          <Mark note="client supplies" /> on this page
+          <Mark note="confirm" />.
+        </p>
+      ) : (
+        <p className={styles.formIntro}>
+          One short form. [GOLDSMITH]
+          <Mark note="client supplies" /> reads it and replies to set a time.
+        </p>
+      )}
 
       {summaryItems.length > 0 && <ErrorSummary items={summaryItems} ref={summaryRef} />}
 
@@ -223,7 +263,8 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
         <Field
           id={FIELD_IDS.description}
           label="Tell us about the piece"
-          hint="What you have in mind, who it's for, a stone you want to reuse. 20 to 2,000 characters."
+          optional
+          hint="What you have in mind, who it's for, a stone you want to reuse. Up to 2,000 characters."
           error={errors.description}
           control={({ id, 'aria-describedby': describedBy, ...aria }) => (
             <>
@@ -291,23 +332,25 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
           )}
         />
 
-        <Field
-          id={FIELD_IDS.email}
-          label="Email"
-          error={errors.email}
-          control={(props) => (
-            <input
-              className={styles.control}
-              type="email"
-              name="email"
-              autoComplete="email"
-              inputMode="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              {...props}
-            />
-          )}
-        />
+        {!calendlyUrl && (
+          <Field
+            id={FIELD_IDS.email}
+            label="Email"
+            error={errors.email}
+            control={(props) => (
+              <input
+                className={styles.control}
+                type="email"
+                name="email"
+                autoComplete="email"
+                inputMode="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                {...props}
+              />
+            )}
+          />
+        )}
 
         <Field
           id="book-phone"
@@ -335,29 +378,6 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
           value={contactWay}
           onChange={(value) => setContactWay(value as ContactWay)}
         />
-
-        <div className={styles.field}>
-          <label className={styles.check}>
-            <input
-              type="checkbox"
-              id={FIELD_IDS.privacyConsent}
-              name="privacyConsent"
-              checked={privacyConsent}
-              onChange={(event) => setPrivacyConsent(event.target.checked)}
-              aria-invalid={errors.privacyConsent ? true : undefined}
-              aria-describedby={errors.privacyConsent ? `${FIELD_IDS.privacyConsent}-error` : undefined}
-            />
-            <span>
-              <b>I agree</b> that Diamond &amp; Co. may use these details and photos to reply to
-              this request, as the <Link href="/privacy">privacy policy</Link> explains.
-            </span>
-          </label>
-          {errors.privacyConsent && (
-            <span className={styles.error} id={`${FIELD_IDS.privacyConsent}-error`}>
-              {errors.privacyConsent}
-            </span>
-          )}
-        </div>
 
         <label className={styles.check}>
           <input
@@ -417,6 +437,11 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
 
       {sendState === 'sending' ? (
         <p className={styles.after}>Sending your photos and answers. Keep this page open.</p>
+      ) : calendlyUrl ? (
+        <p className={styles.after}>
+          Next, you pick a consultation time on this page
+          <Mark note="confirm" />. Nothing is charged until you agree.
+        </p>
       ) : (
         <p className={styles.after}>
           [GOLDSMITH] replies within one business day
@@ -428,5 +453,14 @@ export function Form({ options, piece, initialPieceType }: FormProps) {
         <Mark note={studio.phone.marker} />
       </p>
     </form>
+  )
+
+  return (
+    <>
+      {form}
+      {calendlyUrl && prefill && (
+        <CalendlyStep link={calendlyUrl} heading={Heading} prefill={prefill} onBack={() => setPrefill(null)} />
+      )}
+    </>
   )
 }

@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import { parseArgs } from 'node:util'
 
-import { pruneUnlinkedUploads } from '../src/inquiry/prune'
+import { PENDING_BLOB_MAX_AGE_MS, pruneUnlinkedUploads } from '../src/inquiry/prune'
 import { blobTokenFallbackVariables, blobTokenVariables } from '../src/lib/blob'
 import config from '../src/payload.config'
 
@@ -39,18 +39,25 @@ if (realStoreTokens.length > 0 && !onBlobMock) {
 const payload = await getPayload({ config })
 let failed = false
 try {
-  const { uploads, orphanBlobs } = await pruneUnlinkedUploads(payload, { dryRun })
+  const { uploads, orphanBlobs, pendingBlobs } = await pruneUnlinkedUploads(payload, { dryRun })
   const done = dryRun ? 'would delete' : 'deleted'
+  const pendingMinutes = PENDING_BLOB_MAX_AGE_MS / 60_000
   for (const { id, fileGone } of uploads) {
     if (fileGone) console.log(`upload ${id}: its file was already gone; ${done} the record`)
     else console.log(`upload ${id}: unlinked for over 24 hours; ${done} the record and its file`)
   }
+  for (const pathname of pendingBlobs ?? []) {
+    console.log(`blob ${pathname}: pending and never confirmed for over ${pendingMinutes} minutes; ${done} the blob`)
+  }
   for (const pathname of orphanBlobs ?? []) console.log(`blob ${pathname}: no upload points at it; ${done} the blob`)
   const blobs = orphanBlobs ? ` and ${orphanBlobs.length} orphan blob(s)` : ''
+  const pending = pendingBlobs
+    ? `, and ${pendingBlobs.length} pending blob(s) never confirmed for over ${pendingMinutes} minutes`
+    : ''
   console.log(
     dryRun
-      ? `Dry run: would delete ${uploads.length} unlinked upload(s)${blobs} older than 24 hours. Deleted nothing.`
-      : `Deleted ${uploads.length} unlinked upload(s)${blobs} older than 24 hours.`,
+      ? `Dry run: would delete ${uploads.length} unlinked upload(s)${blobs} older than 24 hours${pending}. Deleted nothing.`
+      : `Deleted ${uploads.length} unlinked upload(s)${blobs} older than 24 hours${pending}.`,
   )
 } catch (error) {
   console.error(`uploads:prune: ${(error as Error).message}`)

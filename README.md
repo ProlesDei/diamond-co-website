@@ -20,7 +20,7 @@ pnpm dev
 
 Open http://localhost:3000 for the site and http://localhost:3000/admin for the admin. On your first visit, the admin asks you to create the first user. That user is an admin.
 
-With no `DATABASE_URL`, `pnpm dev` runs a MongoDB server inside the app's process. You need no account and no Docker. The data stays in `.data/` between runs. Delete `.data/` to start over. Set `DATABASE_URL` in `.env` to use another database instead. `.env.example` lists every variable.
+With no `DATABASE_URL`, `pnpm dev` runs a MongoDB server inside the app's process. You need no account and no Docker. The data stays in `.data/` between runs. Delete `.data/` to start over. Set `DATABASE_URL` in `.env` to use another database instead. `SITE_ENV` and `SITE_URL` are build-time settings: set them when `pnpm build` runs, not only when the site runs, and rebuild after you change either. `.env.example` lists every variable.
 
 While `pnpm dev` runs, `pnpm seed` and `pnpm uploads:prune` use the same local database.
 
@@ -31,14 +31,17 @@ With no `RESEND_API_KEY`, the app writes each email to `.outbox/<time>-<n>.json`
 To try the site with sample content on your own machine:
 
 1. Install, as above: `pnpm install`.
-2. Start the app: `pnpm dev`. Leave it running.
-3. In a second terminal, in this folder, fill the database with samples: `pnpm seed`.
-4. Open http://localhost:3000 for the site.
-5. Open http://localhost:3000/admin and sign in as `owner@example.test`. The password is the one `pnpm seed` printed. To choose your own, set `SEED_ADMIN_PASSWORD` before the first `pnpm seed`.
+2. Copy the example settings: `cp .env.example .env`. This sets Cloudflare's test Turnstile keys, which let the booking form send without a real key. Do it before step 3: the app reads `.env` when it starts.
+3. Start the app: `pnpm dev`. Leave it running.
+4. In a second terminal, in this folder, fill the database with samples: `pnpm seed`.
+5. Open http://localhost:3000 for the site.
+6. Send a test consultation. On the home page, scroll to "Book a free consultation", choose a kind of piece and a budget range, fill in a made-up name and email, and press "Request my consultation". The other fields are optional. The page moves to "Request sent" and greets you by first name. No email is sent, and nothing is written to `.outbox/` for it.
+7. Open http://localhost:3000/admin and sign in as `owner@example.test`. The password is the one `pnpm seed` printed. To choose your own, set `SEED_ADMIN_PASSWORD` before the first `pnpm seed`.
+8. In the admin, open Inquiries (press "Open Menu" first if the menu is closed), then open your test consultation. It shows as New, with its reference.
 
 `pnpm seed` adds an admin user, sample site settings, 6 sample pieces with placeholder images, and 6 FAQs. It draws the placeholder images as it runs, so no image is stored in git. Every sample fact is marked `[confirm]`, and every image is marked as a placeholder. Run it again and it adds only what is missing; it says so when nothing is. It refuses to run when `SITE_ENV` is `production`, or when `DATABASE_URL` points at any host but `127.0.0.1`, `localhost` or `[::1]`.
 
-The password is printed only once. If you lose it, stop the app, delete `.data/` and `media/`, and run steps 2 and 3 again.
+The password is printed only once. If you lose it, stop the app, delete `.data/` and `media/`, and run steps 3 and 4 again.
 
 ## Scripts
 
@@ -72,14 +75,15 @@ Production writes nothing to the server's disk, so a build or start with `SITE_E
 - `DATABASE_URL`: the MongoDB connection string.
 - `SITE_URL`: the site's public address. For now that is the project's .vercel.app address, such as `https://diamond-co-website.vercel.app`.
 - `PAYLOAD_SECRET`: the secret Payload signs sessions with.
-- `TURNSTILE_SECRET_KEY` (parked): the Cloudflare Turnstile secret that checks each booking on the server.
+- `TURNSTILE_SECRET_KEY` (parked): the Cloudflare Turnstile secret that checks each booking on the server. Cloudflare's test keys in `.env.example` work for local runs and Vercel Preview builds (`VERCEL_ENV` is `preview`), never Production: with `SITE_ENV=production` anywhere else, every check is refused.
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (parked): the Turnstile site key the booking form shows.
-- `RESEND_API_KEY` (parked): the Resend key that sends the staff alert and the visitor's auto-reply.
-- `EMAIL_FROM_ADDRESS` (parked): the address those emails come from.
-- `EMAIL_FROM_NAME` (parked): the name those emails come from.
+- `RESEND_API_KEY` (parked): the Resend key. It sends the admin password-reset email only; the booking forms send no email.
+- `EMAIL_FROM_ADDRESS` (parked): the address the admin password-reset email comes from. The booking forms send no email.
+- `EMAIL_FROM_NAME` (parked): the name the admin password-reset email comes from. The booking forms send no email.
 - `BLOB_READ_WRITE_TOKEN`: the read-write token of the public Vercel Blob store, where media go.
 - `INQUIRY_BLOB_READ_WRITE_TOKEN`: the read-write token of the private Vercel Blob store, where inquiry uploads go.
+- `NEXT_PUBLIC_CALENDLY_URL` (optional): the Calendly event link the booking forms open after a send that saved. It is set for Preview and Development only for now; Production leaves it unset, which hides the time step, so the forms end with their send-and-reply message. Set, it also takes the Email field off the forms, since Calendly asks for the email. A value that is not an `https://calendly.com/` link counts as unset. The build bakes it in, so changing it needs a rebuild.
 
-PARKED (owner, Nov 19, 2026): online booking and email are off for the .vercel.app run, so the five parked names only warn when unset, and the booking forms show their failed message. Move them back into `productionVariables` in `next.config.ts` to turn the refusal back on.
+PARKED (owner, Nov 19, 2026): online booking and email are off for the .vercel.app run, so the five parked names only warn when unset. With both Turnstile keys unset, the spam check is skipped and the booking forms save and end normally. Move them back into `productionVariables` in `next.config.ts` to turn the refusal back on.
 
 Vercel sets `VERCEL=1` at build and run time when the project's "Automatically expose System Environment Variables" setting is on ([Vercel's system environment variables](https://vercel.com/docs/environment-variables/system-environment-variables)). With it set, `next.config.ts` leaves `cacheHandler` unset, so Vercel's own cache serves pages and `revalidateTag` instead of `src/lib/cacheHandler.ts` writing `.next/` at run time.

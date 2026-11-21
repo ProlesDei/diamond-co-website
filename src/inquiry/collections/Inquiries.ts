@@ -24,7 +24,6 @@ const stampOnCreate: CollectionBeforeChangeHook = async ({ data, operation, req 
     reference: await nextReference(req.payload, now),
     newsOptIn,
     newsOptInAt: newsOptIn ? now.toISOString() : null,
-    privacyConsentAt: data.form === 'book' ? now.toISOString() : null,
   }
 }
 
@@ -47,6 +46,7 @@ export const Inquiries: CollectionConfig = {
   admin: {
     useAsTitle: 'reference',
     defaultColumns: ['reference', 'status', 'form', 'name', 'contact', 'pieceType', 'interests', 'createdAt'],
+    listSearchableFields: ['reference', 'email', 'contact'],
   },
   defaultSort: '-createdAt',
   access: {
@@ -98,8 +98,8 @@ export const Inquiries: CollectionConfig = {
     { name: 'piece', type: 'relationship', relationTo: 'pieces', ...bookOnly },
     { name: 'pieceType', label: 'Piece type', type: 'text', required: true, ...bookOnly },
     { name: 'budget', label: 'Budget range (CAD)', type: 'text', required: true, ...bookOnly },
-    { name: 'description', type: 'textarea', required: true, maxLength: DESCRIPTION_MAX_LENGTH, ...bookOnly },
-    { name: 'email', type: 'text', required: true, ...bookOnly },
+    { name: 'description', type: 'textarea', maxLength: DESCRIPTION_MAX_LENGTH, ...bookOnly },
+    { name: 'email', type: 'text', ...bookOnly },
     { name: 'phone', type: 'text', ...bookOnly },
     {
       name: 'contactWay',

@@ -6,7 +6,6 @@ export const BOOK_FIELDS = [
   'description',
   'name',
   'email',
-  'privacyConsent',
 ] as const
 
 export type BookField = (typeof BOOK_FIELDS)[number]
@@ -16,15 +15,14 @@ export type BookAnswers = {
   budget: string
   description: string
   name: string
-  email: string
-  privacyConsent: boolean
+  email: string | undefined
 }
 
 export type BookErrors = Partial<Record<BookField, string>>
 
 const isBookField = (key: unknown): key is BookField => BOOK_FIELDS.some((field) => field === key)
 
-// The schema also checks the other fields (phone, contact way); the form answers only these six.
+// The schema also checks the other fields (phone, contact way); the form answers only these five.
 export function validateBook(answers: BookAnswers): BookErrors {
   const result = bookInquirySchema.safeParse({ form: 'book', ...answers })
   const errors: BookErrors = {}

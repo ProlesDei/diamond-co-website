@@ -3,13 +3,23 @@ import type { MongooseAdapter } from '@payloadcms/db-mongodb'
 import { getPayload } from 'payload'
 import { z } from 'zod'
 
+import { isProduction } from '../lib/site'
+
 const SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 const SITEVERIFY_TIMEOUT_MS = 5000
 const SECRET_ERROR_CODES = new Set(['missing-input-secret', 'invalid-input-secret'])
+const TEST_SECRET_SHAPE = /^[0-9]x0{31}[a-z]{2}$/
+const TEST_KEY_HOSTNAME = 'example.com'
+
+const refusesTestKeys = isProduction && process.env.VERCEL_ENV !== 'preview'
+
+const isTestSecret = (secret: string): boolean => TEST_SECRET_SHAPE.test(secret.toLowerCase().replace(/[^0-9a-z]/g, ''))
 
 const siteverifyAnswer = z.object({
   success: z.boolean(),
   'error-codes': z.array(z.string()).optional(),
+  hostname: z.string().optional(),
+  metadata: z.object({ result_with_testing_key: z.boolean().optional() }).optional(),
 })
 
 export type TurnstileResult = { ok: true } | { ok: false }
@@ -18,6 +28,12 @@ export async function verifyTurnstile(token: string, ip: string): Promise<Turnst
   const secret = process.env.TURNSTILE_SECRET_KEY
   if (!secret) {
     console.error('turnstile: TURNSTILE_SECRET_KEY is not set, so every check is refused. Set it in .env.')
+    return { ok: false }
+  }
+  if (refusesTestKeys && isTestSecret(secret)) {
+    console.error(
+      'turnstile: TURNSTILE_SECRET_KEY is a Cloudflare test key while SITE_ENV is production, so every check is refused. Set the real secret.',
+    )
     return { ok: false }
   }
   if (!token) return { ok: false }
@@ -46,7 +62,17 @@ export async function verifyTurnstile(token: string, ip: string): Promise<Turnst
     console.error('turnstile: siteverify answered in an unexpected shape; refused.')
     return { ok: false }
   }
-  if (parsed.data.success) return { ok: true }
+  if (parsed.data.success) {
+    const testKeyAnswer =
+      parsed.data.hostname === TEST_KEY_HOSTNAME || parsed.data.metadata?.result_with_testing_key === true
+    if (refusesTestKeys && testKeyAnswer) {
+      console.error(
+        'turnstile: siteverify answered as a test key for TURNSTILE_SECRET_KEY while SITE_ENV is production, so every check is refused. Set the real secret.',
+      )
+      return { ok: false }
+    }
+    return { ok: true }
+  }
 
   const secretCodes = (parsed.data['error-codes'] ?? []).filter((code) => SECRET_ERROR_CODES.has(code))
   if (secretCodes.length > 0) {

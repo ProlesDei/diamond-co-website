@@ -1,10 +1,8 @@
 import config from '@payload-config'
-import { after } from 'next/server'
 import { getPayload } from 'payload'
 import type { Payload } from 'payload'
 import { z } from 'zod'
 
-import { sendInquiryEmails } from '@/inquiry/email'
 import { clientIp, rateLimit, rateLimitUnavailable, refuse, verifyTurnstile } from '@/inquiry/guard'
 import { getBookOptions } from '@/inquiry/options'
 import type { BookOptions } from '@/inquiry/options'
@@ -136,9 +134,5 @@ export async function POST(request: Request): Promise<Response> {
     return refuse(400, result.reason, 'We could not find that photo or sketch. Choose it again and send.')
   }
 
-  const { inquiry } = result
-  const adminUrl = new URL(`/admin/collections/inquiries/${inquiry.id}`, request.url).toString()
-  after(() => sendInquiryEmails(payload, inquiry, adminUrl))
-
-  return Response.json({ reference: inquiry.reference }, { status: 201 })
+  return Response.json({ reference: result.inquiry.reference }, { status: 201 })
 }

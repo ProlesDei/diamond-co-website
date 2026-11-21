@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 import * as content from './content'
 import { emailAdapter } from './email/adapter'
 import * as inquiry from './inquiry'
+import { isProduction } from './lib/site'
 import * as media from './media'
 import { answerLockedLoginAsUnknown } from './users/loginErrors'
 import { Users } from './users/Users'
@@ -39,7 +40,8 @@ export default buildConfig({
   },
   db: mongooseAdapter({
     // FALLBACK (chief of staff, Nov 19, 2026): Vercel's MongoDB add-on sets MONGODB_URI; delete this to read DATABASE_URL only.
-    url: process.env.DATABASE_URL || process.env.MONGODB_URI || '',
+    // Only for production: preview and local runs never read MONGODB_URI.
+    url: process.env.DATABASE_URL || (isProduction ? process.env.MONGODB_URI : undefined) || '',
   }),
   sharp,
 })

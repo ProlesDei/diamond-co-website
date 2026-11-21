@@ -4,17 +4,27 @@ import path from 'node:path'
 import type { Payload } from 'payload'
 
 import { readBlobToken } from '../lib/blob'
+import { PENDING_PREFIX } from './directUpload'
 import { abortAfterTimeout, INQUIRY_BLOB_PREFIX, pathnameOf } from './storage'
 import { claimUploads, UPLOAD_LINKS, uploadIdsOf } from './submit'
+import { CLIENT_TOKEN_MS } from './upload'
+
+const MINUTE_MS = 60 * 1000
 
 export const UNLINKED_UPLOAD_MAX_AGE_MS = 24 * 60 * 60 * 1000
+// Past the token's lifetime, the margin lets an upload that started just before it ran out finish,
+// within the page's own transfer timeout, and be confirmed.
+export const PENDING_BLOB_MAX_AGE_MS = CLIENT_TOKEN_MS + 15 * MINUTE_MS
 
 export type PrunedUpload = { id: string; fileGone: boolean }
 
 export type PruneResult = {
   uploads: PrunedUpload[]
   orphanBlobs?: string[]
+  pendingBlobs?: string[]
 }
+
+type OldBlobs = { orphanBlobs: string[]; pendingBlobs: string[] }
 
 async function step<T>(name: string, run: () => Promise<T>): Promise<T> {
   try {
@@ -31,6 +41,7 @@ async function releaseAfterFailure(
   release: () => Promise<void>,
   id: string,
   failure: unknown,
+  recheckFile: (() => Promise<boolean>) | undefined,
 ): Promise<void> {
   let recordKept: boolean
   try {
@@ -44,7 +55,7 @@ async function releaseAfterFailure(
     recordKept = record !== null
   } catch (error) {
     throw new Error(
-      `${(failure as Error).message}. Checking whether upload ${id}'s record is still there also failed, so the prune kept its claim: requests naming it are refused until its row (_id ${id}) is removed from ${UPLOAD_LINKS}. Remove that row only if upload ${id} is still in inquiry-uploads: ${(error as Error).message}`,
+      `${(failure as Error).message}. Checking whether upload ${id}'s record is still there also failed, so the prune kept its claim: requests naming it are refused until its row (_id ${id}) is removed from ${UPLOAD_LINKS}. If upload ${id} is still in inquiry-uploads, delete it in the admin first, then remove its row (_id ${id}) from ${UPLOAD_LINKS}: ${(error as Error).message}`,
       { cause: failure },
     )
   }
@@ -53,6 +64,24 @@ async function releaseAfterFailure(
       `${(failure as Error).message}. Upload ${id}'s record is already deleted, so the prune kept its claim: its row (_id ${id}) stays in ${UPLOAD_LINKS}, and requests naming the upload are refused.`,
       { cause: failure },
     )
+  }
+  if (recheckFile) {
+    const recovery = `requests naming it are refused until you delete upload ${id} in the admin, then remove its row (_id ${id}) from ${UPLOAD_LINKS}`
+    let fileGone: boolean
+    try {
+      fileGone = await recheckFile()
+    } catch (error) {
+      throw new Error(
+        `${(failure as Error).message}. Upload ${id}'s record is still there, but checking whether its file is still there also failed, so the prune kept its claim: ${recovery}: ${(error as Error).message}`,
+        { cause: failure },
+      )
+    }
+    if (fileGone) {
+      throw new Error(
+        `${(failure as Error).message}. Upload ${id}'s record is still there but its file is gone, so the prune kept its claim: ${recovery}.`,
+        { cause: failure },
+      )
+    }
   }
   try {
     await release()
@@ -123,22 +152,30 @@ async function filenamesInUse(payload: Payload, filenames: string[]): Promise<Se
 
 const filenameOf = (pathname: string): string => pathname.slice(INQUIRY_BLOB_PREFIX.length)
 
-async function findOrphanBlobs(payload: Payload, token: string, cutoff: number): Promise<string[]> {
+const isPending = (pathname: string): boolean => pathname.startsWith(PENDING_PREFIX)
+
+async function findOldBlobs(payload: Payload, token: string, now: number): Promise<OldBlobs> {
   const blobs = await step(`listing blobs under ${INQUIRY_BLOB_PREFIX}`, () => blobsUnderPrefix(token))
-  const old = blobs.filter((blob) => blob.uploadedAt.getTime() < cutoff).map((blob) => blob.pathname)
-  if (old.length === 0) return []
+  const olderThan = (pending: boolean, maxAge: number): string[] =>
+    blobs
+      .filter((blob) => isPending(blob.pathname) === pending && blob.uploadedAt.getTime() < now - maxAge)
+      .map((blob) => blob.pathname)
+  const old = olderThan(false, UNLINKED_UPLOAD_MAX_AGE_MS)
+  const oldPending = olderThan(true, PENDING_BLOB_MAX_AGE_MS)
+  if (old.length === 0 && oldPending.length === 0) return { orphanBlobs: [], pendingBlobs: [] }
   const inUse = await step(`finding uploads that point at blobs under ${INQUIRY_BLOB_PREFIX}`, () =>
     filenamesInUse(
       payload,
       blobs.map((blob) => filenameOf(blob.pathname)),
     ),
   )
-  if (inUse.size === 0) {
+  if (old.length > 0 && inUse.size === 0) {
     throw new Error(
       `refused, deleting nothing: no upload in the database points at any of the ${blobs.length} blob(s) under ${INQUIRY_BLOB_PREFIX}, so the database may not be the one this store's uploads are recorded in. Check that DATABASE_URL names that database. If the store truly holds only orphans, delete them in the store's Vercel dashboard.`,
     )
   }
-  return old.filter((pathname) => !inUse.has(filenameOf(pathname)))
+  const unused = (pathnames: string[]): string[] => pathnames.filter((pathname) => !inUse.has(filenameOf(pathname)))
+  return { orphanBlobs: unused(old), pendingBlobs: unused(oldPending) }
 }
 
 export async function pruneUnlinkedUploads(
@@ -147,7 +184,7 @@ export async function pruneUnlinkedUploads(
 ): Promise<PruneResult> {
   const token = readBlobToken('inquiry-uploads')
   const cutoff = now.getTime() - UNLINKED_UPLOAD_MAX_AGE_MS
-  const orphanBlobs = token ? await findOrphanBlobs(payload, token, cutoff) : undefined
+  const oldBlobs = token ? await findOldBlobs(payload, token, now.getTime()) : undefined
   const { docs: old } = await step('finding uploads older than 24 hours', () =>
     payload.find({
       collection: 'inquiry-uploads',
@@ -183,8 +220,10 @@ export async function pruneUnlinkedUploads(
         ? undefined
         : await step(`claiming upload ${doc.id} in ${UPLOAD_LINKS}`, () => claimUploads(payload, [doc.id]))
       if (claim && !claim.ok) continue
+      let recheckFile: (() => Promise<boolean>) | undefined
       try {
         const gone = await step(`checking upload ${doc.id}'s file`, () => fileGone(doc.filename))
+        recheckFile = () => fileGone(doc.filename)
         if (claim) {
           await step(`deleting upload ${doc.id}`, () =>
             payload.delete({ collection: 'inquiry-uploads', id: doc.id, overrideAccess: true }),
@@ -192,17 +231,21 @@ export async function pruneUnlinkedUploads(
         }
         uploads.push({ id: doc.id, fileGone: gone })
       } catch (error) {
-        if (claim) await releaseAfterFailure(payload, claim.release, doc.id, error)
+        if (claim) await releaseAfterFailure(payload, claim.release, doc.id, error, recheckFile)
         throw error
       }
     }
   }
 
-  if (!token || !orphanBlobs) return { uploads }
+  if (!token || !oldBlobs) return { uploads }
+  const { orphanBlobs, pendingBlobs } = oldBlobs
   if (!dryRun) {
+    for (const pathname of pendingBlobs) {
+      await step(`deleting pending blob ${pathname}`, () => del(pathname, { abortSignal: abortAfterTimeout(), token }))
+    }
     for (const pathname of orphanBlobs) {
       await step(`deleting orphan blob ${pathname}`, () => del(pathname, { abortSignal: abortAfterTimeout(), token }))
     }
   }
-  return { uploads, orphanBlobs }
+  return { uploads, orphanBlobs, pendingBlobs }
 }
