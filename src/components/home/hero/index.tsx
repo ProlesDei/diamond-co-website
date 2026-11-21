@@ -1,11 +1,10 @@
-import { getHomePieces } from '@/components/home/pieces'
+import { getHomeImages } from '@/components/home/homeImages'
 import { Confirm } from '@/components/pages/Confirm'
 import { Button } from '@/components/site/Button'
 
 import styles from './Hero.module.css'
 import { HeroPhoto } from './HeroPhoto'
 import { HeroSection } from './HeroSection'
-import { getStone } from './stone'
 
 function Headline() {
   return (
@@ -22,19 +21,18 @@ type HeroProps = {
 }
 
 export async function Hero({ reduceMotion }: HeroProps) {
-  const [piece] = await getHomePieces()
-  const image = piece?.image
+  const { hero } = await getHomeImages()
 
   return (
     <HeroSection reduceMotion={reduceMotion}>
       <h1 className={styles.headline}>
         <Headline />
       </h1>
-      {piece && image ? (
-        <HeroPhoto image={image} stone={await getStone(piece.slug)} />
+      {hero ? (
+        <HeroPhoto image={hero.image} stone={hero.stone} />
       ) : (
         <div className={styles.photo}>
-          <p className={styles.placeholder}>Placeholder: studio photo of the newest featured piece</p>
+          <p className={styles.placeholder}>Placeholder: hero photo, chosen in Site settings → Home page images</p>
         </div>
       )}
       <p className={`${styles.headline} ${styles.copy}`} aria-hidden="true">

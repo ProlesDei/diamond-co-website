@@ -1,11 +1,11 @@
+import { getHomeImages } from '@/components/home/homeImages'
 import type { HomeImage } from '@/components/home/pieces'
-import { getHomePieces } from '@/components/home/pieces'
 
 import { BenchPhoto } from './BenchPhoto'
 import styles from './Hinge.module.css'
 
 type PlateProps = {
-  image: HomeImage | undefined
+  image: HomeImage | null
   caption: string
   placeholder: string
 }
@@ -26,25 +26,22 @@ function Plate({ image, caption, placeholder }: PlateProps) {
 }
 
 export async function Hinge({ large = false }: { large?: boolean }) {
-  const pieces = await getHomePieces()
-  const images = pieces.flatMap((piece) => (piece.image ? [piece.image] : []))
-  const daylight = images.find((image) => image.shot === 'daylight')
-  const studio = images.find((image) => image.shot === 'studio')
+  const { benchDaylight, benchStudio } = await getHomeImages()
 
   return (
     <div className={styles.plates}>
       <Plate
-        image={daylight}
+        image={benchDaylight}
         caption="Your idea, in daylight"
-        placeholder="Placeholder: daylight photo of a finished piece, from the client"
+        placeholder="Placeholder: daylight photo, chosen in Site settings → Home page images"
       />
       <div className={large ? `${styles.ampersand} ${styles.large}` : styles.ampersand} aria-hidden="true">
         &amp;
       </div>
       <Plate
-        image={studio}
+        image={benchStudio}
         caption="Made at our bench in White Rock"
-        placeholder="Placeholder: studio photo of a finished piece, from the client"
+        placeholder="Placeholder: studio photo, chosen in Site settings → Home page images"
       />
     </div>
   )
