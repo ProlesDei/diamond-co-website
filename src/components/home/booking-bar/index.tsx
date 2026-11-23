@@ -1,6 +1,5 @@
 'use client'
 
-import { Confirm } from '@/components/pages/Confirm'
 import { Button } from '@/components/site/Button'
 import { useReducedMotion } from '@/components/site/useReducedMotion'
 
@@ -19,10 +18,7 @@ export function BookingBar() {
       <Button variant="primary" href="#book" className={styles.button}>
         Book a free consultation
       </Button>
-      <p className={styles.micro}>
-        Reply within one business day
-        <Confirm />
-      </p>
+      <p className={styles.micro}>Pick a time online</p>
     </div>
   )
 }

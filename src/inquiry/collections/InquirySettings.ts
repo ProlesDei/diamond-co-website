@@ -1,11 +1,18 @@
-import type { Field, GlobalConfig } from 'payload'
+import type { Field, FieldAccess, GlobalConfig, TextFieldSingleValidation } from 'payload'
 
-import { adminOnly, signedIn } from './access'
+import { readCalendlyLink } from '@/lib/calendly'
+
+import { isAdmin } from '../../content/access'
+import { signedIn } from './access'
+
+const adminOnlyField: FieldAccess = ({ req }) => isAdmin(req)
 
 const choices = (name: string, label: string, defaults: [label: string, value: string][]): Field => ({
   name,
   label,
   type: 'array',
+  // Editors may change the Calendly link; the choices stay with admins.
+  access: { update: adminOnlyField },
   defaultValue: defaults.map(([label, value]) => ({ label, value })),
   fields: [
     { name: 'label', type: 'text', required: true },
@@ -13,11 +20,16 @@ const choices = (name: string, label: string, defaults: [label: string, value: s
   ],
 })
 
+const validateCalendlyLink: TextFieldSingleValidation = (value) =>
+  !value ||
+  readCalendlyLink(value) !== null ||
+  'Use a Calendly event link that starts with https://calendly.com/, such as https://calendly.com/your-studio/consultation'
+
 export const InquirySettings: GlobalConfig = {
   slug: 'inquiry-settings',
   access: {
     read: signedIn,
-    update: adminOnly,
+    update: signedIn,
   },
   fields: [
     choices('pieceTypes', 'Piece types (/book)', [
@@ -36,5 +48,15 @@ export const InquirySettings: GlobalConfig = {
       ['Over $20,000', 'over-20000'],
       ['Not sure yet', 'not-sure'],
     ]),
+    {
+      name: 'calendlyLink',
+      label: 'Calendly link (https://calendly.com/ only)',
+      type: 'text',
+      validate: validateCalendlyLink,
+      admin: {
+        description:
+          'The Calendly event the booking forms open after a visitor sends the form. Leave it empty and the forms end by asking the visitor to call or email with their reference. A change shows on the next page load.',
+      },
+    },
   ],
 }

@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { useSyncExternalStore } from 'react'
 
+import { studio } from '@/components/site/studio'
+
 import { Confirm } from '../Confirm'
 import { readSent } from './sent'
 import styles from './Thanks.module.css'
@@ -19,39 +21,38 @@ export function Thanks() {
   if (sent === undefined) return null
   if (sent === null) redirect('/book')
 
-  const { firstName, reference, piece } = sent
+  const { reference, piece } = sent
 
   return (
     <div className={styles.page}>
       <div>
         <p className={styles.eyebrow}>Request sent</p>
-        <h1 className={styles.title}>
-          Thank you, <em>{firstName}.</em>
-        </h1>
+        <h1 className={styles.title}>Thank you.</h1>
         <p className={styles.reference}>
           <span>Your reference</span>
           <b>{reference}</b>
         </p>
-        <p className={styles.lede}>
-          Quote the reference if you call.
-        </p>
+        <p className={styles.lede}>Quote it when you call or email us to set a time.</p>
         <ol className={styles.steps}>
           <li>
             <div>
               <h2>We read it today</h2>
               <p>
                 [GOLDSMITH] reads every request themselves
-                <Confirm />, photos and all.
+                <Confirm />.
               </p>
             </div>
           </li>
           <li>
             <div>
-              <h2>
-                We reply within one business day
-                <Confirm />
-              </h2>
-              <p>By email, as you asked, to set a time for your free consultation.</p>
+              <h2>You call or email us</h2>
+              <p>
+                Call <a href={studio.phone.href}>{studio.phone.text}</a>
+                <Confirm note={studio.phone.marker} /> or email{' '}
+                <a href={studio.email.href}>{studio.email.text}</a>
+                <Confirm note={studio.email.marker} /> with your reference to set a time for your free
+                consultation.
+              </p>
             </div>
           </li>
           <li>

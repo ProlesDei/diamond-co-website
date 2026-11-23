@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 
 import { seedAdmin } from './admin'
 import { seedFaqs } from './faqs'
+import { seedInquirySettings } from './inquirySettings'
 import { seedPieces } from './pieces'
 import { seedSiteSettings } from './siteSettings'
 
@@ -14,6 +15,7 @@ export type SeedStep = {
 export const seedSteps: SeedStep[] = [
   { name: 'admin user', run: seedAdmin },
   { name: 'site-settings', run: seedSiteSettings },
+  { name: 'inquiry-settings', run: seedInquirySettings },
   { name: 'pieces', run: seedPieces },
   { name: 'faqs', run: seedFaqs },
 ]

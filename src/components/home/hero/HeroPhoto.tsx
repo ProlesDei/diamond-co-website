@@ -47,9 +47,9 @@ export function HeroPhoto({ image, stone }: HeroPhotoProps) {
         alt={image.alt}
         width={width}
         height={height}
-        sizes="(max-width: 759px) 100vw, max(45vw, 828px)"
+        sizes="(max-width: 759px) 100vw, min(calc(60vw - 8px), 856px)"
         preload
-        className={styles[image.shot]}
+        className={image.shot === 'studio' ? `${styles.image} ${styles.studio}` : styles.image}
       />
       <div ref={glow} className={styles.glow} aria-hidden="true" />
     </div>

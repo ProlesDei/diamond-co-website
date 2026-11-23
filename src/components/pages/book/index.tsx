@@ -4,7 +4,6 @@ import { getPayload } from 'payload'
 
 import { studio } from '@/components/site/studio'
 import { getBookOptions } from '@/inquiry/options'
-import { calendlyUrl } from '@/lib/calendly'
 
 import { pageMetadata } from '../metadata'
 import styles from './book.module.css'
@@ -15,18 +14,17 @@ import { findAskedPiece } from './piece/lookup'
 const { address, hours, appointment } = studio
 const [openHours] = hours
 
-const STEPS = [
-  { title: 'You send this form', text: "Two minutes. Photos help but aren't needed." },
-  calendlyUrl
+const steps = (calendlyLink: string | null) => [
+  { title: 'You send this form', text: 'Under a minute: the kind of piece and a budget.' },
+  calendlyLink
     ? {
         title: 'You pick a time on this page',
         mark: 'confirm',
         text: 'Right after the form, from our open consultation times.',
       }
     : {
-        title: 'We reply within one business day',
-        mark: 'confirm',
-        text: 'By the way you choose, to set a time.',
+        title: 'You call or email us',
+        text: 'Quote your reference to set a time.',
       },
   { title: 'You sit down with us', text: 'Bring the stone or piece if you have one.' },
 ]
@@ -39,7 +37,7 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
   // The labels come from the CMS and an admin's edit shows on the next load, so never prerender.
   await connection()
   const { piece: pieceParam } = await searchParams
-  const options = await getBookOptions(await getPayload({ config }))
+  const { calendlyLink, ...options } = await getBookOptions(await getPayload({ config }))
   const { piece, initialPieceType } = await findAskedPiece(
     typeof pieceParam === 'string' ? pieceParam : undefined,
     options,
@@ -62,7 +60,7 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
             or not you go ahead.
           </p>
           <ol className={styles.steps}>
-            {STEPS.map((step) => (
+            {steps(calendlyLink).map((step) => (
               <li key={step.title}>
                 <span>
                   <b>
@@ -93,7 +91,13 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
           </dl>
         </div>
         <div className={styles.panel}>
-          <Form heading="h2" options={options} piece={piece} initialPieceType={initialPieceType} />
+          <Form
+            heading="h2"
+            options={options}
+            calendlyLink={calendlyLink}
+            piece={piece}
+            initialPieceType={initialPieceType}
+          />
         </div>
       </div>
     </section>

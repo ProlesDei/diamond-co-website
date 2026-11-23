@@ -41,11 +41,25 @@ const homeOnly = { ...submitted, admin: { condition: fromHome } }
 
 const bookOnly = { ...submitted, admin: { condition: fromBook } }
 
+const hasValue = (value: unknown) =>
+  value !== undefined && value !== null && value !== '' && value !== false && !(Array.isArray(value) && value.length === 0)
+
+// The book form no longer asks these, so the edit view shows each one only on the older inquiries that hold a value.
+const whenSet =
+  (name: keyof Inquiry, also: Condition = () => true): Condition =>
+  (data, siblingData, context) =>
+    hasValue(data?.[name]) && also(data, siblingData, context)
+
+const keptOnly = (name: keyof Inquiry, also?: Condition) => ({
+  ...submitted,
+  admin: { condition: whenSet(name, also) },
+})
+
 export const Inquiries: CollectionConfig = {
   slug: 'inquiries',
   admin: {
     useAsTitle: 'reference',
-    defaultColumns: ['reference', 'status', 'form', 'name', 'contact', 'pieceType', 'interests', 'createdAt'],
+    defaultColumns: ['reference', 'status', 'pieceType', 'budget', 'createdAt'],
     listSearchableFields: ['reference', 'email', 'contact'],
   },
   defaultSort: '-createdAt',
@@ -86,7 +100,7 @@ export const Inquiries: CollectionConfig = {
       ],
       ...submitted,
     },
-    { name: 'name', type: 'text', required: true, maxLength: NAME_MAX_LENGTH, ...submitted },
+    { name: 'name', type: 'text', maxLength: NAME_MAX_LENGTH, ...keptOnly('name') },
     { name: 'contact', type: 'text', required: true, ...homeOnly },
     {
       name: 'interests',
@@ -99,17 +113,16 @@ export const Inquiries: CollectionConfig = {
     { name: 'pieceType', label: 'Piece type', type: 'text', required: true, ...bookOnly },
     { name: 'budget', label: 'Budget range (CAD)', type: 'text', required: true, ...bookOnly },
     { name: 'description', type: 'textarea', maxLength: DESCRIPTION_MAX_LENGTH, ...bookOnly },
-    { name: 'email', type: 'text', ...bookOnly },
-    { name: 'phone', type: 'text', ...bookOnly },
+    { name: 'email', type: 'text', ...keptOnly('email', fromBook) },
+    { name: 'phone', type: 'text', ...keptOnly('phone', fromBook) },
     {
       name: 'contactWay',
       label: 'Reach them by',
       type: 'select',
-      required: true,
       options: CONTACT_WAYS.map((value) => ({ label: CONTACT_WAY_LABELS[value], value })),
-      ...bookOnly,
+      ...keptOnly('contactWay', fromBook),
     },
-    { name: 'needBy', label: 'Need by (YYYY-MM-DD)', type: 'text', ...submitted },
+    { name: 'needBy', label: 'Need by (YYYY-MM-DD)', type: 'text', ...keptOnly('needBy') },
     { name: 'upload', label: 'Photo or sketch', type: 'upload', relationTo: 'inquiry-uploads', ...homeOnly },
     {
       name: 'uploads',
@@ -118,14 +131,14 @@ export const Inquiries: CollectionConfig = {
       relationTo: 'inquiry-uploads',
       hasMany: true,
       maxRows: MAX_UPLOADS,
-      ...bookOnly,
+      ...keptOnly('uploads', fromBook),
     },
-    { name: 'newsOptIn', label: 'Wants news of new work', type: 'checkbox', defaultValue: false, ...submitted },
+    { name: 'newsOptIn', label: 'Wants news of new work', type: 'checkbox', defaultValue: false, ...keptOnly('newsOptIn') },
     {
       name: 'newsOptInAt',
       label: 'News opt-in time',
       type: 'date',
-      admin: { date: { pickerAppearance: 'dayAndTime' } },
+      admin: { condition: whenSet('newsOptInAt'), date: { pickerAppearance: 'dayAndTime' } },
       ...submitted,
     },
     {

@@ -110,7 +110,8 @@
   color: var(--ink);
 }
 
-.panel .confirm {
+/* On the form, not the panel: the home page's #book section renders this form in a panel of its own. */
+.form .confirm {
   color: var(--ink-muted);
 }
 
@@ -207,11 +208,6 @@
   font: 500 16px/1.4 var(--font-sans);
 }
 
-.optional {
-  font-weight: 400;
-  color: var(--ink-muted);
-}
-
 .hint {
   font-size: 14px;
   line-height: 1.5;
@@ -244,10 +240,6 @@
   padding: 14px 16px;
   line-height: 1.55;
   resize: vertical;
-}
-
-.dateControl {
-  max-width: 240px;
 }
 
 .counter {
@@ -354,35 +346,6 @@
   color: var(--ink-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.check {
-  display: flex;
-  gap: var(--space-3);
-  align-items: flex-start;
-  font-size: 15px;
-  line-height: 1.55;
-  cursor: pointer;
-}
-
-.check input {
-  flex: none;
-  width: 24px;
-  height: 24px;
-  margin: 0;
-  accent-color: var(--evergreen);
-}
-
-.check input:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 3px;
-}
-
-.check small {
-  display: block;
-  margin-top: 4px;
-  font-size: 13px;
-  color: var(--ink-muted);
 }
 
 .promise {

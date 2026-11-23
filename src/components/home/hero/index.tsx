@@ -52,7 +52,7 @@ export async function Hero({ reduceMotion }: HeroProps) {
           </Button>
         </div>
         <p className={styles.micro}>
-          30 minutes · No obligation · Reply within one business day
+          30 minutes · No obligation · Pick a time online
           <Confirm />
         </p>
       </div>
