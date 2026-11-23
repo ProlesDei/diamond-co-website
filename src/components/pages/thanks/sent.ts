@@ -3,7 +3,6 @@ import { z } from 'zod'
 const storageKey = 'dc-inquiry-sent'
 
 const sentSchema = z.object({
-  firstName: z.string().min(1),
   reference: z.string().min(1),
   piece: z
     .object({

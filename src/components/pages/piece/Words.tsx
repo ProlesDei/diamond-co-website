@@ -78,9 +78,7 @@ export function Words({ piece }: { piece: Piece }) {
           Book a free consultation
         </Button>
         <p className={styles.micro}>
-          Your request will name this piece, so [GOLDSMITH] has it in front of them. Reply within one
-          business day
-          <Confirm />.
+          Your request will name this piece, so [GOLDSMITH] has it in front of them. Pick a time online.
         </p>
         <Link href={links.commissions} className={styles.all}>
           See all commissions

@@ -35,11 +35,11 @@ To try the site with sample content on your own machine:
 3. Start the app: `pnpm dev`. Leave it running.
 4. In a second terminal, in this folder, fill the database with samples: `pnpm seed`.
 5. Open http://localhost:3000 for the site.
-6. Send a test consultation. On the home page, scroll to "Book a free consultation", choose a kind of piece and a budget range, fill in a made-up name and email, and press "Request my consultation". The other fields are optional. The page moves to "Request sent" and greets you by first name. No email is sent, and nothing is written to `.outbox/` for it.
+6. Send a test consultation. On the home page, scroll to "Book a free consultation", choose a kind of piece and a budget range, and press "Request my consultation". The note is optional, and the form asks no name or email. The page moves to "Request sent" and shows your reference. No email is sent, and nothing is written to `.outbox/` for it.
 7. Open http://localhost:3000/admin and sign in as `owner@example.test`. The password is the one `pnpm seed` printed. To choose your own, set `SEED_ADMIN_PASSWORD` before the first `pnpm seed`.
 8. In the admin, open Inquiries (press "Open Menu" first if the menu is closed), then open your test consultation. It shows as New, with its reference.
 
-`pnpm seed` adds an admin user, sample site settings, 6 sample pieces with placeholder images, and 6 FAQs. It draws the placeholder images as it runs, so no image is stored in git. Every sample fact is marked `[confirm]`, and every image is marked as a placeholder. Run it again and it adds only what is missing; it says so when nothing is. It refuses to run when `SITE_ENV` is `production`, or when `DATABASE_URL` points at any host but `127.0.0.1`, `localhost` or `[::1]`.
+`pnpm seed` adds an admin user, sample site settings, a sample Calendly link, 6 sample pieces with placeholder images, and 6 FAQs. It draws the placeholder images as it runs, so no image is stored in git. Every sample fact is marked `[confirm]`, and every image is marked as a placeholder. Run it again and it adds only what is missing; it says so when nothing is. It refuses to run when `SITE_ENV` is `production`, or when `DATABASE_URL` points at any host but `127.0.0.1`, `localhost` or `[::1]`.
 
 The password is printed only once. If you lose it, stop the app, delete `.data/` and `media/`, and run steps 3 and 4 again.
 
@@ -67,6 +67,10 @@ The password is printed only once. If you lose it, stop the app, delete `.data/`
 
 The `users` collection is in `src/users/`. Users are admins or editors. Five wrong passwords in a row lock an account for 10 minutes.
 
+## Booking link
+
+The booking forms open a Calendly event after a send that saved. The studio sets that event in the admin: Inquiry settings → Calendly link. Any signed-in user can change it; piece types and budget ranges stay admin-only. The field takes only links that start with `https://calendly.com/` and have a path after it. Leave it empty and the forms end by asking the visitor to call or email with their reference, with no time step. A change shows on the next page load, with no rebuild or redeploy. `pnpm seed` fills an empty field with a sample link.
+
 ## Hosting on Vercel
 
 Production writes nothing to the server's disk, so a build or start with `SITE_ENV=production` refuses to run until every other variable below is set, and names the ones that are missing. The parked ones only warn. Set them in the Vercel project's settings, by name:
@@ -82,7 +86,6 @@ Production writes nothing to the server's disk, so a build or start with `SITE_E
 - `EMAIL_FROM_NAME` (parked): the name the admin password-reset email comes from. The booking forms send no email.
 - `BLOB_READ_WRITE_TOKEN`: the read-write token of the public Vercel Blob store, where media go.
 - `INQUIRY_BLOB_READ_WRITE_TOKEN`: the read-write token of the private Vercel Blob store, where inquiry uploads go.
-- `NEXT_PUBLIC_CALENDLY_URL` (optional): the Calendly event link the booking forms open after a send that saved. It is set for Preview and Development only for now; Production leaves it unset, which hides the time step, so the forms end with their send-and-reply message. Set, it also takes the Email field off the forms, since Calendly asks for the email. A value that is not an `https://calendly.com/` link counts as unset. The build bakes it in, so changing it needs a rebuild.
 
 PARKED (owner, Nov 19, 2026): online booking and email are off for the .vercel.app run, so the five parked names only warn when unset. With both Turnstile keys unset, the spam check is skipped and the booking forms save and end normally. Move them back into `productionVariables` in `next.config.ts` to turn the refusal back on.
 

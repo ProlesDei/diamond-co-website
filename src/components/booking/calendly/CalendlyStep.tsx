@@ -51,7 +51,7 @@ export function CalendlyStep({ link, heading: Heading, prefill, onBack }: Calend
         </Heading>
         <p>Calendly has emailed you the time and the details.</p>
         <p>
-          Your answers and any photos are saved with the studio under <strong>{prefill.reference}</strong>.
+          Your answers are saved with the studio under <strong>{prefill.reference}</strong>.
         </p>
       </div>
     )

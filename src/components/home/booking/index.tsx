@@ -9,7 +9,7 @@ import styles from './booking.module.css'
 
 export async function Booking() {
   await connection()
-  const options = await getBookOptions(await getPayload({ config }))
+  const { calendlyLink, ...options } = await getBookOptions(await getPayload({ config }))
 
   return (
     <section className={styles.book} id="book" aria-labelledby="book-heading">
@@ -46,7 +46,13 @@ export async function Booking() {
           </dl>
         </div>
         <div className={styles.panel}>
-          <Form heading="h3" options={options} piece={null} initialPieceType={null} />
+          <Form
+            heading="h3"
+            options={options}
+            calendlyLink={calendlyLink}
+            piece={null}
+            initialPieceType={null}
+          />
         </div>
       </div>
     </section>

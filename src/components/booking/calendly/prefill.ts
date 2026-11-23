@@ -2,10 +2,9 @@ import { z } from 'zod'
 
 import { calendlyOrigin } from '@/lib/calendly'
 
+// Calendly asks the invitee's name and email itself, so the prefill carries only the answers.
 export type CalendlyPrefill = {
   reference: string
-  name: string
-  email?: string
   a1: string
 }
 
@@ -19,8 +18,6 @@ export function joinAnswers(short: readonly (string | undefined)[], ...rest: (st
 
 export function frameUrl(link: string, prefill: CalendlyPrefill, host: string): string {
   const url = new URL(link)
-  url.searchParams.set('name', prefill.name)
-  if (prefill.email) url.searchParams.set('email', prefill.email)
   url.searchParams.set('a1', joinAnswers([`Request ${prefill.reference}`], prefill.a1))
   url.searchParams.set('embed_domain', host)
   url.searchParams.set('embed_type', 'Inline')

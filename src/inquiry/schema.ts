@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-import { calendlyUrl } from '../lib/calendly'
 import { isEmailOrPhone } from './contact'
 
 export const INTERESTS = ['engagement-ring', 'redesign', 'wedding-band', 'not-sure'] as const
@@ -54,43 +53,13 @@ export type InquiryInput = z.infer<typeof inquirySchema>
 
 const requiredChoice = (message: string) => z.string({ error: message }).trim().min(1, message)
 
-const bookEmail = z
-  .string({ error: 'Add your email address so we can reply.' })
-  .trim()
-  .min(1, { error: 'Add your email address so we can reply.', abort: true })
-  .max(CONTACT_MAX_LENGTH, { error: `Keep your email address to ${CONTACT_MAX_LENGTH} characters.`, abort: true })
-  .refine(
-    (email) => email.includes('@') && isEmailOrPhone(email),
-    'That doesn’t look like an email address. Check it and try again.',
-  )
-
+// The visitor answers only these; Calendly asks their name and email when they pick a time.
+// Keys an older page still sends, such as name or uploadIds, are dropped, not saved.
 export const bookInquirySchema = z.object({
   form: z.literal('book'),
   pieceType: requiredChoice('Choose the kind of piece, or "Something else".'),
   budget: requiredChoice('Choose a range, or "Not sure yet". It helps us suggest stones and metals.'),
   description: z.string().trim().max(DESCRIPTION_MAX_LENGTH, 'Keep the description to 2,000 characters.').optional(),
-  name: z
-    .string({ error: 'Add your name so we know who to reply to.' })
-    .trim()
-    .min(1, 'Add your name so we know who to reply to.')
-    .max(NAME_MAX_LENGTH, `Keep your name to ${NAME_MAX_LENGTH} characters.`),
-  email: calendlyUrl ? bookEmail.optional() : bookEmail,
-  phone: z
-    .string()
-    .trim()
-    .refine(
-      (phone) => !phone.includes('@') && isEmailOrPhone(phone),
-      'That doesn’t look like a phone number. Check it and try again.',
-    )
-    .optional(),
-  contactWay: z.enum(CONTACT_WAYS, { error: 'Choose how we should reach you.' }),
-  uploadIds: z
-    .array(uploadId)
-    .max(MAX_UPLOADS, "That's 5, our limit. Remove one to add another, or bring the rest to your consultation.")
-    .refine((ids) => new Set(ids).size === ids.length, 'Add each photo once.')
-    .optional(),
-  needBy: needBy.optional(),
-  newsOptIn: z.boolean().default(false),
   piece: z
     .string()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Not a valid piece.')

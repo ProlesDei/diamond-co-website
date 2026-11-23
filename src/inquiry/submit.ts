@@ -107,27 +107,18 @@ async function publishedPieceId(payload: Payload, slug: string | undefined): Pro
 }
 
 export async function submitBookInquiry(payload: Payload, input: BookInquiryInput): Promise<SubmitResult> {
-  const uploadIds = input.uploadIds ?? []
   const piece = await publishedPieceId(payload, input.piece)
-  return createLinked(payload, uploadIds, () =>
-    payload.create({
-      collection: 'inquiries',
-      depth: 1,
-      data: {
-        status: 'new',
-        form: 'book',
-        name: input.name,
-        email: input.email,
-        phone: input.phone,
-        contactWay: input.contactWay,
-        pieceType: input.pieceType,
-        budget: input.budget,
-        description: input.description,
-        piece,
-        uploads: uploadIds,
-        needBy: input.needBy,
-        newsOptIn: input.newsOptIn,
-      },
-    }),
-  )
+  const inquiry = await payload.create({
+    collection: 'inquiries',
+    depth: 1,
+    data: {
+      status: 'new',
+      form: 'book',
+      pieceType: input.pieceType,
+      budget: input.budget,
+      description: input.description,
+      piece,
+    },
+  })
+  return { ok: true, inquiry }
 }

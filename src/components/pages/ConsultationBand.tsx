@@ -2,7 +2,6 @@ import { useId, type ReactNode } from 'react'
 
 import { Button } from '@/components/site/Button'
 
-import { Confirm } from './Confirm'
 import styles from './ConsultationBand.module.css'
 
 type ConsultationBandProps = {
@@ -26,10 +25,7 @@ export function ConsultationBand({ heading, children }: ConsultationBandProps) {
           <Button className={styles.button} variant="inverse" href="/book">
             Book a free consultation
           </Button>
-          <p className={styles.micro}>
-            Reply within one business day
-            <Confirm />
-          </p>
+          <p className={styles.micro}>Pick a time online</p>
         </div>
       </div>
     </section>

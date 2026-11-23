@@ -56,9 +56,7 @@ export function PhoneMenu({ id, open, onNavigate }: PhoneMenuProps) {
       <Button variant="primary" href={bookHref(pathname)} className={styles.book} onClick={onNavigate}>
         Book a free consultation
       </Button>
-      <p className={styles.micro}>
-        Reply within one business day<span className={styles.confirm}>[confirm]</span>
-      </p>
+      <p className={styles.micro}>Pick a time online</p>
     </div>
   )
 }
