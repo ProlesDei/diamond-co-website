@@ -30,6 +30,7 @@ import type { BookErrors, BookField } from './validate'
 
 type FormProps = {
   heading: 'h2' | 'h3'
+  goldsmithName: string | null
   options: BookOptions
   calendlyLink: string | null
   piece: BookPiece | null
@@ -61,7 +62,7 @@ const formatCount = (count: number) => count.toLocaleString('en-CA')
 const optionLabel = (choices: BookOption[], value: string) =>
   choices.find((option) => option.value === value)?.label
 
-export function Form({ heading: Heading, options, calendlyLink, piece, initialPieceType }: FormProps) {
+export function Form({ heading: Heading, goldsmithName, options, calendlyLink, piece, initialPieceType }: FormProps) {
   const [pieceType, setPieceType] = useState(initialPieceType ?? '')
   const [budget, setBudget] = useState('')
   const [description, setDescription] = useState('')
@@ -156,7 +157,7 @@ export function Form({ heading: Heading, options, calendlyLink, piece, initialPi
       <Heading className={styles.formHeading}>Book a free consultation</Heading>
       {calendlyLink ? (
         <p className={styles.formIntro}>
-          One short form, then you pick a time with [GOLDSMITH]
+          One short form, then you pick a time with {goldsmithName ?? 'a goldsmith'}
           <Mark note="client supplies" /> on this page
           <Mark note="confirm" />.
         </p>

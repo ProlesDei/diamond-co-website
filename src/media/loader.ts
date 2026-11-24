@@ -36,3 +36,12 @@ export const mediaLoader = ({ src, width }: ImageLoaderProps): string => {
 
   return (wideEnough[0] ?? sizes.zoom).url
 }
+
+export const responsiveMedia = (src: string): { src: string; srcSet: string } => {
+  const sizes = parseSrc(src)
+  const byWidth = new Map(Object.values(sizes).map(({ width, url }) => [width, url]))
+  return {
+    src: sizes.card.url,
+    srcSet: Array.from(byWidth, ([width, url]) => `${url} ${width}w`).join(', '),
+  }
+}

@@ -6,7 +6,7 @@ import type {
   PayloadRequest,
 } from 'payload'
 
-const revalidate = (req: PayloadRequest, tags: string[]): void => {
+export const revalidate = (req: PayloadRequest, tags: string[]): void => {
   if (req.context.disableRevalidate) return
   for (const tag of new Set(tags)) {
     revalidateTag(tag, { expire: 0 })

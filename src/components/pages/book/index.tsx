@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 
 import { studio } from '@/components/site/studio'
 import { getBookOptions } from '@/inquiry/options'
+import { getGoldsmithName } from '@/lib/content'
 
 import { pageMetadata } from '../metadata'
 import styles from './book.module.css'
@@ -11,7 +12,7 @@ import { Form } from './Form'
 import { Mark } from './Mark'
 import { findAskedPiece } from './piece/lookup'
 
-const { address, hours, appointment } = studio
+const { hours, appointment } = studio
 const [openHours] = hours
 
 const steps = (calendlyLink: string | null) => [
@@ -38,6 +39,7 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
   await connection()
   const { piece: pieceParam } = await searchParams
   const { calendlyLink, ...options } = await getBookOptions(await getPayload({ config }))
+  const goldsmithName = await getGoldsmithName()
   const { piece, initialPieceType } = await findAskedPiece(
     typeof pieceParam === 'string' ? pieceParam : undefined,
     options,
@@ -52,7 +54,7 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
             <Mark note="confirm" />
           </p>
           <h1 className={styles.heading}>
-            Sit down with <em>[GOLDSMITH].</em>
+            Sit down with <em>{goldsmithName ?? 'a goldsmith'}.</em>
           </h1>
           <p className={styles.lead}>
             Thirty minutes across the table in White Rock
@@ -73,13 +75,6 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
             ))}
           </ol>
           <dl className={styles.visit}>
-            <dt>Where</dt>
-            <dd>
-              {address.street.text}
-              <Mark note={address.street.marker} />
-              <br />
-              {address.city}
-            </dd>
             <dt>When</dt>
             <dd>
               {openHours.days}, {openHours.time}
@@ -93,6 +88,7 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
         <div className={styles.panel}>
           <Form
             heading="h2"
+            goldsmithName={goldsmithName}
             options={options}
             calendlyLink={calendlyLink}
             piece={piece}

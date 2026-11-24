@@ -4,14 +4,12 @@ import type { Payload } from 'payload'
 
 import type { Inquiry } from '@/payload-types'
 
-import type { BookInquiryInput, InquiryInput } from './schema'
+import type { BookInquiryInput } from './schema'
 
 export const UPLOAD_LINKS = 'inquiry-upload-links'
 const DUPLICATE_KEY = 11000
 
 type UploadLink = { _id: string; linkedAt: Date; claim: string }
-
-export type SubmitResult = { ok: true; inquiry: Inquiry } | { ok: false; reason: 'upload_unavailable' }
 
 function uploadLinks(payload: Payload) {
   if (payload.db.name !== 'mongoose') {
@@ -60,39 +58,6 @@ export async function claimUploads(payload: Payload, uploadIds: string[]): Promi
   }
 }
 
-async function createLinked(
-  payload: Payload,
-  uploadIds: string[],
-  create: () => Promise<Inquiry>,
-): Promise<SubmitResult> {
-  const claim = await claimUploads(payload, uploadIds)
-  if (!claim.ok) return { ok: false, reason: 'upload_unavailable' }
-  try {
-    return { ok: true, inquiry: await create() }
-  } catch (error) {
-    await claim.release()
-    throw error
-  }
-}
-
-export async function submitInquiry(payload: Payload, input: InquiryInput): Promise<SubmitResult> {
-  const { uploadId } = input
-  return createLinked(payload, uploadId ? [uploadId] : [], () =>
-    payload.create({
-      collection: 'inquiries',
-      data: {
-        status: 'new',
-        name: input.name,
-        contact: input.contact,
-        interests: input.interests,
-        needBy: input.needBy,
-        upload: uploadId,
-        newsOptIn: input.newsOptIn,
-      },
-    }),
-  )
-}
-
 async function publishedPieceId(payload: Payload, slug: string | undefined): Promise<string | undefined> {
   if (!slug) return undefined
   const { docs } = await payload.find({
@@ -106,9 +71,9 @@ async function publishedPieceId(payload: Payload, slug: string | undefined): Pro
   return docs[0]?.id
 }
 
-export async function submitBookInquiry(payload: Payload, input: BookInquiryInput): Promise<SubmitResult> {
+export async function submitBookInquiry(payload: Payload, input: BookInquiryInput): Promise<Inquiry> {
   const piece = await publishedPieceId(payload, input.piece)
-  const inquiry = await payload.create({
+  return payload.create({
     collection: 'inquiries',
     depth: 1,
     data: {
@@ -120,5 +85,4 @@ export async function submitBookInquiry(payload: Payload, input: BookInquiryInpu
       piece,
     },
   })
-  return { ok: true, inquiry }
 }

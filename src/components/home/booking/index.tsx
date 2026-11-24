@@ -4,12 +4,14 @@ import { getPayload } from 'payload'
 
 import { Form } from '@/components/pages/book/Form'
 import { getBookOptions } from '@/inquiry/options'
+import { getGoldsmithName } from '@/lib/content'
 
 import styles from './booking.module.css'
 
 export async function Booking() {
   await connection()
   const { calendlyLink, ...options } = await getBookOptions(await getPayload({ config }))
+  const goldsmithName = await getGoldsmithName()
 
   return (
     <section className={styles.book} id="book" aria-labelledby="book-heading">
@@ -19,7 +21,7 @@ export async function Booking() {
             Your free consultation<span className={styles.confirm}>[confirm]</span>
           </p>
           <h2 className={styles.heading} id="book-heading">
-            Sit down with <em>[GOLDSMITH].</em>
+            Sit down with <em>{goldsmithName ?? 'a goldsmith'}.</em>
           </h2>
           <p className={styles.lead}>
             Thirty minutes across the table in White Rock
@@ -27,12 +29,6 @@ export async function Booking() {
             range and a timeline, whether or not you go ahead.
           </p>
           <dl className={styles.visit}>
-            <dt>Where</dt>
-            <dd>
-              [Street address]<span className={styles.confirm}>[confirm]</span>
-              <br />
-              White Rock, BC
-            </dd>
             <dt>When</dt>
             <dd>
               Tuesday to Saturday, 10 am to 5 pm<span className={styles.confirm}>[confirm]</span>
@@ -40,14 +36,13 @@ export async function Booking() {
               By appointment
             </dd>
             <dt>Lead time</dt>
-            <dd>
-              About [X] weeks to your hand<span className={styles.confirm}>[confirm]</span>
-            </dd>
+            <dd>About 2-4 weeks to your hand</dd>
           </dl>
         </div>
         <div className={styles.panel}>
           <Form
             heading="h3"
+            goldsmithName={goldsmithName}
             options={options}
             calendlyLink={calendlyLink}
             piece={null}

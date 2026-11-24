@@ -14,7 +14,7 @@ import styles from './Thanks.module.css'
 const subscribe = () => () => {}
 const notReadYet = () => undefined
 
-export function Thanks() {
+export function Thanks({ goldsmithName }: { goldsmithName: string | null }) {
   // The server can't see sessionStorage, so it renders nothing and the browser decides.
   const sent = useSyncExternalStore(subscribe, readSent, notReadYet)
 
@@ -38,7 +38,7 @@ export function Thanks() {
             <div>
               <h2>We read it today</h2>
               <p>
-                [GOLDSMITH] reads every request themselves
+                {goldsmithName ?? 'Your goldsmith'} reads every request themselves
                 <Confirm />.
               </p>
             </div>

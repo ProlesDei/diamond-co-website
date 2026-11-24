@@ -48,7 +48,7 @@ export function Process() {
         From a conversation <em>to your hand.</em>
       </h2>
       <p className={styles.lede}>
-        About [X] weeks from first sit-down to your hand <Confirm />. One bench, so we take [N]
+        About 2-4 weeks from first sit-down to your hand. One bench, so we take [N]
         commissions a month <Confirm />. Planning a proposal? Put the date in the form.
       </p>
       <ProcessSteps steps={steps} />

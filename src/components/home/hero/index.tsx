@@ -1,4 +1,4 @@
-import { getHomeImages } from '@/components/home/homeImages'
+import type { HomeImages } from '@/components/home/homeImages'
 import { Confirm } from '@/components/pages/Confirm'
 import { Button } from '@/components/site/Button'
 
@@ -17,12 +17,11 @@ function Headline() {
 }
 
 type HeroProps = {
+  hero: HomeImages['hero']
   reduceMotion: boolean
 }
 
-export async function Hero({ reduceMotion }: HeroProps) {
-  const { hero } = await getHomeImages()
-
+export function Hero({ hero, reduceMotion }: HeroProps) {
   return (
     <HeroSection reduceMotion={reduceMotion}>
       <h1 className={styles.headline}>
