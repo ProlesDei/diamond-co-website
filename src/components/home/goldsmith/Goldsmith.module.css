@@ -5,34 +5,27 @@
 }
 
 .inner {
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-16);
+}
+
+.withPortrait {
   display: grid;
   grid-template-columns: 5fr 7fr;
   gap: var(--space-16);
   align-items: start;
-  border-top: 1px solid var(--line);
-  padding-top: var(--space-16);
 }
 
 .portrait {
   margin: 0;
   max-width: 460px;
-}
-
-.frame {
   position: relative;
   aspect-ratio: 4 / 5;
   background: var(--stage);
 }
 
-.placeholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  margin: 0;
-  padding: var(--space-4);
-  color: var(--on-evergreen-muted);
-  font: 400 12px/1.5 var(--font-sans);
+.photo {
+  object-fit: cover;
 }
 
 .eyebrow {
@@ -108,9 +101,12 @@
   }
 
   .inner {
+    padding-top: var(--space-12);
+  }
+
+  .withPortrait {
     grid-template-columns: 1fr;
     gap: var(--space-8);
-    padding-top: var(--space-12);
   }
 
   .portrait {

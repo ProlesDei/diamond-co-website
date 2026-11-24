@@ -39,7 +39,7 @@ To try the site with sample content on your own machine:
 7. Open http://localhost:3000/admin and sign in as `owner@example.test`. The password is the one `pnpm seed` printed. To choose your own, set `SEED_ADMIN_PASSWORD` before the first `pnpm seed`.
 8. In the admin, open Inquiries (press "Open Menu" first if the menu is closed), then open your test consultation. It shows as New, with its reference.
 
-`pnpm seed` adds an admin user, sample site settings, a sample Calendly link, 6 sample pieces with placeholder images, and 6 FAQs. It draws the placeholder images as it runs, so no image is stored in git. Every sample fact is marked `[confirm]`, and every image is marked as a placeholder. Run it again and it adds only what is missing; it says so when nothing is. It refuses to run when `SITE_ENV` is `production`, or when `DATABASE_URL` points at any host but `127.0.0.1`, `localhost` or `[::1]`.
+`pnpm seed` adds an admin user, sample site settings, a sample Calendly link, 6 sample pieces with placeholder images, and 15 FAQs. Fresh settings select 5 questions for home and 14 for the FAQ page in display order. Four records, including timing, serve both pages. The seed draws the placeholder images as it runs and marks them as placeholders. Rerun it to fill missing samples in a sample database. If any FAQ lacks a recognized sample key, the seed skips all writes. Use a separate fresh database for samples if you already have editorial content. It refuses to run when `SITE_ENV` is `production`, or when `DATABASE_URL` points at any host but `127.0.0.1`, `localhost` or `[::1]`.
 
 The password is printed only once. If you lose it, stop the app, delete `.data/` and `media/`, and run steps 3 and 4 again.
 
@@ -69,7 +69,23 @@ The `users` collection is in `src/users/`. Users are admins or editors. Five wro
 
 ## Booking link
 
-The booking forms open a Calendly event after a send that saved. The studio sets that event in the admin: Inquiry settings → Calendly link. Any signed-in user can change it; piece types and budget ranges stay admin-only. The field takes only links that start with `https://calendly.com/` and have a path after it. Leave it empty and the forms end by asking the visitor to call or email with their reference, with no time step. A change shows on the next page load, with no rebuild or redeploy. `pnpm seed` fills an empty field with a sample link.
+The booking forms open a Calendly event after a send that saved. The studio sets that event in the admin: Inquiry settings → Calendly link. Any signed-in user can change it; piece types and budget ranges stay admin-only. The field takes only links that start with `https://calendly.com/` and have a path after it. Leave it empty and the forms end by asking the visitor to call or email with their reference, with no time step. A change shows on the next page load, with no rebuild or redeploy. When seeding sample data, `pnpm seed` fills an empty field with a sample link.
+
+## Goldsmith and home questions
+
+In the admin, open Site Settings → Goldsmith to set the name, credential line and portrait. Use a client photo in production. Local and preview sites also accept placeholder images. Blank fields give visitors a generic name and hide the credential or photo.
+
+Create and publish answers in FAQs. In Site Settings → Home questions, choose which ones to show and drag them into order. Save an empty list to hide the Questions section. Drafts, unpublished answers and deleted records stay off the public page. Published answers can show Media images and link to published commissions. If a linked commission is unavailable, the answer shows its link text as plain text.
+
+Deploy normally with the existing database. No migration or seed command is needed. Existing sites show the five built-in home questions until an editor saves a selection. To set the list, find the records you want in FAQs, including the timing FAQ under its current title. Create and publish any missing questions. Choose the records in Site Settings → Home questions, drag them into order and save. This lets you reuse a renamed question with its edited answer.
+
+To roll back, redeploy the previous build with the same database. It shows the prior built-in profile and questions. Leave the new fields and FAQ records in place so they are available if you redeploy this version.
+
+### FAQ page
+
+To use Payload on `/faq`, open Site Settings → FAQ page. Choose a topic and a published FAQ for each row, then drag the rows into order within each topic. Use the same FAQ record on both pages when they share an answer. Use the optional label if the FAQ page needs a different question title. Enable **Use selected questions on the FAQ page** and save. An enabled empty list shows the topic headings with no questions. Unpublished and deleted records disappear from the list.
+
+Deploy with the existing database. There are no migrations or seed commands. The built-in FAQ stays live until you enable the selection. You can prepare that selection first. Reuse edited records under their current titles and create any missing ones in FAQs. To restore the built-in page, turn off the setting. To roll back the release, redeploy the previous build with the same database and leave the new settings and FAQ records in place. The previous build shows its built-in FAQ and still reads the same home selection.
 
 ## Hosting on Vercel
 
@@ -85,7 +101,7 @@ Production writes nothing to the server's disk, so a build or start with `SITE_E
 - `EMAIL_FROM_ADDRESS` (parked): the address the admin password-reset email comes from. The booking forms send no email.
 - `EMAIL_FROM_NAME` (parked): the name the admin password-reset email comes from. The booking forms send no email.
 - `BLOB_READ_WRITE_TOKEN`: the read-write token of the public Vercel Blob store, where media go.
-- `INQUIRY_BLOB_READ_WRITE_TOKEN`: the read-write token of the private Vercel Blob store, where inquiry uploads go.
+- `INQUIRY_BLOB_READ_WRITE_TOKEN`: the read-write token for the private Vercel Blob store that holds photos and sketches from older inquiries. The admin uses it to show those files.
 
 PARKED (owner, Nov 19, 2026): online booking and email are off for the .vercel.app run, so the five parked names only warn when unset. With both Turnstile keys unset, the spam check is skipped and the booking forms save and end normally. Move them back into `productionVariables` in `next.config.ts` to turn the refusal back on.
 

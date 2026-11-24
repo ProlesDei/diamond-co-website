@@ -1,4 +1,7 @@
+import Image from 'next/image'
+
 import { Confirm } from '@/components/pages/Confirm'
+import { getGoldsmithProfile } from '@/lib/content'
 
 import styles from './Goldsmith.module.css'
 
@@ -7,27 +10,29 @@ const quoteSlots = [
   'Slot for a second real review, ideally an heirloom redesign.',
 ]
 
-export function Goldsmith() {
+export async function Goldsmith() {
+  const { name, credential, portrait } = await getGoldsmithProfile()
+
   return (
     <section id="goldsmith" className={styles.section} aria-labelledby="goldsmith-heading">
-      <div className={styles.inner}>
-        <figure className={styles.portrait}>
-          <div className={styles.frame}>
-            <p className={styles.placeholder}>
-              Placeholder: portrait of [NAME] at the bench, from the client
-            </p>
-          </div>
-        </figure>
+      <div className={portrait ? `${styles.inner} ${styles.withPortrait}` : styles.inner}>
+        {portrait && (
+          <figure className={styles.portrait}>
+            <Image
+              src={portrait.src}
+              alt={portrait.alt}
+              fill
+              sizes="(max-width: 899px) 280px, 460px"
+              className={styles.photo}
+            />
+          </figure>
+        )}
         <div>
-          <p className={styles.eyebrow}>Meet your goldsmith</p>
+          {name && <p className={styles.eyebrow}>Meet your goldsmith</p>}
           <h2 className={styles.heading} id="goldsmith-heading">
-            [NAME]
-            <Confirm note="client supplies" />
+            {name ?? 'Meet your goldsmith'}
           </h2>
-          <p className={styles.credential}>
-            [Credential: training, guild or years at the bench]
-            <Confirm note="client supplies" />
-          </p>
+          {credential && <p className={styles.credential}>{credential}</p>}
           <p className={styles.lede}>
             Made in-house at our White Rock bench
             <Confirm />. The person you sit down with is the one who makes your piece

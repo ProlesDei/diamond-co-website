@@ -67,17 +67,21 @@ if (proxy) {
 const payload = await getPayload({ config })
 try {
   const results = await runSeed(payload)
-  let total = 0
-  for (const { step, added } of results) {
-    total += added.length
-    console.log(added.length ? `${step}: added ${added.length}` : `${step}: nothing to add`)
-    for (const label of added) console.log(`  - ${label}`)
+  if (results === null) {
+    console.log('Seed skipped: the database contains FAQs without recognized sample keys. Use a fresh database for samples, or choose existing FAQs in Site Settings → Home questions.')
+  } else {
+    let total = 0
+    for (const { step, added } of results) {
+      total += added.length
+      console.log(added.length ? `${step}: added ${added.length}` : `${step}: nothing to add`)
+      for (const label of added) console.log(`  - ${label}`)
+    }
+    console.log(
+      total
+        ? `Seed done: added ${total}.`
+        : 'Seed done: nothing to add. The database already holds every sample item.',
+    )
   }
-  console.log(
-    total
-      ? `Seed done: added ${total}.`
-      : 'Seed done: nothing to add. The database already holds every sample item.',
-  )
 } finally {
   await payload.destroy()
 }

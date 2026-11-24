@@ -1,9 +1,15 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, PayloadRequest } from 'payload'
+
+import type { Faq } from '../payload-types'
 
 import { publishedOrStaff } from './access'
-import { revalidateAfterChange, revalidateAfterDelete } from './revalidate'
+import { revalidate } from './revalidate'
 
-const faqTags = (): string[] => ['faqs']
+const revalidateFaqs = ({ doc, req }: { doc: Faq; req: PayloadRequest }) => {
+  // Unpublishing after saving a draft can leave both versions marked as drafts.
+  revalidate(req, ['faqs'])
+  return doc
+}
 
 export const Faqs: CollectionConfig = {
   slug: 'faqs',
@@ -19,10 +25,11 @@ export const Faqs: CollectionConfig = {
     drafts: true,
   },
   hooks: {
-    afterChange: [revalidateAfterChange(faqTags)],
-    afterDelete: [revalidateAfterDelete(faqTags)],
+    afterChange: [revalidateFaqs],
+    afterDelete: [revalidateFaqs],
   },
   fields: [
+    { name: 'sampleKey', type: 'text', hidden: true },
     { name: 'question', type: 'text', required: true },
     { name: 'answer', type: 'richText', required: true },
     {

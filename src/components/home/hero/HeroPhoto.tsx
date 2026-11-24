@@ -1,11 +1,10 @@
 'use client'
 
-import Image from 'next/image'
 import { useCallback, useRef } from 'react'
 
 import type { HomeImage } from '@/components/home/pieces'
 import { useReducedMotion } from '@/components/site/useReducedMotion'
-import { mediaLoader } from '@/media/loader'
+import { responsiveMedia } from '@/media/loader'
 
 import { lightTheStone } from './glow'
 import styles from './Hero.module.css'
@@ -40,15 +39,17 @@ export function HeroPhoto({ image, stone }: HeroPhotoProps) {
 
   return (
     <div ref={light} className={styles.photo}>
-      <Image
+      {/* Use the stored file widths so the preload and image pick the same candidate. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        id="home-hero-image"
         ref={img}
-        loader={mediaLoader}
-        src={image.src}
+        {...responsiveMedia(image.src)}
         alt={image.alt}
         width={width}
         height={height}
         sizes="(max-width: 759px) 100vw, min(calc(60vw - 8px), 856px)"
-        preload
+        fetchPriority="high"
         className={image.shot === 'studio' ? `${styles.image} ${styles.studio}` : styles.image}
       />
       <div ref={glow} className={styles.glow} aria-hidden="true" />

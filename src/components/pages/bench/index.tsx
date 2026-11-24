@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 import { Hinge } from '@/components/home/bench/Hinge'
 import { type Metal, metalLooks } from '@/components/home/commissions/metals'
 import { MetalSwatch } from '@/components/home/commissions/MetalSwatch'
@@ -6,6 +8,7 @@ import {
   ProcessSteps,
   type Step,
 } from '@/components/home/process/ProcessSteps'
+import { getGoldsmithProfile } from '@/lib/content'
 
 import { Confirm } from '../Confirm'
 import { ConsultationBand } from '../ConsultationBand'
@@ -77,7 +80,9 @@ const steps: Step[] = [
   },
 ]
 
-export default function BenchPage() {
+export default async function BenchPage() {
+  const { name, credential, portrait } = await getGoldsmithProfile()
+
   return (
     <>
       <section className={styles.hero} aria-labelledby="bench-title">
@@ -111,19 +116,19 @@ export default function BenchPage() {
           </div>
           <ul className={styles.smiths} role="list">
             <li>
-              <div className={styles.frame}>
-                <p className={styles.placeholder}>
-                  Placeholder: portrait of [NAME] at the bench, from the client
-                </p>
-              </div>
-              <h3 className={styles.smithName}>
-                [NAME]
-                <Confirm note="client supplies" />
-              </h3>
-              <p className={styles.role}>
-                Master goldsmith. [Training, guild or years at the bench]
-                <Confirm note="client supplies" />
-              </p>
+              {portrait && (
+                <div className={styles.frame}>
+                  <Image
+                    src={portrait.src}
+                    alt={portrait.alt}
+                    fill
+                    sizes="(max-width: 899px) 45vw, 25vw"
+                    className={styles.photo}
+                  />
+                </div>
+              )}
+              <h3 className={styles.smithName}>{name ?? 'Goldsmith'}</h3>
+              {credential && <p className={styles.role}>{credential}</p>}
             </li>
             <li>
               <div className={styles.frame}>
@@ -148,7 +153,7 @@ export default function BenchPage() {
           From a conversation <em>to your hand.</em>
         </h2>
         <p className={styles.lede}>
-          About [X] weeks from first sit-down to your hand <StepConfirm />. One bench, so we take [N]
+          About 2-4 weeks from first sit-down to your hand. One bench, so we take [N]
           commissions a month <StepConfirm />.
         </p>
         <ProcessSteps steps={steps} layout="rows" />

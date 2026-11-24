@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 
 import type { SiteSetting } from '../payload-types'
 import { seedContext } from './context'
+import { faqPageSeedSettings, homeFaqSeedIds } from './faqs'
 
 // Sample facts only, each marked [confirm] until the client answers. Email and social links
 // are left empty: their fields check the format, so they can't carry the marker.
@@ -21,7 +22,11 @@ export const seedSiteSettings = async (payload: Payload): Promise<string[]> => {
 
   await payload.updateGlobal({
     slug: 'site-settings',
-    data: sampleSettings,
+    data: {
+      ...sampleSettings,
+      homeFaqs: await homeFaqSeedIds(payload),
+      faqPage: await faqPageSeedSettings(payload),
+    },
     overrideAccess: true,
     context: seedContext,
   })

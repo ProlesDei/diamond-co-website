@@ -1,0 +1,56 @@
+.loader {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  background: var(--stage);
+  color: var(--on-evergreen);
+  touch-action: none;
+}
+
+.loader[data-loading] {
+  display: grid;
+}
+
+:global(html):has(.loader[data-loading]) :global(:is(body > :not(main), main > :not(#home-loader))) {
+  visibility: hidden;
+  interactivity: inert;
+}
+
+.mark {
+  width: var(--space-6);
+  aspect-ratio: 1;
+  border: 1px solid var(--gold);
+  rotate: 45deg;
+  animation: pulse 1.4s var(--ease) infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    opacity: .45;
+    scale: .85;
+  }
+}
+
+.name {
+  font: 400 clamp(32px, 6vw, 52px)/1 var(--font-display);
+}
+
+.label {
+  color: var(--on-evergreen-muted);
+  /* Keep the status readable while the site fonts download. */
+  font: 400 14px/1.5 system-ui, sans-serif;
+}
+
+.loader[data-motion='reduce'] .mark {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark {
+    animation: none;
+  }
+}

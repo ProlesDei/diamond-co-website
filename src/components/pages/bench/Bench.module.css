@@ -69,11 +69,16 @@
 }
 
 .frame {
+  position: relative;
   display: flex;
   align-items: flex-end;
   aspect-ratio: 4 / 5;
   padding: var(--space-4);
   background: var(--stage);
+}
+
+.photo {
+  object-fit: cover;
 }
 
 .placeholder {

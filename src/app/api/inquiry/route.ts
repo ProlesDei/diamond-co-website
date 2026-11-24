@@ -6,10 +6,9 @@ import { z } from 'zod'
 import { clientIp, rateLimit, rateLimitUnavailable, refuse, verifyTurnstile } from '@/inquiry/guard'
 import { getBookOptions } from '@/inquiry/options'
 import type { BookOptions } from '@/inquiry/options'
-import { bookInquirySchema, inquirySchema } from '@/inquiry/schema'
-import type { BookInquiryInput, InquiryInput } from '@/inquiry/schema'
-import { submitBookInquiry, submitInquiry } from '@/inquiry/submit'
-import type { SubmitResult } from '@/inquiry/submit'
+import { bookInquirySchema } from '@/inquiry/schema'
+import type { BookInquiryInput } from '@/inquiry/schema'
+import { submitBookInquiry } from '@/inquiry/submit'
 import { turnstileParked } from '@/inquiry/turnstileParked'
 
 const SUBMITS_PER_HOUR = 5
@@ -34,17 +33,6 @@ function invalid(error: z.ZodError<Record<string, unknown>>): Response {
     if (messages?.[0]) fields[field] = messages[0]
   }
   return invalidFields(fields, formErrors[0])
-}
-
-type Parsed = { form: 'home'; input: InquiryInput } | { form: 'book'; input: BookInquiryInput }
-
-function parse(body: unknown): Parsed | Response {
-  if (typeof body === 'object' && body !== null && 'form' in body) {
-    const parsed = bookInquirySchema.safeParse(body)
-    return parsed.success ? { form: 'book', input: parsed.data } : invalid(parsed.error)
-  }
-  const parsed = inquirySchema.safeParse(body)
-  return parsed.success ? { form: 'home', input: parsed.data } : invalid(parsed.error)
 }
 
 function choiceErrors(input: BookInquiryInput, options: BookOptions): Record<string, string> {
@@ -104,16 +92,14 @@ export async function POST(request: Request): Promise<Response> {
     return refuse(400, 'invalid_json', 'Send the request as a JSON object.')
   }
 
-  const parsed = parse(body)
-  if (parsed instanceof Response) return parsed
+  const parsed = bookInquirySchema.safeParse(body)
+  if (!parsed.success) return invalid(parsed.error)
 
   let payload: Payload
   try {
     payload = await getPayload({ config })
-    if (parsed.form === 'book') {
-      const fields = choiceErrors(parsed.input, await getBookOptions(payload))
-      if (Object.keys(fields).length > 0) return invalidFields(fields)
-    }
+    const fields = choiceErrors(parsed.data, await getBookOptions(payload))
+    if (Object.keys(fields).length > 0) return invalidFields(fields)
   } catch (error) {
     return saveFailed(error)
   }
@@ -124,15 +110,10 @@ export async function POST(request: Request): Promise<Response> {
     if (!turnstile.ok) return refuse(403, 'turnstile_failed', 'We could not check that this came from a person. Reload the page and send again.')
   }
 
-  let result: SubmitResult
   try {
-    result = parsed.form === 'book' ? await submitBookInquiry(payload, parsed.input) : await submitInquiry(payload, parsed.input)
+    const inquiry = await submitBookInquiry(payload, parsed.data)
+    return Response.json({ reference: inquiry.reference }, { status: 201 })
   } catch (error) {
     return saveFailed(error)
   }
-  if (!result.ok) {
-    return refuse(400, result.reason, 'We could not find that photo or sketch. Choose it again and send.')
-  }
-
-  return Response.json({ reference: result.inquiry.reference }, { status: 201 })
 }

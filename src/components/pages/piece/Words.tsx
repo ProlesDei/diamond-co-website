@@ -5,6 +5,7 @@ import { metalLooks } from '@/components/home/commissions/metals'
 import { MetalSwatch } from '@/components/home/commissions/MetalSwatch'
 import { Button } from '@/components/site/Button'
 import { links } from '@/components/site/nav'
+import { getGoldsmithName } from '@/lib/content'
 import type { Piece } from '@/payload-types'
 
 import { Confirm } from '../Confirm'
@@ -18,7 +19,8 @@ const hasText = (node: unknown): boolean => {
   return 'children' in node && Array.isArray(node.children) && node.children.some(hasText)
 }
 
-export function Words({ piece }: { piece: Piece }) {
+export async function Words({ piece }: { piece: Piece }) {
+  const goldsmithName = await getGoldsmithName()
   const metals = piece.metals ?? []
   const stones = stoneLines(piece)
   const { story } = piece
@@ -78,7 +80,8 @@ export function Words({ piece }: { piece: Piece }) {
           Book a free consultation
         </Button>
         <p className={styles.micro}>
-          Your request will name this piece, so [GOLDSMITH] has it in front of them. Pick a time online.
+          Your request will name this piece, so {goldsmithName ?? 'the goldsmith'} has it in front of
+          them. Pick a time online.
         </p>
         <Link href={links.commissions} className={styles.all}>
           See all commissions
