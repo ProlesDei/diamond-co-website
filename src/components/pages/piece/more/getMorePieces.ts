@@ -24,6 +24,7 @@ export const getMorePieces = unstable_cache(
       metals: piece.metals,
       stones: piece.stones,
       setting: piece.setting,
+      startingFrom: piece.startingFrom,
       image: firstImage(piece),
     }))
   },

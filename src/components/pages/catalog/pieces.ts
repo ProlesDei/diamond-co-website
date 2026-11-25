@@ -36,6 +36,7 @@ export async function getCatalogPieces(): Promise<HomePiece[]> {
     metals: piece.metals,
     stones: piece.stones,
     setting: piece.setting,
+    startingFrom: piece.startingFrom,
     image: firstImage(piece),
   }))
 }

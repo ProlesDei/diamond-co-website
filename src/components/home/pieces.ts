@@ -14,7 +14,7 @@ export type HomeImage = {
   shot: Media['shot']
 }
 
-export type HomePiece = Pick<Piece, 'title' | 'slug' | 'metals' | 'stones' | 'setting'> & {
+export type HomePiece = Pick<Piece, 'title' | 'slug' | 'metals' | 'stones' | 'setting' | 'startingFrom'> & {
   image: HomeImage | null
 }
 
@@ -45,6 +45,7 @@ export const getHomePieces = cache(async (): Promise<HomePiece[]> => {
     metals: piece.metals,
     stones: piece.stones,
     setting: piece.setting,
+    startingFrom: piece.startingFrom,
     image: toHomeImage(piece.gallery[0]),
   }))
 })

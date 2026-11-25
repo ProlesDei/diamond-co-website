@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { metalLooks } from '@/components/home/commissions/metals'
 import { MetalSwatch } from '@/components/home/commissions/MetalSwatch'
+import { startingPrice } from '@/components/home/commissions/price'
 import { Button } from '@/components/site/Button'
 import { links } from '@/components/site/nav'
 import { getGoldsmithName } from '@/lib/content'
@@ -24,6 +25,7 @@ export async function Words({ piece }: { piece: Piece }) {
   const metals = piece.metals ?? []
   const stones = stoneLines(piece)
   const { story } = piece
+  const price = startingPrice(piece.startingFrom)
 
   return (
     <div>
@@ -71,13 +73,14 @@ export async function Words({ piece }: { piece: Piece }) {
         </div>
       )}
       <div className={styles.cta}>
+        {price ? <p className={styles.price}>{price}</p> : null}
         <Button
           id="piece-book"
           variant="primary"
           href={`/book?piece=${encodeURIComponent(piece.slug)}`}
           className={styles.book}
         >
-          Book a free consultation
+          Book a consultation about this piece
         </Button>
         <p className={styles.micro}>
           Your request will name this piece, so {goldsmithName ?? 'the goldsmith'} has it in front of
