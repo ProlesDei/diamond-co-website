@@ -17,9 +17,10 @@ const sections: Section[] = [
     title: 'Who we are',
     body: (
       <p>
-        Diamond &amp; Co. is a private jeweller at [street address]
-        <Confirm />, White Rock, BC. This policy explains what personal information we collect
-        through this website, why, how long we keep it, and what you can ask of us. It follows
+        Diamond &amp; Co. is a private jeweller. Email us at [EMAIL]
+        <Confirm note="client supplies" /> or call [PHONE]
+        <Confirm note="client supplies" />. This policy explains what personal information we
+        collect through this website, why, how long we keep it, and what you can ask of us. It follows
         British Columbia&rsquo;s Personal Information Protection Act (PIPA) and, where it applies,
         the federal Personal Information Protection and Electronic Documents Act (PIPEDA).
       </p>
@@ -130,9 +131,9 @@ const sections: Section[] = [
     title: 'Contact',
     body: (
       <p>
-        Privacy contact: [NAME]
-        <Confirm note="client supplies" />, Diamond &amp; Co., [street address]
-        <Confirm />, White Rock, BC, or [EMAIL]
+        Contact [NAME]
+        <Confirm note="client supplies" /> at Diamond &amp; Co. about your privacy. Email [EMAIL]
+        <Confirm note="client supplies" /> or call [PHONE]
         <Confirm note="client supplies" />. If you&rsquo;re not satisfied with our answer, you can
         contact the Office of the Information and Privacy Commissioner for British Columbia.
       </p>

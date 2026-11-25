@@ -32,49 +32,39 @@ const metals: Metal[] = [
 const steps: Step[] = [
   {
     name: 'Consult',
-    time: (
-      <>
-        30 minutes <StepConfirm />
-      </>
-    ),
-    text: 'A free consultation with the goldsmith who will make your piece. Bring a sketch, a photo, or the stone you want to reuse. You leave with a sketch, a price range and a timeline.',
+    time: '15–30 minutes online, free',
+    text: 'Share a sketch or a photo, or tell the goldsmith about a stone you want to reuse. You leave with a sketch, a firm quote and a timeline.',
   },
   {
     name: 'Design',
-    time: (
-      <>
-        Render in [X] days <StepConfirm />
-      </>
-    ),
+    time: 'Render in 1–4 days',
     text: (
       <>
-        We draw it by hand, then render it so you can see it from every side. You approve the render
-        before any metal is cut, and [N] rounds of changes are included <StepConfirm />.
+        We draw it by hand, then render it so you can see it from every side. The timing depends
+        on how complex the piece is. You approve the render before we cut any metal. We include
+        [N] rounds of changes <StepConfirm />.
       </>
     ),
   },
   {
     name: 'Craft',
-    time: (
-      <>
-        [X] weeks at the bench <StepConfirm />
-      </>
-    ),
+    time: 'About 1–2 weeks at the bench',
     text: (
       <>
-        Made by hand at our bench in White Rock, in 14k to 24k gold <StepConfirm />. Your stone
-        never leaves the bench; we photograph and measure it with you before work starts{' '}
+        We make your piece by hand at our bench, in 14k to 24k gold <StepConfirm />. Your stone
+        stays at the bench. We photograph and measure it with you before work starts{' '}
         <StepConfirm />.
       </>
     ),
   },
   {
-    name: 'Collect',
-    time: 'In White Rock',
+    name: 'Delivered',
+    time: 'Three ways to get your ring',
     text: (
       <>
-        Fitted in person, with care advice for the life of the piece and a cleaning whenever
-        you&rsquo;re passing <StepConfirm />.
+        Choose insured shipping, studio pickup by appointment, or a private handover appointment.
+        We share the studio address after you book your pickup. We include care advice for your
+        piece. Contact us to arrange a cleaning <StepConfirm />.
       </>
     ),
   },
@@ -93,8 +83,8 @@ export default async function BenchPage() {
               Your idea, <em>our bench.</em>
             </h1>
             <p className={styles.lede}>
-              Bring a sketch, a photo or a stone of your own. We draw it with you across the table,
-              then make it here, by hand, in the metal you choose.
+              Share a sketch or a photo, or tell us about a stone you want to reuse. We draw the
+              piece with you online, then make it by hand in the metal you choose.
             </p>
           </div>
           <Hinge large />
@@ -110,7 +100,7 @@ export default async function BenchPage() {
             </h2>
             <p className={styles.lede}>
               More than 35 years at the bench
-              <Confirm />. The person you sit down with is the one who makes your piece
+              <Confirm />. The goldsmith you meet online makes your piece
               <Confirm />.
             </p>
           </div>
@@ -153,8 +143,7 @@ export default async function BenchPage() {
           From a conversation <em>to your hand.</em>
         </h2>
         <p className={styles.lede}>
-          About 2-4 weeks from first sit-down to your hand. One bench, so we take [N]
-          commissions a month <StepConfirm />.
+          About 2–4 weeks in all. Planning a proposal? Put the date in the form.
         </p>
         <ProcessSteps steps={steps} layout="rows" />
         <ul className={styles.metals} aria-label="Metals we work in">
@@ -171,13 +160,12 @@ export default async function BenchPage() {
       <ConsultationBand
         heading={
           <>
-            Sit down with <em>a goldsmith.</em>
+            Talk with <em>a goldsmith.</em>
           </>
         }
       >
-        Private consultations in White Rock, by appointment. Bring a sketch, a photo or a stone of
-        your own. Thirty minutes, free, and you leave with a sketch, a price range and a timeline.
-        <Confirm />
+        Book a free online consultation. It takes 15–30 minutes. Share a sketch or photo, or tell
+        us about a stone you want to reuse. You leave with a sketch, a firm quote and a timeline.
       </ConsultationBand>
     </>
   )

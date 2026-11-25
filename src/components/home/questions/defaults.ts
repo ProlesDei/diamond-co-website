@@ -1,7 +1,7 @@
 export const homeTimingQuestion = {
   key: 'timing',
   question: 'How long will it take?',
-  answer: 'About 2-4 weeks from first sit-down to your hand. Planning a proposal? Tell us the date and we’ll say honestly whether we can make it.',
+  answer: 'About 2–4 weeks in all. After your online consultation, the render takes 1–4 days, depending on how complex the piece is. Crafting takes about 1–2 weeks at the bench. Planning a proposal? Put the date in the form.',
 }
 
 export const keepStoneQuestion = {
@@ -19,7 +19,7 @@ export const approveDesignQuestion = {
 export const redrawDesignQuestion = {
   key: 'redraw-design',
   question: 'What if I don’t like the design?',
-  answer: 'We redraw it. If it still isn’t right, you can walk away owing [nothing / only the $[X] design deposit] [confirm].',
+  answer: 'We redraw it. If it still isn’t right, you can walk away owing [nothing / only the design deposit] [confirm].',
 }
 
 export const homeQuestionDefaults = [
@@ -30,6 +30,6 @@ export const homeQuestionDefaults = [
   {
     key: 'no-pressure',
     question: 'Will I be pushed to go ahead?',
-    answer: 'No. The consultation is free and there’s no obligation [confirm]. Nothing is booked or charged until you agree.',
+    answer: 'No. The online consultation is free and takes 15–30 minutes. You get a firm quote before you commit.',
   },
 ]

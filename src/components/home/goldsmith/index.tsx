@@ -34,8 +34,8 @@ export async function Goldsmith() {
           </h2>
           {credential && <p className={styles.credential}>{credential}</p>}
           <p className={styles.lede}>
-            Made in-house at our White Rock bench
-            <Confirm />. The person you sit down with is the one who makes your piece
+            We make each piece at our bench
+            <Confirm />. The goldsmith you meet online makes your piece
             <Confirm />.
           </p>
           <div className={styles.proof}>
