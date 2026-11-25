@@ -108,8 +108,9 @@
   white-space: nowrap;
 }
 
-/* First visit in this browser session: draw the stone, then set the name. */
-.loader[data-intro='full'] {
+/* First visit in this browser session: draw the stone, then set the name.
+   Only the contents fade in, so the dark stage shows from the first frame. */
+.loader[data-intro='full'] .stage {
   animation: fade-in 600ms var(--ease) both;
 }
 
@@ -159,6 +160,11 @@
 .loader:is([data-intro='full'], [data-intro='short'])[data-leaving] {
   mask-image: radial-gradient(circle at 50% 50%, transparent var(--iris), #000 calc(var(--iris) + 5vmin));
   animation: iris 800ms var(--draw) forwards;
+}
+
+/* A repeat visit has seen the intro, so it opens faster. */
+.loader[data-intro='short'][data-leaving] {
+  animation-duration: 450ms;
 }
 
 .loader:is([data-intro='full'], [data-intro='short'])[data-leaving] .stage {
@@ -226,8 +232,10 @@
     --iris: -5vmin;
   }
 
+  /* Just past the farthest corner (half the diagonal is at most ~70.7vmax),
+     so the whole opening stays on screen. */
   to {
-    --iris: 80vmax;
+    --iris: 72vmax;
   }
 }
 
@@ -235,5 +243,21 @@
   to {
     opacity: 0;
     scale: 1.04;
+  }
+}
+
+/* Short screens, such as a phone on its side: keep the label on screen. */
+@media (max-height: 480px) {
+  .mark {
+    width: 72px;
+  }
+
+  .words {
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .name {
+    font-size: 28px;
   }
 }

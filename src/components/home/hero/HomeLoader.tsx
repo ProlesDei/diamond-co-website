@@ -2,8 +2,8 @@ import type { CSSProperties } from 'react'
 
 import styles from './HomeLoader.module.css'
 
-// The intro plays in full for this long before the loader may leave.
-const INTRO_MS = 1200
+// The intro plays in full, then holds the finished mark, for this long before the loader may leave.
+const INTRO_MS = 1600
 // Longest exit; the loader closes after it even if no animation event fires.
 const EXIT_MS = 800
 // Photos get this long to decode before the loader leaves anyway.
