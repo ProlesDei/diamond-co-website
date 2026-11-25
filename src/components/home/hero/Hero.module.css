@@ -5,7 +5,7 @@
 }
 
 .hero {
-  --hl-size: clamp(76px, 13.2vw, 196px);
+  --hl-size: clamp(76px, 12vw, 176px);
   --col-gap: 24px;
   max-width: var(--page-max);
   margin: 0 auto;
@@ -156,7 +156,7 @@
 
 @media (max-width: 759px) {
   .hero {
-    --hl-size: clamp(64px, 19.5vw, 92px);
+    --hl-size: clamp(52px, 16vw, 76px);
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
     padding: 36px var(--gut) 72px;
@@ -176,7 +176,7 @@
     grid-column: 1;
     grid-row: 2;
     margin: calc(var(--hl-size) * -.62) calc(var(--gut) * -1) 0;
-    aspect-ratio: 390 / 470;
+    aspect-ratio: 390 / 400;
   }
 
   .intro {
