@@ -1,19 +1,25 @@
+import type { SerializedLexicalNode } from '@payloadcms/richtext-lexical/lexical'
 import { type JSXConvertersFunction, RichText } from '@payloadcms/richtext-lexical/react'
 
 import type { Faq } from '@/payload-types'
 
-// Older answers can hold a [confirm] note for the client; it never shows on the site.
-const CONFIRM_MARKER = ' [confirm]'
+// Older answers can hold a [confirm] note for the client; it never shows on the site. The note can sit
+// in a text run of its own, so a run followed by one also drops its trailing space.
+const CONFIRM_NOTE = /\s*\[confirm\]/g
+const startsWithNote = (node: SerializedLexicalNode | undefined) =>
+  node?.type === 'text' && 'text' in node && typeof node.text === 'string' && /^\s*\[confirm\]/.test(node.text)
 
 const answerConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
   text: (args) => {
     const renderText = defaultConverters.text
     if (typeof renderText !== 'function') return renderText
-    const { node } = args
-    return node.text.includes(CONFIRM_MARKER)
-      ? renderText({ ...args, node: { ...node, text: node.text.replaceAll(CONFIRM_MARKER, '') } })
-      : renderText(args)
+    const { node, parent, childIndex } = args
+    const siblings = 'children' in parent && Array.isArray(parent.children) ? parent.children : []
+    let text = node.text.replace(CONFIRM_NOTE, '')
+    if (startsWithNote(siblings[childIndex + 1])) text = text.trimEnd()
+    if (text === node.text) return renderText(args)
+    return text ? renderText({ ...args, node: { ...node, text } }) : null
   },
   link: (args) => {
     const { node, nodesToJSX } = args

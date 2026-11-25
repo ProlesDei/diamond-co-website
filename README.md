@@ -83,9 +83,9 @@ To roll back, redeploy the previous build with the same database. It shows the p
 
 ### FAQ page
 
-To edit `/faq`, open Site Settings → FAQ page. Add topics, pick a published FAQ for each question, drag them into order and save. Use the same FAQ record on both pages when they share an answer. Use the optional label if the FAQ page needs a different question title. Unpublished and deleted records disappear from the list. With no published question in any topic, the page shows its built-in questions.
+To edit `/faq`, open Site Settings → FAQ page. Add topics, pick a published FAQ for each question, drag them into order and save. Use the same FAQ record on both pages when they share an answer. Use the optional label if the FAQ page needs a different question title. Unpublished and deleted records disappear from the list. With no published question in any topic, the page shows the selection saved by an earlier build, or its built-in questions if there is none.
 
-Deploy with the existing database. There are no migrations or seed commands. A selection saved by an earlier build shows as topics until an editor changes them. To roll back the release, redeploy the previous build with the same database and leave the new settings and FAQ records in place. The previous build shows its built-in FAQ and still reads the same home selection.
+Deploy with the existing database. There are no migrations or seed commands. A selection saved by an earlier build keeps showing on `/faq`, under its old topic titles and links, until an editor saves a topic with a published question. The admin shows only saved topics, so Topics starts empty after the upgrade. The earlier selection stays in the database untouched. To roll back the release, redeploy the previous build with the same database and leave the new settings and FAQ records in place. The previous build reads the earlier selection as before and still reads the same home selection.
 
 ## Hosting on Vercel
 

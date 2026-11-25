@@ -4,7 +4,8 @@ import { connection } from 'next/server'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 
-import type { Faq, Media } from '@/payload-types'
+import { faqTopicDefaults } from '@/components/pages/faq/defaults'
+import type { Faq, Media, SiteSetting } from '@/payload-types'
 
 export const getSiteSettings = unstable_cache(
   async () => {
@@ -106,17 +107,30 @@ export const getHomeQuestions = async () => {
   return ids.map((id) => byId.get(id)).filter((doc) => doc !== undefined)
 }
 
+type FaqPageSettings = NonNullable<SiteSetting['faqPage']>
+type FaqTopicSource = { title: string; questions: { id?: string | null; faq: string | Faq; questionLabel?: string | null }[] }
+
+// Before topics existed, a checkbox switched the page to rows that each named a built-in topic.
+const earlierTopics = ({ usePublishedQuestions, questions }: FaqPageSettings): FaqTopicSource[] => {
+  if (!usePublishedQuestions) return []
+  return faqTopicDefaults.map(({ id, title }) => ({
+    title,
+    questions: (questions ?? []).filter(({ topic }) => topic === id),
+  }))
+}
+
 export const getFaqPage = async () => {
   // Linked FAQs can be published or unpublished without a Site Settings save.
   await connection()
-  const { faqPage } = await getSiteSettings()
-  const topicRows = faqPage?.topics ?? []
-  const ids = topicRows.flatMap(({ questions }) => (questions ?? []).map(({ faq }) => faq))
+  const faqPage = (await getSiteSettings()).faqPage ?? {}
+  const saved = (faqPage.topics ?? []).map(({ title, questions }) => ({ title, questions: questions ?? [] }))
+  const earlier = earlierTopics(faqPage)
+  const ids = [...saved, ...earlier].flatMap(({ questions }) => questions.map(({ faq }) => faq))
     .filter((id) => typeof id === 'string')
   const byId = await findPublishedFaqs([...new Set(ids)])
 
-  const topics = topicRows.flatMap(({ title, questions }, topicIndex) => {
-    const rows = (questions ?? []).flatMap(({ id: rowId, faq, questionLabel }, index) => {
+  const shown = (sources: FaqTopicSource[]) => sources.flatMap(({ title, questions }, topicIndex) => {
+    const rows = questions.flatMap(({ id: rowId, faq, questionLabel }, index) => {
       const record = typeof faq === 'string' ? byId.get(faq) : undefined
       if (!record) return []
       return [{
@@ -127,12 +141,14 @@ export const getFaqPage = async () => {
     })
     return rows.length > 0 ? [{ title: title.trim(), questions: rows }] : []
   })
+  // Saved topics win once one of them has a published question; until then the earlier selection shows.
+  const savedTopics = shown(saved)
 
   return {
-    heading: faqPage?.heading?.trim() || null,
-    headingItalic: faqPage?.headingItalic?.trim() || null,
-    lede: faqPage?.lede?.trim() || null,
-    topics,
+    heading: faqPage.heading?.trim() || null,
+    headingItalic: faqPage.headingItalic?.trim() || null,
+    lede: faqPage.lede?.trim() || null,
+    topics: savedTopics.length > 0 ? savedTopics : shown(earlier),
   }
 }
 
