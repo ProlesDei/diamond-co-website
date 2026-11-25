@@ -23,7 +23,7 @@ export function BookingBar() {
         href={`/book?piece=${encodeURIComponent(slug)}`}
         className={styles.button}
       >
-        Book a free consultation
+        Book a consultation about this piece
       </Button>
       <p className={styles.micro}>Pick a time online</p>
     </div>

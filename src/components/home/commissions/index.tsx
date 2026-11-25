@@ -13,13 +13,13 @@ export async function Commissions() {
     <section id="commissions" className={styles.section} aria-labelledby="commissions-heading">
       <div className={styles.head}>
         <div>
-          <p className={styles.eyebrow}>Recent commissions</p>
+          <p className={styles.eyebrow}>From the catalog</p>
           <h2 id="commissions-heading" className={styles.heading}>
             Made for one person each
           </h2>
         </div>
-        <Link href="/commissions" className={styles.all}>
-          See all commissions
+        <Link href="/catalog" className={styles.all}>
+          See the whole catalog
         </Link>
       </div>
       <ul className={styles.pieces}>

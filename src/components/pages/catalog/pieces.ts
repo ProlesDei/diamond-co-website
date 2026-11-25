@@ -20,7 +20,7 @@ export const firstImage = (piece: Piece): HomeImage | null => {
   }
 }
 
-export async function getCommissionPieces(): Promise<HomePiece[]> {
+export async function getCatalogPieces(): Promise<HomePiece[]> {
   await connection()
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
@@ -36,6 +36,7 @@ export async function getCommissionPieces(): Promise<HomePiece[]> {
     metals: piece.metals,
     stones: piece.stones,
     setting: piece.setting,
+    startingFrom: piece.startingFrom,
     image: firstImage(piece),
   }))
 }

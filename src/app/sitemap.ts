@@ -10,7 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...routes.map((route) => ({ url: absoluteUrl(route) })),
     ...pieces.map((piece) => ({
-      url: absoluteUrl(`/commissions/${encodeURIComponent(piece.slug)}`),
+      url: absoluteUrl(`/catalog/${encodeURIComponent(piece.slug)}`),
       lastModified: piece.updatedAt,
     })),
   ]

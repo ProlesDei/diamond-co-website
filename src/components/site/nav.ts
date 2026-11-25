@@ -1,7 +1,7 @@
 export const links = {
-  commissions: '/commissions',
+  catalog: '/catalog',
   bench: '/the-bench',
-  visit: '/visit',
+  contact: '/contact',
   questions: '/faq',
   privacy: '/privacy',
 } as const

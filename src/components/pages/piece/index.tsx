@@ -18,13 +18,13 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
   return pieces.map(({ slug }) => ({ slug }))
 }
 
-export async function generateMetadata({ params }: PageProps<'/commissions/[slug]'>) {
+export async function generateMetadata({ params }: PageProps<'/catalog/[slug]'>) {
   const { slug } = await params
   const piece = await getPiece(slug)
   return pageMetadata(piece?.title ?? 'Page not found')
 }
 
-export default async function PiecePage({ params }: PageProps<'/commissions/[slug]'>) {
+export default async function PiecePage({ params }: PageProps<'/catalog/[slug]'>) {
   const { slug } = await params
   const piece = await getPiece(slug)
   if (!piece) notFound()
@@ -32,8 +32,8 @@ export default async function PiecePage({ params }: PageProps<'/commissions/[slu
   return (
     <>
       <div className={styles.back}>
-        <Link href={links.commissions} className={styles.crumb}>
-          Commissions
+        <Link href={links.catalog} className={styles.crumb}>
+          Catalog
         </Link>
       </div>
       <div className={styles.layout}>

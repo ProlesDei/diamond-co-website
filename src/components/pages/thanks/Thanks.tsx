@@ -57,11 +57,10 @@ export function Thanks({ goldsmithName }: { goldsmithName: string | null }) {
           </li>
           <li>
             <div>
-              <h2>You sit down with us</h2>
+              <h2>We talk online</h2>
               <p>
-                Thirty minutes in White Rock
-                <Confirm />. Bring the stone or piece if you have one. You leave with a sketch, a
-                price range and a timeline.
+                A free online consultation, 15 to 30 minutes
+                <Confirm />. You come away with a sketch, a price range and a timeline.
               </p>
             </div>
           </li>
@@ -85,8 +84,8 @@ export function Thanks({ goldsmithName }: { goldsmithName: string | null }) {
           </div>
         )}
         <p>
-          <Link className={styles.link} href="/commissions">
-            See the commissions
+          <Link className={styles.link} href="/catalog">
+            See the catalog
           </Link>
         </p>
         <p>
@@ -95,8 +94,8 @@ export function Thanks({ goldsmithName }: { goldsmithName: string | null }) {
           </Link>
         </p>
         <p>
-          <Link className={styles.link} href="/visit">
-            Find the studio
+          <Link className={styles.link} href="/contact">
+            Contact us
           </Link>
         </p>
       </aside>

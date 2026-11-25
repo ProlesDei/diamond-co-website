@@ -11,6 +11,7 @@ import { mediaLoader } from '@/media/loader'
 import styles from './Commissions.module.css'
 import { metalLooks } from './metals'
 import { MetalSwatch } from './MetalSwatch'
+import { startingPrice } from './price'
 
 const stoneName = ({ cut, type }: NonNullable<HomePiece['stones']>[number]) =>
   [cut, type.toLowerCase()].filter(Boolean).join(' ')
@@ -20,12 +21,13 @@ export function PieceCard({ piece, grid = false }: { piece: HomePiece; grid?: bo
   const { image } = piece
   const stones = [...new Set((piece.stones ?? []).map(stoneName))]
   const detail = [...stones, piece.setting].filter(Boolean).join(', ')
+  const price = startingPrice(piece.startingFrom)
   const className = [styles.piece, reduceMotion ? '' : styles.zoom, grid ? styles.grid : '']
     .filter(Boolean)
     .join(' ')
 
   return (
-    <Link href={`/commissions/${piece.slug}`} className={className}>
+    <Link href={`/catalog/${piece.slug}`} className={className}>
       <div className={styles.photo}>
         {image ? (
           <Image
@@ -56,6 +58,7 @@ export function PieceCard({ piece, grid = false }: { piece: HomePiece; grid?: bo
         ))}
         {detail ? <li>{detail}</li> : null}
       </ul>
+      {price ? <p className={styles.price}>{price}</p> : null}
     </Link>
   )
 }

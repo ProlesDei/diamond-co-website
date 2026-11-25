@@ -18,10 +18,10 @@ export function MoreCommissions({ pieces }: { pieces: HomePiece[] }) {
     <section className={styles.section} aria-labelledby="more-commissions-heading">
       <div className={styles.head}>
         <h2 id="more-commissions-heading" className={styles.heading}>
-          More <em>commissions</em>
+          More from <em>the catalog</em>
         </h2>
-        <Link href={links.commissions} className={styles.all}>
-          See all commissions
+        <Link href={links.catalog} className={styles.all}>
+          See the whole catalog
         </Link>
       </div>
       <ul className={styles.pieces}>

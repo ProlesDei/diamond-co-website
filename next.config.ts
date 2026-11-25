@@ -88,6 +88,11 @@ const nextConfig: NextConfig = {
   agentRules: false,
   ...(process.env.VERCEL === '1' ? {} : { cacheHandler: path.resolve(dirname, 'src/lib/cacheHandler.ts') }),
   headers: async () => [{ source: '/:path*', headers: securityHeaders }],
+  redirects: async () => [
+    { source: '/commissions', destination: '/catalog', permanent: true },
+    { source: '/commissions/:slug', destination: '/catalog/:slug', permanent: true },
+    { source: '/visit', destination: '/contact', permanent: true },
+  ],
   images: {
     localPatterns: [
       {

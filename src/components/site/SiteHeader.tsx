@@ -54,10 +54,10 @@ export function SiteHeader() {
         <nav className={styles.nav} aria-label="Main">
           <Link
             className={styles.link}
-            href={links.commissions}
-            aria-current={currentPage(pathname, links.commissions)}
+            href={links.catalog}
+            aria-current={currentPage(pathname, links.catalog)}
           >
-            Commissions
+            Catalog
           </Link>
           <Link
             className={styles.link}
@@ -65,6 +65,13 @@ export function SiteHeader() {
             aria-current={currentPage(pathname, links.bench)}
           >
             The Bench
+          </Link>
+          <Link
+            className={styles.link}
+            href={links.contact}
+            aria-current={currentPage(pathname, links.contact)}
+          >
+            Contact
           </Link>
         </nav>
         <Link className={styles.mark} href="/" onClick={closeMenu}>

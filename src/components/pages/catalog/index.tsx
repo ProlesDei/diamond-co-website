@@ -5,11 +5,11 @@ import { Confirm } from '../Confirm'
 import { ConsultationBand } from '../ConsultationBand'
 import { pageMetadata } from '../metadata'
 import { PageHead } from '../PageHead'
-import styles from './Commissions.module.css'
-import { getCommissionPieces } from './pieces'
+import styles from './Catalog.module.css'
+import { getCatalogPieces } from './pieces'
 
 export function generateMetadata() {
-  return pageMetadata('Commissions')
+  return pageMetadata('Catalog')
 }
 
 const title = (
@@ -18,13 +18,13 @@ const title = (
   </>
 )
 
-export default async function CommissionsPage() {
-  const pieces = await getCommissionPieces()
+export default async function CatalogPage() {
+  const pieces = await getCatalogPieces()
 
   if (pieces.length === 0) {
     return (
       <>
-        <PageHead eyebrow="Commissions" title={title} />
+        <PageHead eyebrow="Catalog" title={title} />
         <div className={styles.empty}>
           <div className={styles.frame} aria-hidden="true">
             <span className={styles.ampersand}>&amp;</span>
@@ -32,8 +32,8 @@ export default async function CommissionsPage() {
           <div>
             <h2 className={styles.heading}>The first pieces go up soon.</h2>
             <p className={styles.text}>
-              We’re photographing recent commissions now. Until they’re here, the quickest way to see
-              our work is across the table: bring an idea and we’ll show you pieces in person
+              We’re photographing recent pieces now. Until they’re here, book a free online
+              consultation: tell us your idea and we’ll show you what we’ve made
               <Confirm />.
             </p>
             <div className={styles.buttons}>
@@ -53,9 +53,9 @@ export default async function CommissionsPage() {
   return (
     <>
       <PageHead
-        eyebrow="Commissions"
+        eyebrow="Catalog"
         title={title}
-        lede="Every piece here was drawn with the person who wears it and made by hand at our bench in White Rock. None of it is for sale: it shows what we can make with you."
+        lede="Every piece here was drawn with the person who wears it and made by hand at our bench. Browse them, see where each one starts, and book a free consultation about the one you like."
         aside={`${pieces.length} ${pieces.length === 1 ? 'piece' : 'pieces'}`}
       />
       <ul className={styles.pieces}>
@@ -72,8 +72,8 @@ export default async function CommissionsPage() {
           </>
         }
       >
-        Bring the piece you liked to a free consultation and we will draw your own version with you, in
-        White Rock.
+        Book a free online consultation about the piece you liked and we will draw your own version
+        with you.
         <Confirm />
       </ConsultationBand>
     </>
