@@ -11,8 +11,8 @@ export function Bench() {
             Your idea, <em>our bench.</em>
           </h2>
           <p className={styles.lede}>
-            Bring a sketch, a photo or a stone of your own. We draw it with you across the table,
-            then make it here, by hand, in the metal you choose.
+            Share a sketch or a photo, or tell us about a stone you want to reuse. We draw the
+            piece with you online, then make it by hand in the metal you choose.
           </p>
         </div>
         <Hinge />

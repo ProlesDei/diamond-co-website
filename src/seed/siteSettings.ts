@@ -8,7 +8,7 @@ import { faqPageSeedSettings, homeFaqSeedIds } from './faqs'
 // are left empty: their fields check the format, so they can't carry the marker.
 const sampleSettings = {
   storeName: 'Diamond & Co [confirm]',
-  address: '[Street address]\nWhite Rock, BC [postal code] [confirm]',
+  address: '',
   phone: '604-555-0123 [confirm]',
   hours: [
     { days: 'Tuesday to Saturday', hours: '10 am to 5 pm [confirm]' },
@@ -30,5 +30,5 @@ export const seedSiteSettings = async (payload: Payload): Promise<string[]> => {
     overrideAccess: true,
     context: seedContext,
   })
-  return ['sample store name, address, phone and hours, each marked [confirm]']
+  return ['sample store name, phone and hours, each marked [confirm]. Address left blank.']
 }

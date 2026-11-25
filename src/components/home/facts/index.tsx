@@ -14,7 +14,7 @@ export function Facts() {
           <b>The Render-First Promise:</b> approve the render before any metal is cut
           <Confirm />
         </li>
-        <li>Designed with you, in White Rock</li>
+        <li>Designed with you online</li>
       </ul>
     </section>
   )

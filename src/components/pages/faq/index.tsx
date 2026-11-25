@@ -1,7 +1,6 @@
 import { FaqAnswer, FaqConfirmText } from '@/components/home/questions/FaqAnswer'
 import { getFaqPageQuestions } from '@/lib/content'
 
-import { Confirm } from '../Confirm'
 import { ConsultationBand } from '../ConsultationBand'
 import { pageMetadata } from '../metadata'
 import { PageHead } from '../PageHead'
@@ -73,9 +72,8 @@ export default async function FaqPage() {
           </>
         }
       >
-        Ask it across the table. Thirty minutes in White Rock, free, with the goldsmith who would
-        make your piece.
-        <Confirm />
+        Ask the goldsmith who would make your piece during a free online consultation. It takes
+        15–30 minutes.
       </ConsultationBand>
     </>
   )

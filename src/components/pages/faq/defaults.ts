@@ -13,17 +13,17 @@ export const faqTopicDefaults = [
       {
         key: 'free-consultation',
         question: 'Is the consultation really free?',
-        answer: 'Yes. Thirty minutes, no charge and no obligation [confirm]. Nothing is booked or charged until you agree.',
+        answer: 'Yes. The consultation is online, takes 15–30 minutes and is free. You get a firm quote before you commit.',
       },
       {
         key: 'what-to-bring',
-        question: 'What should I bring?',
-        answer: 'Anything that helps: a sketch, screenshots, a ring you like the feel of, or the stone you want to reuse. If you have nothing yet, come anyway.',
+        question: 'What should I share for the consultation?',
+        answer: 'Share a sketch, screenshots or photos of a ring you like. If you want to reuse a stone, tell us about it. It’s fine if you have nothing ready yet.',
       },
       {
         key: 'walk-in',
-        question: 'Can I come without an appointment?',
-        answer: 'We work by appointment so the goldsmith can sit down with you [confirm]. Send the form or call and we’ll find a time that week.',
+        question: 'How do I book a consultation?',
+        answer: 'Send the form or call us to book a free online consultation. It takes 15–30 minutes.',
       },
     ],
   },
@@ -34,7 +34,7 @@ export const faqTopicDefaults = [
       {
         key: 'custom-ring-price',
         question: 'What does a custom ring cost?',
-        answer: 'Engagement rings start from $[X] [confirm]. The price depends mostly on the stone and the metal. You get a firm quote at your consultation, before you commit.',
+        answer: 'Engagement rings from $2,000, with a firm quote at your consultation, before you commit. The price depends mostly on the stone and the metal.',
       },
       approveDesignQuestion,
       redrawDesignQuestion,
@@ -53,7 +53,7 @@ export const faqTopicDefaults = [
       {
         key: 'who-makes-it',
         question: 'Who makes it?',
-        answer: 'The goldsmith you sit down with, at our bench in White Rock [confirm]. Nothing is sent away to be made.',
+        answer: 'The goldsmith you meet online makes your piece at our bench [confirm].',
       },
     ],
   },
@@ -76,8 +76,13 @@ export const faqTopicDefaults = [
   },
   {
     id: 'q-after',
-    title: 'After you collect it',
+    title: 'Delivery and care',
     questions: [
+      {
+        key: 'delivery',
+        question: 'How do I get my ring?',
+        answer: 'Choose insured shipping, studio pickup by appointment, or a private handover appointment. We share the studio address after you book your pickup.',
+      },
       {
         key: 'resize',
         question: 'What if it doesn’t fit?',
@@ -86,7 +91,7 @@ export const faqTopicDefaults = [
       {
         key: 'clean-and-check',
         question: 'Do you clean and check pieces?',
-        answer: 'Yes. Bring it in whenever you’re passing and we’ll clean it and check the setting [confirm].',
+        answer: 'Yes. Contact us to arrange a cleaning and setting check [confirm].',
       },
     ],
   },
