@@ -6,9 +6,9 @@ import { pageMetadata } from '../metadata'
 import styles from './NotFound.module.css'
 
 const ways = [
-  { href: links.commissions, label: 'See the commissions' },
+  { href: links.catalog, label: 'See the catalog' },
   { href: links.bench, label: 'See how a piece is made' },
-  { href: links.visit, label: 'Find the studio' },
+  { href: links.contact, label: 'Contact us' },
   { href: '/book', label: 'Book a free consultation' },
 ]
 

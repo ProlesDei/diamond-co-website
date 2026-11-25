@@ -85,8 +85,8 @@ export function Thanks({ goldsmithName }: { goldsmithName: string | null }) {
           </div>
         )}
         <p>
-          <Link className={styles.link} href="/commissions">
-            See the commissions
+          <Link className={styles.link} href="/catalog">
+            See the catalog
           </Link>
         </p>
         <p>
@@ -95,8 +95,8 @@ export function Thanks({ goldsmithName }: { goldsmithName: string | null }) {
           </Link>
         </p>
         <p>
-          <Link className={styles.link} href="/visit">
-            Find the studio
+          <Link className={styles.link} href="/contact">
+            Contact us
           </Link>
         </p>
       </aside>

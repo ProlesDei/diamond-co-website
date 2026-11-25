@@ -23,13 +23,13 @@ export function Footer() {
           <h2 className={styles.heading}>Pages</h2>
           <ul className={styles.list}>
             <li>
-              <Link href={links.commissions}>Commissions</Link>
+              <Link href={links.catalog}>Catalog</Link>
             </li>
             <li>
               <Link href={links.bench}>The Bench</Link>
             </li>
             <li>
-              <Link href={links.visit}>Visit</Link>
+              <Link href={links.contact}>Contact</Link>
             </li>
             <li>
               <Link href={links.questions}>Questions</Link>

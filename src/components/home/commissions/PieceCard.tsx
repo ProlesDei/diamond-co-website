@@ -25,7 +25,7 @@ export function PieceCard({ piece, grid = false }: { piece: HomePiece; grid?: bo
     .join(' ')
 
   return (
-    <Link href={`/commissions/${piece.slug}`} className={className}>
+    <Link href={`/catalog/${piece.slug}`} className={className}>
       <div className={styles.photo}>
         {image ? (
           <Image

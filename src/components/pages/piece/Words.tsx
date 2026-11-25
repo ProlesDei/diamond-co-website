@@ -83,8 +83,8 @@ export async function Words({ piece }: { piece: Piece }) {
           Your request will name this piece, so {goldsmithName ?? 'the goldsmith'} has it in front of
           them. Pick a time online.
         </p>
-        <Link href={links.commissions} className={styles.all}>
-          See all commissions
+        <Link href={links.catalog} className={styles.all}>
+          See the whole catalog
         </Link>
       </div>
     </div>

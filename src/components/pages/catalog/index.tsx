@@ -5,11 +5,11 @@ import { Confirm } from '../Confirm'
 import { ConsultationBand } from '../ConsultationBand'
 import { pageMetadata } from '../metadata'
 import { PageHead } from '../PageHead'
-import styles from './Commissions.module.css'
-import { getCommissionPieces } from './pieces'
+import styles from './Catalog.module.css'
+import { getCatalogPieces } from './pieces'
 
 export function generateMetadata() {
-  return pageMetadata('Commissions')
+  return pageMetadata('Catalog')
 }
 
 const title = (
@@ -18,13 +18,13 @@ const title = (
   </>
 )
 
-export default async function CommissionsPage() {
-  const pieces = await getCommissionPieces()
+export default async function CatalogPage() {
+  const pieces = await getCatalogPieces()
 
   if (pieces.length === 0) {
     return (
       <>
-        <PageHead eyebrow="Commissions" title={title} />
+        <PageHead eyebrow="Catalog" title={title} />
         <div className={styles.empty}>
           <div className={styles.frame} aria-hidden="true">
             <span className={styles.ampersand}>&amp;</span>
@@ -53,7 +53,7 @@ export default async function CommissionsPage() {
   return (
     <>
       <PageHead
-        eyebrow="Commissions"
+        eyebrow="Catalog"
         title={title}
         lede="Every piece here was drawn with the person who wears it and made by hand at our bench in White Rock. None of it is for sale: it shows what we can make with you."
         aside={`${pieces.length} ${pieces.length === 1 ? 'piece' : 'pieces'}`}

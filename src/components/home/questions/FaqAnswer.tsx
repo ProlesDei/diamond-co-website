@@ -23,7 +23,7 @@ const answerConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
 
     return (
       <a
-        href={`/commissions/${encodeURIComponent(piece.slug)}`}
+        href={`/catalog/${encodeURIComponent(piece.slug)}`}
         target={newTab ? '_blank' : undefined}
         rel={newTab ? 'noopener noreferrer' : undefined}
       >

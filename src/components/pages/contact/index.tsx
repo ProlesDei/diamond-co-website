@@ -4,7 +4,7 @@ import { studio } from '@/components/site/studio'
 import { Confirm } from '../Confirm'
 import { pageMetadata } from '../metadata'
 import { PageHead } from '../PageHead'
-import styles from './Visit.module.css'
+import styles from './Contact.module.css'
 
 const { address, hours, appointment, phone, email } = studio
 
@@ -13,10 +13,10 @@ const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURICom
 )}`
 
 export function generateMetadata() {
-  return pageMetadata('Visit')
+  return pageMetadata('Contact')
 }
 
-export default function VisitPage() {
+export default function ContactPage() {
   return (
     <>
       <PageHead

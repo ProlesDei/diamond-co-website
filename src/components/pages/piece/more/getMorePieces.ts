@@ -4,7 +4,7 @@ import { getPayload } from 'payload'
 
 import type { HomePiece } from '@/components/home/pieces'
 
-import { firstImage } from '../../commissions/pieces'
+import { firstImage } from '../../catalog/pieces'
 
 // The page shows three, and the piece being read may be among the newest ones, so read four.
 // The 'pieces' tag is revalidated when a published piece is saved or deleted.

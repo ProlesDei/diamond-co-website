@@ -23,11 +23,11 @@ export function PhoneMenu({ id, open, onNavigate }: PhoneMenuProps) {
     <div id={id} className={className}>
       <Link
         className={styles.link}
-        href={links.commissions}
-        aria-current={currentPage(pathname, links.commissions)}
+        href={links.catalog}
+        aria-current={currentPage(pathname, links.catalog)}
         onClick={onNavigate}
       >
-        Commissions
+        Catalog
       </Link>
       <Link
         className={styles.link}
@@ -39,11 +39,11 @@ export function PhoneMenu({ id, open, onNavigate }: PhoneMenuProps) {
       </Link>
       <div className={styles.small}>
         <Link
-          href={links.visit}
-          aria-current={currentPage(pathname, links.visit)}
+          href={links.contact}
+          aria-current={currentPage(pathname, links.contact)}
           onClick={onNavigate}
         >
-          Visit
+          Contact
         </Link>
         <Link
           href={links.questions}

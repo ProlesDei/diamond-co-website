@@ -54,10 +54,10 @@ export function SiteHeader() {
         <nav className={styles.nav} aria-label="Main">
           <Link
             className={styles.link}
-            href={links.commissions}
-            aria-current={currentPage(pathname, links.commissions)}
+            href={links.catalog}
+            aria-current={currentPage(pathname, links.catalog)}
           >
-            Commissions
+            Catalog
           </Link>
           <Link
             className={styles.link}
