@@ -42,12 +42,6 @@ export function Footer() {
         <div>
           <h2 className={styles.heading}>The studio</h2>
           <p>
-            {studio.address.street.text}
-            <Confirm note={studio.address.street.marker} />
-            <br />
-            {studio.address.city}
-          </p>
-          <p className={styles.fact}>
             {studio.hours[0].days}, {studio.hours[0].time}
             <Confirm note={studio.hours[0].marker} />
             <br />

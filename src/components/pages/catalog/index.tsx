@@ -32,8 +32,8 @@ export default async function CatalogPage() {
           <div>
             <h2 className={styles.heading}>The first pieces go up soon.</h2>
             <p className={styles.text}>
-              We’re photographing recent commissions now. Until they’re here, the quickest way to see
-              our work is across the table: bring an idea and we’ll show you pieces in person
+              We’re photographing recent pieces now. Until they’re here, book a free online
+              consultation: tell us your idea and we’ll show you what we’ve made
               <Confirm />.
             </p>
             <div className={styles.buttons}>
@@ -55,7 +55,7 @@ export default async function CatalogPage() {
       <PageHead
         eyebrow="Catalog"
         title={title}
-        lede="Every piece here was drawn with the person who wears it and made by hand at our bench in White Rock. None of it is for sale: it shows what we can make with you."
+        lede="Every piece here was drawn with the person who wears it and made by hand at our bench. Browse them, see where each one starts, and book a free consultation about the one you like."
         aside={`${pieces.length} ${pieces.length === 1 ? 'piece' : 'pieces'}`}
       />
       <ul className={styles.pieces}>
@@ -72,8 +72,8 @@ export default async function CatalogPage() {
           </>
         }
       >
-        Bring the piece you liked to a free consultation and we will draw your own version with you, in
-        White Rock.
+        Book a free online consultation about the piece you liked and we will draw your own version
+        with you.
         <Confirm />
       </ConsultationBand>
     </>

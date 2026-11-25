@@ -10,12 +10,7 @@ export type Contact = Fact & {
 }
 
 export const studio = {
-  tagline: 'Private jewellers in White Rock, BC. Custom design only.',
-  address: {
-    street: { text: '[Street address]', marker: 'confirm' },
-    city: 'White Rock, BC',
-    postalCode: { text: '[postal code]', marker: 'confirm' },
-  },
+  tagline: 'Private jewellers. Custom design only.',
   hours: [
     { days: 'Tuesday to Saturday', time: '10 am to 5 pm', marker: 'confirm' },
     { days: 'Sunday and Monday', time: 'Closed', marker: 'confirm' },
@@ -25,7 +20,6 @@ export const studio = {
   email: { text: '[EMAIL]', href: 'mailto:hello@example.ca', marker: 'client supplies' },
 } as const satisfies {
   tagline: string
-  address: { street: Fact; city: string; postalCode: Fact }
   hours: readonly { days: string; time: string; marker: Marker }[]
   appointment: Fact
   phone: Contact
