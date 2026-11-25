@@ -18,7 +18,7 @@ The install also downloads the MongoDB server that the app runs locally.
 pnpm dev
 ```
 
-If `tools/check.sh` leaves `node_modules` as a link to a shared read-only install, `next dev` and `next build` refuse to use it. Run `rm node_modules && pnpm install --frozen-lockfile` in this folder before `pnpm dev` to give it its own install.
+If `node_modules` is a link to a shared read-only install, `next dev` and `next build` refuse to use it. Run `rm node_modules && pnpm install --frozen-lockfile` in this folder before `pnpm dev` to give it its own install.
 
 Open http://localhost:3000 for the site and http://localhost:3000/admin for the admin. On your first visit, the admin asks you to create the first user. That user is an admin.
 

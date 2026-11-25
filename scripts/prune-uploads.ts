@@ -31,7 +31,7 @@ const realStoreTokens = [...Object.values(blobTokenVariables), ...Object.values(
 if (realStoreTokens.length > 0 && !onBlobMock) {
   const names = realStoreTokens.join(' and ')
   console.error(
-    `uploads:prune: refused because ${names} ${realStoreTokens.length > 1 ? 'are' : 'is'} set and VERCEL_BLOB_API_URL is not the blob mock, so the prune would reach a real Blob store; until the owner's call on pairing a store with its database, it runs only on the blob mock or on local files. Unset ${names} to prune the local files, or start tools/blob-mock and export the VERCEL_BLOB_API_URL it prints.`,
+    `uploads:prune: refused because ${names} ${realStoreTokens.length > 1 ? 'are' : 'is'} set and VERCEL_BLOB_API_URL is not the blob mock, so the prune would reach a real Blob store; until the owner's call on pairing a store with its database, it runs only on the blob mock or on local files. Unset ${names} to prune the local files, or start a local blob mock and export the VERCEL_BLOB_API_URL it prints.`,
   )
   process.exit(2)
 }
