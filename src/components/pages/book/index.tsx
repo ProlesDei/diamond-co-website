@@ -27,7 +27,7 @@ const steps = (calendlyLink: string | null) => [
         title: 'You call or email us',
         text: 'Quote your reference to set a time.',
       },
-  { title: 'You sit down with us', text: 'Bring the stone or piece if you have one.' },
+  { title: 'You meet with us online', text: 'We talk through your design, budget and timing.' },
 ]
 
 export function generateMetadata() {
@@ -49,17 +49,13 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
     <section className={styles.book} aria-label="Book a free consultation">
       <div className={styles.inner}>
         <div className={styles.intro}>
-          <p className={styles.eyebrow}>
-            Your free consultation
-            <Mark note="confirm" />
-          </p>
+          <p className={styles.eyebrow}>Your free consultation</p>
           <h1 className={styles.heading}>
-            Sit down with <em>{goldsmithName ?? 'a goldsmith'}.</em>
+            Talk with <em>{goldsmithName ?? 'a goldsmith'}.</em>
           </h1>
           <p className={styles.lead}>
-            Thirty minutes across the table in White Rock
-            <Mark note="confirm" />. You leave with a sketch, a price range and a timeline, whether
-            or not you go ahead.
+            Meet online for a free 15–30 minute consultation. You leave with a direction for your
+            sketch, a price range and a timeline, whether or not you go ahead.
           </p>
           <ol className={styles.steps}>
             {steps(calendlyLink).map((step) => (

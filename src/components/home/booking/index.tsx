@@ -17,16 +17,13 @@ export async function Booking() {
     <section className={styles.book} id="book" aria-labelledby="book-heading">
       <div className={styles.inner}>
         <div className={styles.intro}>
-          <p className={styles.eyebrow}>
-            Your free consultation<span className={styles.confirm}>[confirm]</span>
-          </p>
+          <p className={styles.eyebrow}>Your free consultation</p>
           <h2 className={styles.heading} id="book-heading">
-            Sit down with <em>{goldsmithName ?? 'a goldsmith'}.</em>
+            Talk with <em>{goldsmithName ?? 'a goldsmith'}.</em>
           </h2>
           <p className={styles.lead}>
-            Thirty minutes across the table in White Rock
-            <span className={styles.confirm}>[confirm]</span>. You leave with a sketch, a price
-            range and a timeline, whether or not you go ahead.
+            Meet online for a free 15–30 minute consultation. You leave with a direction for your
+            sketch, a price range and a timeline, whether or not you go ahead.
           </p>
           <dl className={styles.visit}>
             <dt>When</dt>

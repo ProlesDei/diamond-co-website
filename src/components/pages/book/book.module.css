@@ -386,7 +386,7 @@
   .inner {
     grid-template-columns: 1fr;
     gap: var(--space-12);
-    padding-block: var(--space-12) 0;
+    padding-block: 0 var(--space-12);
   }
 
   .intro {
@@ -403,6 +403,7 @@
   }
 
   .panel {
+    grid-row: 1;
     margin-inline: calc(var(--gut) * -1);
     padding: var(--space-8) var(--gut) var(--space-12);
   }
