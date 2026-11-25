@@ -11,7 +11,8 @@ export const getSiteSettings = unstable_cache(
     const payload = await getPayload({ config })
     return payload.findGlobal({ slug: 'site-settings', depth: 0, overrideAccess: false })
   },
-  ['site-settings'],
+  // Bump the version when the stored shape changes, so entries cached before a deploy are not read.
+  ['site-settings', 'v2'],
   { tags: ['site-settings'] },
 )
 
@@ -30,8 +31,8 @@ export const getGoldsmithName = async () => (await getGoldsmithSettings()).name
 const canShow = ({ source }: Pick<Media, 'source'>) =>
   source === 'client-photo' || (source === 'placeholder' && process.env.SITE_ENV !== 'production')
 
-const findPortraits = async (ids: string[]) => {
-  if (ids.length === 0) return new Map<string, { src: string; alt: string }>()
+const findShownMedia = async (ids: string[]) => {
+  if (ids.length === 0) return new Map<string, Media>()
 
   // Media can change independently of Site Settings.
   await connection()
@@ -43,10 +44,12 @@ const findPortraits = async (ids: string[]) => {
     overrideAccess: false,
     pagination: false,
   })
-  return new Map(docs.filter(canShow).flatMap((media) => {
-    const src = media.sizes?.card?.url || media.url
-    return src ? [[media.id, { src, alt: media.alt }] as const] : []
-  }))
+  return new Map(docs.filter(canShow).map((media) => [media.id, media]))
+}
+
+const imageOf = (media: Media | undefined, size: 'card' | 'detail') => {
+  const src = media?.sizes?.[size]?.url || media?.url
+  return media && src ? { src, alt: media.alt } : null
 }
 
 const idOf = (value: string | Media | null | undefined) => (typeof value === 'string' ? value : null)
@@ -54,8 +57,8 @@ const idOf = (value: string | Media | null | undefined) => (typeof value === 'st
 export const getGoldsmithProfile = cache(async () => {
   const { name, credential, portraitId, team } = await getGoldsmithSettings()
   const ids = [portraitId, ...team.map(({ portrait }) => portrait)].map(idOf).filter((id) => id !== null)
-  const portraits = await findPortraits([...new Set(ids)])
-  const portraitFor = (value: string | Media | null | undefined) => portraits.get(idOf(value) ?? '') ?? null
+  const portraits = await findShownMedia([...new Set(ids)])
+  const portraitFor = (value: string | Media | null | undefined) => imageOf(portraits.get(idOf(value) ?? ''), 'card')
 
   return {
     name,
@@ -69,22 +72,11 @@ export const getGoldsmithProfile = cache(async () => {
   }
 })
 
-export const getSiteLogo = unstable_cache(
-  async () => {
-    const payload = await getPayload({ config })
-    const { logo } = await payload.findGlobal({
-      slug: 'site-settings',
-      depth: 1,
-      overrideAccess: false,
-      select: { logo: true },
-    })
-    if (!logo || typeof logo !== 'object' || !canShow(logo)) return null
-    const src = logo.sizes?.detail?.url || logo.url
-    return src ? { src, alt: logo.alt } : null
-  },
-  ['site-logo'],
-  { tags: ['site-settings'] },
-)
+export const getSiteLogo = cache(async () => {
+  const id = idOf((await getSiteSettings()).logo)
+  if (id === null) return null
+  return imageOf((await findShownMedia([id])).get(id), 'detail')
+})
 
 const findPublishedFaqs = async (ids: string[]) => {
   if (ids.length === 0) return new Map<string, Faq>()

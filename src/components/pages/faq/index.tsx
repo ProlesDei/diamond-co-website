@@ -19,10 +19,14 @@ type Topic = {
   questions: { key: string; question: string; answer: ReactNode }[]
 }
 
+// A topic titled like a built-in topic keeps that topic's anchor, so earlier links still work.
+const builtInAnchors = new Map<string, string>(faqTopicDefaults.map(({ id, title }) => [title.toLowerCase(), id]))
+
 const anchorsFor = (titles: string[]): string[] => {
   const used = new Set<string>()
   return titles.map((title) => {
-    const base = `q-${title.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'topic'}`
+    const base = builtInAnchors.get(title.toLowerCase())
+      ?? `q-${title.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'topic'}`
     let anchor = base
     for (let n = 2; used.has(anchor); n += 1) anchor = `${base}-${n}`
     used.add(anchor)

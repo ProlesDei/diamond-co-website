@@ -13,6 +13,9 @@ const isHttpsUrl = (value: string | null | undefined): true | string => {
   }
 }
 
+const idOf = (value: unknown) =>
+  typeof value === 'object' && value !== null && 'id' in value ? value.id : value
+
 const homeSources = (): string[] =>
   process.env.SITE_ENV === 'production' ? ['client-photo'] : ['client-photo', 'placeholder']
 
@@ -25,6 +28,8 @@ const homeImage = (name: string, label: string, description: string): UploadFiel
   filterOptions: () => ({ source: { in: homeSources() } }),
   validate: async (value, options) => {
     if ((await upload(value, options)) === true) return true
+    // An image saved earlier and later moved to another source just stops showing; it must not block other edits.
+    if (value && idOf(value) === idOf(options.previousValue)) return true
     return process.env.SITE_ENV === 'production'
       ? `${label}: choose a client photo that is in the Media library. Atmosphere (generated) and placeholder (sample) images can’t show on the site.`
       : `${label}: choose a client photo or a placeholder that is in the Media library. Atmosphere (generated) images can’t show on the site.`
