@@ -15,9 +15,9 @@ const productionVariables = [
 ]
 
 const fallbackVariables: Record<string, string> = {
-  // FALLBACK (chief of staff, Nov 19, 2026): Vercel's MongoDB add-on sets MONGODB_URI; delete this to read DATABASE_URL only.
+  // FALLBACK (Nov 19, 2026): Vercel's MongoDB add-on sets MONGODB_URI; delete this to read DATABASE_URL only.
   DATABASE_URL: 'MONGODB_URI',
-  // FALLBACK (chief of staff, Nov 19, 2026): Vercel's inquiries store connection sets INQUIRY_READ_WRITE_TOKEN; delete this to read INQUIRY_BLOB_READ_WRITE_TOKEN only.
+  // FALLBACK (Nov 19, 2026): Vercel's inquiries store connection sets INQUIRY_READ_WRITE_TOKEN; delete this to read INQUIRY_BLOB_READ_WRITE_TOKEN only.
   INQUIRY_BLOB_READ_WRITE_TOKEN: 'INQUIRY_READ_WRITE_TOKEN',
 }
 

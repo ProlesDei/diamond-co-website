@@ -18,6 +18,8 @@ The install also downloads the MongoDB server that the app runs locally.
 pnpm dev
 ```
 
+If `tools/check.sh` leaves `node_modules` as a link to a shared read-only install, `next dev` and `next build` refuse to use it. Run `rm node_modules && pnpm install --frozen-lockfile` in this folder before `pnpm dev` to give it its own install.
+
 Open http://localhost:3000 for the site and http://localhost:3000/admin for the admin. On your first visit, the admin asks you to create the first user. That user is an admin.
 
 With no `DATABASE_URL`, `pnpm dev` runs a MongoDB server inside the app's process. You need no account and no Docker. The data stays in `.data/` between runs. Delete `.data/` to start over. Set `DATABASE_URL` in `.env` to use another database instead. `SITE_ENV` and `SITE_URL` are build-time settings: set them when `pnpm build` runs, not only when the site runs, and rebuild after you change either. `.env.example` lists every variable.
@@ -25,6 +27,16 @@ With no `DATABASE_URL`, `pnpm dev` runs a MongoDB server inside the app's proces
 While `pnpm dev` runs, `pnpm seed` and `pnpm uploads:prune` use the same local database.
 
 With no `RESEND_API_KEY`, the app writes each email to `.outbox/<time>-<n>.json` instead of sending it. Password reset emails land there, for example.
+
+## Studio Media uploads
+
+From **Media**, use **Create New** for one image or **Bulk Upload** to add files and edit their fields. Choose **Source** for each photo before saving. If a save fails, read the message next to the field or file.
+
+Media accepts JPEG, PNG, WebP, AVIF, GIF and TIFF and stores JPEGs. Media uses the JPEG's EXIF orientation to match the crop to the preview. For an animated GIF or WebP or a multi-page TIFF, it uses the first frame or page. The Media collection sets no file-size or image-dimension limits. The site uses the sizes it can make from each photo and uses the stored original JPEG when it has no resized copies. For HEIC or SVG, export a JPEG before uploading.
+
+### Service limits
+
+With Blob configured, phone photos go from the browser to Blob before Payload converts and saves them as JPEGs. Vercel documents a default 4.5 MB Function request limit and a 5 TB maximum per Blob object. Sharp and the hosting runtime also have processing limits. [Vercel Function limits](https://vercel.com/docs/functions/limitations) and [Vercel Blob limits](https://vercel.com/docs/vercel-blob/usage-and-pricing#limits).
 
 ## Try it
 
@@ -54,6 +66,8 @@ The password is printed only once. If you lose it, stop the app, delete `.data/`
 | `pnpm typecheck` | Runs the TypeScript compiler. |
 | `pnpm seed` | Runs `scripts/seed.ts` against the database. |
 | `pnpm uploads:prune` | Runs `scripts/prune-uploads.ts` against the database. |
+
+For a local production run with the built-in database, run `pnpm seed` before `pnpm build` so the sample piece pages prerender. To stop a background `pnpm start` that started its own MongoDB, send `TERM` to the `pid` in `.data/server.json`. This stops Next.js and its local MongoDB server, whose port is in the `uri` in that file. Check that both ports are free.
 
 `pnpm dev`, `pnpm build` and `pnpm typecheck` first regenerate `src/payload-types.ts` and the admin's `src/app/(payload)/admin/importMap.js`. Both are generated, so git ignores them.
 

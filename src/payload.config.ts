@@ -39,7 +39,7 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: mongooseAdapter({
-    // FALLBACK (chief of staff, Nov 19, 2026): Vercel's MongoDB add-on sets MONGODB_URI; delete this to read DATABASE_URL only.
+    // FALLBACK (Nov 19, 2026): Vercel's MongoDB add-on sets MONGODB_URI; delete this to read DATABASE_URL only.
     // Only for production: preview and local runs never read MONGODB_URI.
     url: process.env.DATABASE_URL || (isProduction ? process.env.MONGODB_URI : undefined) || '',
   }),

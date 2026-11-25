@@ -9,6 +9,7 @@ import { freeMediaFileName } from './fileName'
 import { Media } from './Media'
 
 const CLIENT_UPLOAD_ROUTE = '/vercel-blob-client-upload-route'
+const BLOB_PROVIDER = '@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler'
 
 type ClientUploadRequest = { collectionSlug: string; docPrefix?: string; filename: string }
 
@@ -35,12 +36,24 @@ const issueNewKeyWithFreeName =
     })
   }
 
-const neverOverwriteOnClientUpload: Plugin = (config) => {
+const guardMediaClientUploads: Plugin = (config) => {
   if (!config.endpoints?.some((endpoint) => endpoint.path === CLIENT_UPLOAD_ROUTE)) {
     throw new Error(`The Vercel Blob plugin has no ${CLIENT_UPLOAD_ROUTE} endpoint to guard against overwrites.`)
   }
   return {
     ...config,
+    admin: {
+      ...config.admin,
+      components: {
+        ...config.admin?.components,
+        providers: config.admin?.components?.providers?.map((provider) =>
+          typeof provider === 'object' && provider.path === BLOB_PROVIDER &&
+          provider.clientProps && 'collectionSlug' in provider.clientProps && provider.clientProps.collectionSlug === 'media'
+            ? { ...provider, path: '/media/MediaBlobUploads#MediaBlobUploads' }
+            : provider,
+        ),
+      },
+    },
     endpoints: config.endpoints.map((endpoint) =>
       endpoint.path === CLIENT_UPLOAD_ROUTE
         ? { ...endpoint, handler: issueNewKeyWithFreeName(endpoint.handler) }
@@ -59,5 +72,5 @@ export const plugins: Plugin[] = [
     token,
     clientUploads: true,
   }),
-  ...(token ? [neverOverwriteOnClientUpload] : []),
+  ...(token ? [guardMediaClientUploads] : []),
 ]

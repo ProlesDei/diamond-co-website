@@ -8,40 +8,42 @@ const storedSize = z.object({
   width: z.number().int().positive(),
 })
 
-const storedSizes = z.object({
-  thumb: storedSize,
-  card: storedSize,
-  detail: storedSize,
-  zoom: storedSize,
+const source = z.object({
+  sizes: z.array(storedSize).nonempty(),
+  preferred: z.string().min(1),
 })
+type Source = z.infer<typeof source>
 
-type StoredSizes = z.infer<typeof storedSizes>
+export const mediaSrc = (media: Pick<Media, 'sizes' | 'url' | 'width'>): string => {
+  const sizes = Object.values(media.sizes ?? {}).flatMap((size) => {
+    const parsed = storedSize.safeParse(size)
+    return parsed.success ? [parsed.data] : []
+  }).sort((a, b) => a.width - b.width)
 
-export const mediaSrc = (media: Pick<Media, 'sizes'>): string =>
-  JSON.stringify(storedSizes.parse(media.sizes))
+  if (sizes.length === 0) sizes.push(storedSize.parse(media))
 
-const parseSrc = (src: string): StoredSizes => {
+  const card = storedSize.safeParse(media.sizes?.card)
+  return JSON.stringify({ sizes, preferred: card.success ? card.data.url : sizes[sizes.length - 1].url })
+}
+
+const parseSrc = (src: string): Source => {
   try {
-    return storedSizes.parse(JSON.parse(src))
+    return source.parse(JSON.parse(src))
   } catch (cause) {
     throw new Error('mediaLoader needs the src that mediaSrc(media) returns.', { cause })
   }
 }
 
 export const mediaLoader = ({ src, width }: ImageLoaderProps): string => {
-  const sizes = parseSrc(src)
-  const wideEnough = Object.values(sizes)
-    .filter((size) => size.width >= width)
-    .sort((a, b) => a.width - b.width)
-
-  return (wideEnough[0] ?? sizes.zoom).url
+  const { sizes } = parseSrc(src)
+  return (sizes.find((size) => size.width >= width) ?? sizes[sizes.length - 1]).url
 }
 
 export const responsiveMedia = (src: string): { src: string; srcSet: string } => {
-  const sizes = parseSrc(src)
-  const byWidth = new Map(Object.values(sizes).map(({ width, url }) => [width, url]))
+  const { sizes, preferred } = parseSrc(src)
+  const byWidth = new Map(sizes.map(({ width, url }) => [width, url]))
   return {
-    src: sizes.card.url,
+    src: preferred,
     srcSet: Array.from(byWidth, ([width, url]) => `${url} ${width}w`).join(', '),
   }
 }
