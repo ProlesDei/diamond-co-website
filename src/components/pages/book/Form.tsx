@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -10,7 +11,7 @@ import { joinAnswers } from '@/components/booking/calendly/prefill'
 import type { CalendlyPrefill } from '@/components/booking/calendly/prefill'
 import { Field } from '@/components/home/booking/Field'
 import { Button } from '@/components/site/Button'
-import { studio } from '@/components/site/studio'
+import type { StudioContact } from '@/components/site/studio'
 import type { BookOption, BookOptions } from '@/inquiry/options'
 import { bookInquirySchema, DESCRIPTION_MAX_LENGTH, type BookInquiryInput } from '@/inquiry/schema'
 
@@ -19,7 +20,6 @@ import { saveSent } from '../thanks/sent'
 import styles from './book.module.css'
 import { ChipGroup } from './ChipGroup'
 import { ErrorSummary } from './ErrorSummary'
-import { Mark } from './Mark'
 import { PieceCard } from './piece'
 import type { BookPiece } from './piece'
 import { sendBook } from './send'
@@ -33,6 +33,7 @@ type FormProps = {
   goldsmithName: string | null
   options: BookOptions
   calendlyLink: string | null
+  contact: StudioContact
   piece: BookPiece | null
   initialPieceType: string | null
 }
@@ -62,7 +63,7 @@ const formatCount = (count: number) => count.toLocaleString('en-CA')
 const optionLabel = (choices: BookOption[], value: string) =>
   choices.find((option) => option.value === value)?.label
 
-export function Form({ heading: Heading, goldsmithName, options, calendlyLink, piece, initialPieceType }: FormProps) {
+export function Form({ heading: Heading, goldsmithName, options, calendlyLink, contact, piece, initialPieceType }: FormProps) {
   const [pieceType, setPieceType] = useState(initialPieceType ?? '')
   const [budget, setBudget] = useState('')
   const [description, setDescription] = useState('')
@@ -76,6 +77,12 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, p
   const sendingRef = useRef(false)
   const router = useRouter()
   const { getToken } = useTurnstile()
+  const { phone, email } = contact
+  const contactAction = phone
+    ? <>call <a href={phone.href}>{phone.text}</a></>
+    : email
+      ? <>email <a href={email.href}>{email.text}</a></>
+      : <Link href="/contact">contact us</Link>
 
   const summaryItems = BOOK_FIELDS.filter((field) => errors[field] !== undefined).map((field) => ({
     id: FIELD_IDS[field],
@@ -157,13 +164,11 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, p
       <Heading className={styles.formHeading}>Book a free consultation</Heading>
       {calendlyLink ? (
         <p className={styles.formIntro}>
-          One short form, then you pick a time with {goldsmithName ?? 'a goldsmith'}
-          <Mark note="client supplies" /> on this page
-          <Mark note="confirm" />.
+          One short form, then you pick a time with {goldsmithName ?? 'a goldsmith'} on this page.
         </p>
       ) : (
         <p className={styles.formIntro}>
-          One short form, then you call or email us with your reference to set a time.
+          Send the form to get a reference. Use it when you contact us to set a time.
         </p>
       )}
 
@@ -177,12 +182,7 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, p
         <ChipGroup
           id={FIELD_IDS.pieceType}
           name="pieceType"
-          legend={
-            <>
-              What would you like made?
-              <Mark note="from the CMS; confirm" />
-            </>
-          }
+          legend="What would you like made?"
           error={errors.pieceType}
           options={options.pieceTypes}
           value={pieceType}
@@ -192,12 +192,7 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, p
         <ChipGroup
           id={FIELD_IDS.budget}
           name="budget"
-          legend={
-            <>
-              Budget range (CAD)
-              <Mark note="from the CMS; confirm" />
-            </>
-          }
+          legend="Budget range (CAD)"
           hint="A range is fine. It helps us suggest stones and metals."
           error={errors.budget}
           options={options.budgetRanges}
@@ -236,7 +231,6 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, p
         <p>
           You approve a drawing and a render before any metal is cut, and your stone never leaves
           our bench.
-          <Mark note="confirm revisions, walk-away terms, deposit" />
         </p>
       </div>
 
@@ -244,10 +238,8 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, p
         <div className={styles.summary} role="alert" tabIndex={-1} ref={noticeRef}>
           <p className={styles.summaryHeading}>Too many tries from this connection</p>
           <p className={styles.summaryText}>
-            We&apos;ve had several requests from here in the last hour
-            <Mark note="confirm" />. Wait an hour and send it again, or call{' '}
-            <a href={studio.phone.href}>{studio.phone.text}</a>
-            <Mark note={studio.phone.marker} />. Your answers are still here.
+            We&apos;ve had several requests from here in the last hour. Wait an hour and send it
+            again, or {contactAction}. Your answers are still here.
           </p>
         </div>
       )}
@@ -255,9 +247,7 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, p
         <div className={styles.summary} role="alert" tabIndex={-1} ref={noticeRef}>
           <p className={styles.summaryHeading}>We couldn&apos;t send this</p>
           <p className={styles.summaryText}>
-            Something went wrong on our side. Try again, or call{' '}
-            <a href={studio.phone.href}>{studio.phone.text}</a>
-            <Mark note={studio.phone.marker} />. Your answers are still here.
+            Something went wrong on our side. Try again, or {contactAction}. Your answers are still here.
           </p>
         </div>
       )}
@@ -272,19 +262,15 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, p
         <p className={styles.after}>Sending your answers. Keep this page open.</p>
       ) : calendlyLink ? (
         <p className={styles.after}>
-          Next, you pick a consultation time on this page
-          <Mark note="confirm" />. Nothing is charged until you agree.
+          Next, you pick a consultation time on this page. Nothing is charged until you agree.
         </p>
       ) : (
         <p className={styles.after}>
-          Next, you call or email us with your reference to set a time. Nothing is booked or
-          charged until you agree.
+          Next, contact us with your reference to set a time. Nothing is booked or charged until
+          you agree.
         </p>
       )}
-      <p className={styles.call}>
-        Rather talk? Call <a href={studio.phone.href}>{studio.phone.text}</a>
-        <Mark note={studio.phone.marker} />
-      </p>
+      <p className={styles.call}>For help, {contactAction}.</p>
     </form>
   )
 
@@ -292,7 +278,13 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, p
     <>
       {form}
       {calendlyLink && prefill && (
-        <CalendlyStep link={calendlyLink} heading={Heading} prefill={prefill} onBack={() => setPrefill(null)} />
+        <CalendlyStep
+          link={calendlyLink}
+          heading={Heading}
+          prefill={prefill}
+          contact={contact}
+          onBack={() => setPrefill(null)}
+        />
       )}
     </>
   )

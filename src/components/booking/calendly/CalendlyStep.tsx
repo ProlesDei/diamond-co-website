@@ -1,10 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useState } from 'react'
 
-import { Confirm } from '@/components/pages/Confirm'
 import { Button } from '@/components/site/Button'
-import { studio } from '@/components/site/studio'
+import type { StudioContact } from '@/components/site/studio'
 
 import styles from './calendly.module.css'
 import { frameUrl, isScheduled } from './prefill'
@@ -14,23 +14,16 @@ type CalendlyStepProps = {
   link: string
   heading: 'h2' | 'h3'
   prefill: CalendlyPrefill
+  contact: StudioContact
   onBack: () => void
 }
 
 // Stable, so React calls it only when a heading mounts: the step's heading takes focus as the step opens.
 const focusOnMount = (node: HTMLHeadingElement | null) => node?.focus()
 
-function StudioPhone() {
-  return (
-    <>
-      <a href={studio.phone.href}>{studio.phone.text}</a>
-      <Confirm note={studio.phone.marker} />
-    </>
-  )
-}
-
-export function CalendlyStep({ link, heading: Heading, prefill, onBack }: CalendlyStepProps) {
+export function CalendlyStep({ link, heading: Heading, prefill, contact, onBack }: CalendlyStepProps) {
   const [scheduled, setScheduled] = useState(false)
+  const { phone, email } = contact
 
   // Listens only while the iframe is on the page; React runs the returned cleanup when it leaves.
   const listen = useCallback((frame: HTMLIFrameElement | null) => {
@@ -70,7 +63,14 @@ export function CalendlyStep({ link, heading: Heading, prefill, onBack }: Calend
         title="Choose a consultation time"
       />
       <p className={styles.call}>
-        Times not loading? Call <StudioPhone /> and we&apos;ll set one with you.
+        Times not loading?{' '}
+        {phone ? (
+          <>Call <a href={phone.href}>{phone.text}</a>.</>
+        ) : email ? (
+          <>Email <a href={email.href}>{email.text}</a>.</>
+        ) : (
+          <Link href="/contact">See how to contact us.</Link>
+        )}
       </p>
       <Button variant="secondary" type="button" onClick={onBack}>
         Back to your answers

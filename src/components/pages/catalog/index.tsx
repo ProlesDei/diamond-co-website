@@ -1,7 +1,6 @@
 import { PieceCard } from '@/components/home/commissions/PieceCard'
 import { Button } from '@/components/site/Button'
 
-import { Confirm } from '../Confirm'
 import { ConsultationBand } from '../ConsultationBand'
 import { pageMetadata } from '../metadata'
 import { PageHead } from '../PageHead'
@@ -33,8 +32,7 @@ export default async function CatalogPage() {
             <h2 className={styles.heading}>The first pieces go up soon.</h2>
             <p className={styles.text}>
               We’re photographing recent pieces now. Until they’re here, book a free online
-              consultation: tell us your idea and we’ll show you what we’ve made
-              <Confirm />.
+              consultation: tell us your idea and we’ll show you what we’ve made.
             </p>
             <div className={styles.buttons}>
               <Button className={styles.button} variant="primary" href="/book">
@@ -74,7 +72,6 @@ export default async function CatalogPage() {
       >
         Book a free online consultation about the piece you liked and we will draw your own version
         with you.
-        <Confirm />
       </ConsultationBand>
     </>
   )

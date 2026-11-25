@@ -1,16 +1,12 @@
-'use client'
-
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 
-import { Confirm } from '../pages/Confirm'
+import { FooterBookLink } from './Footer.BookLink'
 import styles from './Footer.module.css'
-import { bookHref, links } from './nav'
-import { PageLink } from './PageLink'
-import { studio } from './studio'
+import { links } from './nav'
+import { getStudioContact, studio } from './studio'
 
-export function Footer() {
-  const pathname = usePathname()
+export async function Footer() {
+  const { phone } = await getStudioContact()
 
   return (
     <footer className={styles.footer}>
@@ -35,7 +31,7 @@ export function Footer() {
               <Link href={links.questions}>Questions</Link>
             </li>
             <li>
-              <PageLink href={bookHref(pathname)}>Book a free consultation</PageLink>
+              <FooterBookLink />
             </li>
           </ul>
         </nav>
@@ -43,17 +39,14 @@ export function Footer() {
           <h2 className={styles.heading}>The studio</h2>
           <p>
             {studio.hours[0].days}, {studio.hours[0].time}
-            <Confirm note={studio.hours[0].marker} />
             <br />
             {studio.appointment.text}
-            <Confirm note={studio.appointment.marker} />
           </p>
-          <p className={styles.fact}>
-            <a className={styles.phone} href={studio.phone.href}>
-              {studio.phone.text}
-            </a>
-            <Confirm note={studio.phone.marker} />
-          </p>
+          {phone && (
+            <p className={styles.fact}>
+              <a className={styles.phone} href={phone.href}>{phone.text}</a>
+            </p>
+          )}
         </div>
       </div>
       <div className={styles.base}>
