@@ -32,19 +32,26 @@ export const getGoldsmithName = async () => (await getGoldsmithSettings()).name
 const canShow = ({ source }: Pick<Media, 'source'>) =>
   source === 'client-photo' || (source === 'placeholder' && process.env.SITE_ENV !== 'production')
 
+const findSettingsMedia = unstable_cache(
+  async (ids: string[]) => {
+    const payload = await getPayload({ config })
+    const { docs } = await payload.find({
+      collection: 'media',
+      where: { id: { in: ids } },
+      depth: 0,
+      overrideAccess: false,
+      pagination: false,
+    })
+    return docs
+  },
+  ['site-settings-media'],
+  { tags: ['site-settings'], revalidate: 30 },
+)
+
 const findShownMedia = async (ids: string[]) => {
   if (ids.length === 0) return new Map<string, Media>()
 
-  // Media can change independently of Site Settings.
-  await connection()
-  const payload = await getPayload({ config })
-  const { docs } = await payload.find({
-    collection: 'media',
-    where: { id: { in: ids } },
-    depth: 0,
-    overrideAccess: false,
-    pagination: false,
-  })
+  const docs = await findSettingsMedia(ids)
   return new Map(docs.filter(canShow).map((media) => [media.id, media]))
 }
 
