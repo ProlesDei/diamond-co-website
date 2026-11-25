@@ -70,21 +70,14 @@
 
 .frame {
   position: relative;
-  display: flex;
-  align-items: flex-end;
   aspect-ratio: 4 / 5;
-  padding: var(--space-4);
+  overflow: hidden;
   background: var(--stage);
 }
 
 .photo {
   object-fit: cover;
-}
-
-.placeholder {
-  margin: 0;
-  color: var(--on-evergreen-muted);
-  font: 400 12px/1.5 var(--font-sans);
+  object-position: center;
 }
 
 .smithName {

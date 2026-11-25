@@ -4,7 +4,7 @@ import { connection } from 'next/server'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 
-import type { Faq } from '@/payload-types'
+import type { Faq, Media } from '@/payload-types'
 
 export const getSiteSettings = unstable_cache(
   async () => {
@@ -21,31 +21,70 @@ const getGoldsmithSettings = async () => {
     name: goldsmith?.name?.trim() || null,
     credential: goldsmith?.credential?.trim() || null,
     portraitId: goldsmith?.portrait,
+    team: goldsmith?.team ?? [],
   }
 }
 
 export const getGoldsmithName = async () => (await getGoldsmithSettings()).name
 
-export const getGoldsmithProfile = cache(async () => {
-  const { name, credential, portraitId } = await getGoldsmithSettings()
-  if (typeof portraitId !== 'string') return { name, credential, portrait: null }
+const canShow = ({ source }: Pick<Media, 'source'>) =>
+  source === 'client-photo' || (source === 'placeholder' && process.env.SITE_ENV !== 'production')
+
+const findPortraits = async (ids: string[]) => {
+  if (ids.length === 0) return new Map<string, { src: string; alt: string }>()
 
   // Media can change independently of Site Settings.
   await connection()
   const payload = await getPayload({ config })
-  const media = await payload.findByID({
+  const { docs } = await payload.find({
     collection: 'media',
-    id: portraitId,
+    where: { id: { in: ids } },
     depth: 0,
-    disableErrors: true,
     overrideAccess: false,
+    pagination: false,
   })
-  const allowed = media?.source === 'client-photo'
-    || (media?.source === 'placeholder' && process.env.SITE_ENV !== 'production')
-  const src = media?.sizes?.card?.url || media?.url
-  const portrait = allowed && media && src ? { src, alt: media.alt } : null
-  return { name, credential, portrait }
+  return new Map(docs.filter(canShow).flatMap((media) => {
+    const src = media.sizes?.card?.url || media.url
+    return src ? [[media.id, { src, alt: media.alt }] as const] : []
+  }))
+}
+
+const idOf = (value: string | Media | null | undefined) => (typeof value === 'string' ? value : null)
+
+export const getGoldsmithProfile = cache(async () => {
+  const { name, credential, portraitId, team } = await getGoldsmithSettings()
+  const ids = [portraitId, ...team.map(({ portrait }) => portrait)].map(idOf).filter((id) => id !== null)
+  const portraits = await findPortraits([...new Set(ids)])
+  const portraitFor = (value: string | Media | null | undefined) => portraits.get(idOf(value) ?? '') ?? null
+
+  return {
+    name,
+    credential,
+    portrait: portraitFor(portraitId),
+    team: team.flatMap(({ id, name: memberName, role, portrait }, index) => {
+      const trimmed = memberName.trim()
+      if (!trimmed) return []
+      return [{ key: id ?? String(index), name: trimmed, role: role?.trim() || null, portrait: portraitFor(portrait) }]
+    }),
+  }
 })
+
+export const getSiteLogo = unstable_cache(
+  async () => {
+    const payload = await getPayload({ config })
+    const { logo } = await payload.findGlobal({
+      slug: 'site-settings',
+      depth: 1,
+      overrideAccess: false,
+      select: { logo: true },
+    })
+    if (!logo || typeof logo !== 'object' || !canShow(logo)) return null
+    const src = logo.sizes?.detail?.url || logo.url
+    return src ? { src, alt: logo.alt } : null
+  },
+  ['site-logo'],
+  { tags: ['site-settings'] },
+)
 
 const findPublishedFaqs = async (ids: string[]) => {
   if (ids.length === 0) return new Map<string, Faq>()
@@ -75,25 +114,34 @@ export const getHomeQuestions = async () => {
   return ids.map((id) => byId.get(id)).filter((doc) => doc !== undefined)
 }
 
-export const getFaqPageQuestions = async () => {
-  // The page can switch to published questions after a build with no selection.
+export const getFaqPage = async () => {
+  // Linked FAQs can be published or unpublished without a Site Settings save.
   await connection()
   const { faqPage } = await getSiteSettings()
-  if (!faqPage?.usePublishedQuestions) return null
+  const topicRows = faqPage?.topics ?? []
+  const ids = topicRows.flatMap(({ questions }) => (questions ?? []).map(({ faq }) => faq))
+    .filter((id) => typeof id === 'string')
+  const byId = await findPublishedFaqs([...new Set(ids)])
 
-  const rows = faqPage.questions ?? []
-  const ids = [...new Set(rows.map(({ faq }) => faq).filter((id) => typeof id === 'string'))]
-  const byId = await findPublishedFaqs(ids)
-  return rows.flatMap(({ id, topic, faq, questionLabel }, index) => {
-    const record = typeof faq === 'string' ? byId.get(faq) : undefined
-    if (!record) return []
-    return [{
-      key: id ?? index,
-      topic,
-      question: questionLabel?.trim() || record.question,
-      answer: record.answer,
-    }]
+  const topics = topicRows.flatMap(({ title, questions }, topicIndex) => {
+    const rows = (questions ?? []).flatMap(({ id: rowId, faq, questionLabel }, index) => {
+      const record = typeof faq === 'string' ? byId.get(faq) : undefined
+      if (!record) return []
+      return [{
+        key: rowId ?? `${topicIndex}-${index}`,
+        question: questionLabel?.trim() || record.question,
+        answer: record.answer,
+      }]
+    })
+    return rows.length > 0 ? [{ title: title.trim(), questions: rows }] : []
   })
+
+  return {
+    heading: faqPage?.heading?.trim() || null,
+    headingItalic: faqPage?.headingItalic?.trim() || null,
+    lede: faqPage?.lede?.trim() || null,
+    topics,
+  }
 }
 
 export const getPublishedPieces = unstable_cache(

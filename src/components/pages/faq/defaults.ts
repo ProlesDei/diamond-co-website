@@ -5,6 +5,12 @@ import {
   redrawDesignQuestion,
 } from '../../home/questions/defaults'
 
+export const faqPageDefaults = {
+  heading: 'Fair questions,',
+  headingItalic: 'plain answers.',
+  lede: "If yours isn't here, ask it in the form or call us. We'd rather you asked.",
+}
+
 export const faqTopicDefaults = [
   {
     id: 'q-consult',
@@ -36,12 +42,18 @@ export const faqTopicDefaults = [
         question: 'What does a custom ring cost?',
         answer: 'Engagement rings from $2,000, with a firm quote at your consultation, before you commit. The price depends mostly on the stone and the metal.',
       },
-      approveDesignQuestion,
-      redrawDesignQuestion,
+      {
+        ...approveDesignQuestion,
+        answer: 'The Render-First Promise: you approve a drawing and a render before any metal is cut. You can ask for changes before you approve.',
+      },
+      {
+        ...redrawDesignQuestion,
+        answer: 'We redraw it. If it still isn’t right, you can walk away.',
+      },
       {
         key: 'deposit',
         question: 'Do you take a deposit?',
-        answer: '[Yes, [X]% when you approve the render / No deposit until ...] [confirm].',
+        answer: 'Ask us at your consultation. You get a firm quote before you commit.',
       },
     ],
   },
@@ -53,7 +65,7 @@ export const faqTopicDefaults = [
       {
         key: 'who-makes-it',
         question: 'Who makes it?',
-        answer: 'The goldsmith you meet online makes your piece at our bench [confirm].',
+        answer: 'The goldsmith you meet online makes your piece at our bench.',
       },
     ],
   },
@@ -61,16 +73,19 @@ export const faqTopicDefaults = [
     id: 'q-stones',
     title: 'Stones and metals',
     questions: [
-      keepStoneQuestion,
+      {
+        ...keepStoneQuestion,
+        answer: 'Yes. Your stone never leaves our bench. We photograph and measure it with you before work starts, and you keep the record.',
+      },
       {
         key: 'natural-or-lab',
         question: 'Natural or lab-grown diamonds?',
-        answer: 'Both [confirm]. We’ll show you each side by side and explain the difference in price plainly.',
+        answer: 'Both. We’ll show you each side by side and explain the difference in price plainly.',
       },
       {
         key: 'metals',
         question: 'Which metals do you work in?',
-        answer: '14k to 24k gold in yellow, white and rose, and platinum [confirm].',
+        answer: '14k to 24k gold in yellow, white and rose, and platinum.',
       },
     ],
   },
@@ -86,12 +101,12 @@ export const faqTopicDefaults = [
       {
         key: 'resize',
         question: 'What if it doesn’t fit?',
-        answer: 'We resize your piece free in the first [X] months [confirm].',
+        answer: 'Contact us and we’ll arrange a resize.',
       },
       {
         key: 'clean-and-check',
         question: 'Do you clean and check pieces?',
-        answer: 'Yes. Contact us to arrange a cleaning and setting check [confirm].',
+        answer: 'Yes. Contact us to arrange a cleaning and setting check.',
       },
     ],
   },

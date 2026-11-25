@@ -3,15 +3,21 @@ import type { Payload } from 'payload'
 import type { SiteSetting } from '../payload-types'
 
 import { homeQuestionDefaults } from '../components/home/questions/defaults'
-import { faqTopicDefaults } from '../components/pages/faq/defaults'
+import { faqPageDefaults, faqTopicDefaults } from '../components/pages/faq/defaults'
 import { seedContext } from './context'
 import { paragraphs } from './richText'
 
-const pageSamples = faqTopicDefaults.flatMap(({ id, questions }) =>
-  questions.map((question) => ({ ...question, topic: id })),
-)
-const samplesByKey = new Map(
-  [...pageSamples, ...homeQuestionDefaults].map((sample) => [sample.key, sample]),
+type FaqSample = { key: string; question: string; answer: string }
+
+const pageSamples = faqTopicDefaults.flatMap(({ questions }): FaqSample[] => [...questions])
+const pageAnswers = new Map(pageSamples.map(({ key, answer }) => [key, answer]))
+// A key on both pages gets one FAQ: the home page's question, with the FAQ page's answer,
+// which carries no [confirm] marker.
+const samplesByKey = new Map<string, FaqSample>(
+  [...pageSamples, ...homeQuestionDefaults].map((sample) => [
+    sample.key,
+    { ...sample, answer: pageAnswers.get(sample.key) ?? sample.answer },
+  ]),
 )
 const sampleFaqs = [...samplesByKey.values()]
 
@@ -46,11 +52,13 @@ export const homeFaqSeedIds = (payload: Payload) =>
   Promise.all(homeQuestionDefaults.map((sample) => requireSampleFaqId(payload, sample)))
 
 export const faqPageSeedSettings = async (payload: Payload): Promise<SiteSetting['faqPage']> => ({
-  usePublishedQuestions: true,
-  questions: await Promise.all(pageSamples.map(async (sample) => ({
-    topic: sample.topic,
-    faq: await requireSampleFaqId(payload, sample),
-    questionLabel: sample.question === samplesByKey.get(sample.key)?.question ? undefined : sample.question,
+  ...faqPageDefaults,
+  topics: await Promise.all(faqTopicDefaults.map(async ({ title, questions }) => ({
+    title,
+    questions: await Promise.all(questions.map(async (sample) => ({
+      faq: await requireSampleFaqId(payload, sample),
+      questionLabel: sample.question === samplesByKey.get(sample.key)?.question ? undefined : sample.question,
+    }))),
   }))),
 })
 

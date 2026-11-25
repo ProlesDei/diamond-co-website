@@ -1,7 +1,5 @@
 import { type JSXConvertersFunction, RichText } from '@payloadcms/richtext-lexical/react'
-import { Fragment } from 'react'
 
-import { Confirm } from '@/components/pages/Confirm'
 import type { Faq } from '@/payload-types'
 
 const answerConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
@@ -41,27 +39,6 @@ const answerConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   },
 })
 
-export function FaqConfirmText({ text }: { text: string }) {
-  return text.split(' [confirm]').map((part, index) => (
-    <Fragment key={index}>
-      {index > 0 && <Confirm />}
-      {part}
-    </Fragment>
-  ))
-}
-
-const pageAnswerConverters: JSXConvertersFunction = (args) => ({
-  ...answerConverters(args),
-  text: (textArgs) => {
-    const { text, format } = textArgs.node
-    if (!format && text.includes(' [confirm]')) return <FaqConfirmText text={text} />
-
-    const renderText = args.defaultConverters.text
-    return typeof renderText === 'function' ? renderText(textArgs) : renderText
-  },
-})
-
-export function FaqAnswer({ answer, showConfirmMarkers }: Pick<Faq, 'answer'> & { showConfirmMarkers?: boolean }) {
-  const converters = showConfirmMarkers ? pageAnswerConverters : answerConverters
-  return <RichText data={answer} converters={converters} disableContainer />
+export function FaqAnswer({ answer }: Pick<Faq, 'answer'>) {
+  return <RichText data={answer} converters={answerConverters} disableContainer />
 }
