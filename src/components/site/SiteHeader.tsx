@@ -66,6 +66,13 @@ export function SiteHeader() {
           >
             The Bench
           </Link>
+          <Link
+            className={styles.link}
+            href={links.contact}
+            aria-current={currentPage(pathname, links.contact)}
+          >
+            Contact
+          </Link>
         </nav>
         <Link className={styles.mark} href="/" onClick={closeMenu}>
           Diamond &amp; Co.
