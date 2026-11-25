@@ -49,16 +49,19 @@ export const faqPage: GroupField = {
         },
       ],
     },
-    // The earlier selection, hidden and never rewritten. The FAQ page shows it until topics hold a
-    // published question, and an earlier build still reads it after a rollback.
+    // The earlier selection, hidden and read-only, so no save (a stale form included) can change it.
+    // The FAQ page shows it until topics hold a published question, and an earlier build still
+    // reads it after a rollback.
     {
       name: 'usePublishedQuestions',
       type: 'checkbox',
+      access: { update: () => false },
       admin: { hidden: true },
     },
     {
       name: 'questions',
       type: 'array',
+      access: { update: () => false },
       admin: { hidden: true },
       fields: [
         {
