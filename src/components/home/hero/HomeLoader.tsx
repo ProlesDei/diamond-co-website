@@ -6,11 +6,28 @@ import styles from './HomeLoader.module.css'
 const INTRO_MS = 1200
 // Longest exit; the loader closes after it even if no animation event fires.
 const EXIT_MS = 800
+// Photos get this long to decode before the loader leaves anyway.
+const DEADLINE_MS = 5000
+// Whatever fails in the script, the page shows by this time.
+const FAILSAFE_MS = DEADLINE_MS + INTRO_MS + EXIT_MS + 400
 
 // Run during HTML parsing so the loader can appear before the app hydrates.
 const startLoader = `
 (() => {
   const loader = document.getElementById('home-loader')
+  let closed = false
+  let revealed = false
+  let failsafe = 0
+  const close = () => {
+    closed = true
+    loader.removeAttribute('data-loading')
+    loader.removeAttribute('data-leaving')
+    clearTimeout(failsafe)
+  }
+  // Armed before the page hides, so no later error can keep it hidden.
+  failsafe = setTimeout(close, ${FAILSAFE_MS})
+  // A page restored from the back/forward cache must not come back hidden.
+  addEventListener('pageshow', (event) => event.persisted && close())
   const started = performance.now()
   let seen = false
   try {
@@ -21,16 +38,15 @@ const startLoader = `
     loader.getAttribute('data-motion') === 'reduce' || matchMedia('(prefers-reduced-motion: reduce)').matches
   loader.setAttribute('data-intro', still ? 'still' : seen ? 'short' : 'full')
   loader.setAttribute('data-loading', '')
-  const close = () => {
-    loader.removeAttribute('data-loading')
-    loader.removeAttribute('data-leaving')
-  }
   const leave = () => {
+    if (closed) return
     loader.setAttribute('data-leaving', '')
     loader.addEventListener('animationend', (event) => event.target === loader && close())
     setTimeout(close, ${EXIT_MS + 100})
   }
   const reveal = () => {
+    if (revealed || closed) return
+    revealed = true
     clearTimeout(deadline)
     document.removeEventListener('DOMContentLoaded', waitForPhotos)
     const intro = still || seen ? 0 : ${INTRO_MS} - (performance.now() - started)
@@ -45,7 +61,7 @@ const startLoader = `
     })
     Promise.allSettled(photos.map((photo) => photo.decode())).then(reveal)
   }
-  const deadline = setTimeout(reveal, 5000)
+  const deadline = setTimeout(reveal, ${DEADLINE_MS})
   document.addEventListener('DOMContentLoaded', waitForPhotos)
 })()
 `
