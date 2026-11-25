@@ -1,5 +1,4 @@
 import type { HomeImages } from '@/components/home/homeImages'
-import { Confirm } from '@/components/pages/Confirm'
 import { Button } from '@/components/site/Button'
 
 import styles from './Hero.module.css'
@@ -39,20 +38,19 @@ export function Hero({ hero, reduceMotion }: HeroProps) {
       </p>
       <div className={styles.intro}>
         <p className={styles.lede}>
-          Custom engagement rings and heirloom redesigns, drawn with you and made by hand at our bench in
-          White Rock. Bring a sketch, a photo, or a stone of your own.
+          Custom engagement rings and heirloom redesigns, drawn with you and made by hand. Start from a
+          sketch, a photo or a stone you already have.
         </p>
         <div className={styles.buttons}>
           <Button variant="primary" href="#book" id="hero-book" className={styles.button}>
             Book a free design consultation
           </Button>
           <Button variant="secondary" href="#commissions" className={styles.button}>
-            See the commissions
+            See the catalog
           </Button>
         </div>
         <p className={styles.micro}>
-          30 minutes · No obligation · Pick a time online
-          <Confirm />
+          15–30 minutes · Online · Free · No obligation
         </p>
       </div>
     </HeroSection>
