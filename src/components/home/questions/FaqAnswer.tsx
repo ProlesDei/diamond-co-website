@@ -2,8 +2,19 @@ import { type JSXConvertersFunction, RichText } from '@payloadcms/richtext-lexic
 
 import type { Faq } from '@/payload-types'
 
+// Older answers can hold a [confirm] note for the client; it never shows on the site.
+const CONFIRM_MARKER = ' [confirm]'
+
 const answerConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
+  text: (args) => {
+    const renderText = defaultConverters.text
+    if (typeof renderText !== 'function') return renderText
+    const { node } = args
+    return node.text.includes(CONFIRM_MARKER)
+      ? renderText({ ...args, node: { ...node, text: node.text.replaceAll(CONFIRM_MARKER, '') } })
+      : renderText(args)
+  },
   link: (args) => {
     const { node, nodesToJSX } = args
     const { doc, linkType, newTab } = node.fields

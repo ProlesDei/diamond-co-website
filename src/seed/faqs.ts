@@ -11,12 +11,11 @@ type FaqSample = { key: string; question: string; answer: string }
 
 const pageSamples = faqTopicDefaults.flatMap(({ questions }): FaqSample[] => [...questions])
 const pageAnswers = new Map(pageSamples.map(({ key, answer }) => [key, answer]))
-// A key on both pages gets one FAQ: the home page's question, with the FAQ page's answer,
-// which carries no [confirm] marker.
+// A key on both pages gets one FAQ: the home page's question, with the FAQ page's answer.
 const samplesByKey = new Map<string, FaqSample>(
   [...pageSamples, ...homeQuestionDefaults].map((sample) => [
     sample.key,
-    { ...sample, answer: pageAnswers.get(sample.key) ?? sample.answer },
+    { ...sample, answer: (pageAnswers.get(sample.key) ?? sample.answer).replaceAll(' [confirm]', '') },
   ]),
 )
 const sampleFaqs = [...samplesByKey.values()]

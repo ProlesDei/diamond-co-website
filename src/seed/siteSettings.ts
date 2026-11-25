@@ -4,15 +4,14 @@ import type { SiteSetting } from '../payload-types'
 import { seedContext } from './context'
 import { faqPageSeedSettings, homeFaqSeedIds } from './faqs'
 
-// Sample facts only, each marked [confirm] until the client answers. Email and social links
-// are left empty: their fields check the format, so they can't carry the marker.
+// Sample facts only, for the client to replace. Email and social links are left empty.
 const sampleSettings = {
-  storeName: 'Diamond & Co [confirm]',
+  storeName: 'Diamond & Co',
   address: '',
-  phone: '604-555-0123 [confirm]',
+  phone: '604-555-0123',
   hours: [
-    { days: 'Tuesday to Saturday', hours: '10 am to 5 pm [confirm]' },
-    { days: 'Sunday and Monday', hours: 'Closed [confirm]' },
+    { days: 'Tuesday to Saturday', hours: '10 am to 5 pm' },
+    { days: 'Sunday and Monday', hours: 'Closed' },
   ],
 } satisfies Partial<SiteSetting>
 
@@ -30,5 +29,5 @@ export const seedSiteSettings = async (payload: Payload): Promise<string[]> => {
     overrideAccess: true,
     context: seedContext,
   })
-  return ['sample store name, phone and hours, each marked [confirm]. Address left blank.']
+  return ['sample store name, phone and hours. Address left blank.']
 }
