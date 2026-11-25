@@ -1,5 +1,5 @@
 @property --iris {
-  syntax: '<length>';
+  syntax: '<length-percentage>';
   inherits: false;
   initial-value: 0px;
 }
@@ -33,7 +33,7 @@
 
 .mark {
   grid-row: 2;
-  width: clamp(104px, 10vw, 148px);
+  width: clamp(112px, 12vw, 184px);
   overflow: visible;
 }
 
@@ -168,7 +168,7 @@
 }
 
 .loader:is([data-intro='full'], [data-intro='short'])[data-leaving] .stage {
-  animation: settle 320ms var(--ease) forwards;
+  animation: settle 450ms var(--ease) forwards;
 }
 
 @keyframes fade-in {
@@ -232,10 +232,10 @@
     --iris: -5vmin;
   }
 
-  /* Just past the farthest corner (half the diagonal is at most ~70.7vmax),
-     so the whole opening stays on screen. */
+  /* 100% is the farthest corner on any screen shape, so the opening is on
+     screen for the whole exit. */
   to {
-    --iris: 72vmax;
+    --iris: 100%;
   }
 }
 
