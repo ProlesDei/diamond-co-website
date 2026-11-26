@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -12,9 +13,12 @@ import styles from './SiteHeader.module.css'
 const MENU_ID = 'menu'
 const DESKTOP_QUERY = '(min-width: 760px)'
 
-export function SiteHeader() {
+type SiteLogo = { src: string; alt: string }
+
+export function SiteHeader({ logo }: { logo: SiteLogo | null }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [failedLogoSrc, setFailedLogoSrc] = useState<string>()
   const menuButton = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -75,7 +79,20 @@ export function SiteHeader() {
           </Link>
         </nav>
         <Link className={styles.mark} href="/" onClick={closeMenu}>
-          Diamond &amp; Co.
+          {logo && logo.src !== failedLogoSrc ? (
+            <span className={styles.logo}>
+              <Image
+                src={logo.src}
+                alt={logo.alt}
+                fill
+                sizes="(max-width: 759px) 160px, 270px"
+                className={styles.logoImage}
+                onError={() => setFailedLogoSrc(logo.src)}
+              />
+            </span>
+          ) : (
+            'Diamond & Co.'
+          )}
         </Link>
         <PageLink className={`${styles.link} ${styles.book}`} href={bookHref(pathname)}>
           Book a free consultation

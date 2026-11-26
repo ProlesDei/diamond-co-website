@@ -1,32 +1,63 @@
-import { FaqAnswer, FaqConfirmText } from '@/components/home/questions/FaqAnswer'
-import { getFaqPageQuestions } from '@/lib/content'
+import type { ReactNode } from 'react'
+
+import { FaqAnswer } from '@/components/home/questions/FaqAnswer'
+import { getFaqPage } from '@/lib/content'
 
 import { ConsultationBand } from '../ConsultationBand'
 import { pageMetadata } from '../metadata'
 import { PageHead } from '../PageHead'
-import { faqTopicDefaults } from './defaults'
+import { faqPageDefaults, faqTopicDefaults } from './defaults'
 import styles from './Faq.module.css'
 
 export function generateMetadata() {
   return pageMetadata('Questions')
 }
 
-export default async function FaqPage() {
-  const selection = await getFaqPageQuestions()
-  const topics = faqTopicDefaults.map(({ id, title, questions }) => ({
+type Topic = {
+  id: string
+  title: string
+  questions: { key: string; question: string; answer: ReactNode }[]
+}
+
+// A topic titled like a built-in topic keeps that topic's anchor, so earlier links still work.
+const builtInAnchors = new Map<string, string>(faqTopicDefaults.map(({ id, title }) => [title.toLowerCase(), id]))
+
+const anchorsFor = (titles: string[]): string[] => {
+  const used = new Set<string>()
+  return titles.map((title) => {
+    const base = builtInAnchors.get(title.toLowerCase())
+      ?? `q-${title.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'topic'}`
+    let anchor = base
+    for (let n = 2; used.has(anchor); n += 1) anchor = `${base}-${n}`
+    used.add(anchor)
+    return anchor
+  })
+}
+
+const defaultTopics = (): Topic[] =>
+  faqTopicDefaults.map(({ id, title, questions }) => ({
     id,
     title,
-    questions: selection === null
-      ? questions.map(({ key, question, answer }) => ({
+    questions: questions.map(({ key, question, answer }) => ({ key, question, answer: <p>{answer}</p> })),
+  }))
+
+export default async function FaqPage() {
+  const page = await getFaqPage()
+  const anchors = anchorsFor(page.topics.map(({ title }) => title))
+  const topics: Topic[] = page.topics.length === 0
+    ? defaultTopics()
+    : page.topics.map(({ title, questions }, index) => ({
+        id: anchors[index],
+        title,
+        questions: questions.map(({ key, question, answer }) => ({
           key,
           question,
-          answer: <FaqConfirmText text={answer} />,
-        }))
-      : selection.filter((row) => row.topic === id).map(({ answer, ...row }) => ({
-          ...row,
-          answer: <FaqAnswer answer={answer} showConfirmMarkers />,
+          answer: <FaqAnswer answer={answer} />,
         })),
-  }))
+      }))
+  const heading = page.heading || page.headingItalic
+    ? { plain: page.heading, italic: page.headingItalic }
+    : { plain: faqPageDefaults.heading, italic: faqPageDefaults.headingItalic }
 
   return (
     <>
@@ -34,10 +65,12 @@ export default async function FaqPage() {
         eyebrow="Questions"
         title={
           <>
-            Fair questions, <em>plain answers.</em>
+            {heading.plain}
+            {heading.plain && heading.italic && ' '}
+            {heading.italic && <em>{heading.italic}</em>}
           </>
         }
-        lede="If yours isn't here, ask it in the form or call us. We'd rather you asked."
+        lede={page.lede ?? faqPageDefaults.lede}
       />
       <div className={styles.layout}>
         <nav className={styles.topics} aria-label="Topics">

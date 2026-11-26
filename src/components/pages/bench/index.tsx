@@ -3,14 +3,9 @@ import Image from 'next/image'
 import { Hinge } from '@/components/home/bench/Hinge'
 import { type Metal, metalLooks } from '@/components/home/commissions/metals'
 import { MetalSwatch } from '@/components/home/commissions/MetalSwatch'
-import {
-  Confirm as StepConfirm,
-  ProcessSteps,
-  type Step,
-} from '@/components/home/process/ProcessSteps'
+import { ProcessSteps, type Step } from '@/components/home/process/ProcessSteps'
 import { getGoldsmithProfile } from '@/lib/content'
 
-import { Confirm } from '../Confirm'
 import { ConsultationBand } from '../ConsultationBand'
 import { pageMetadata } from '../metadata'
 import styles from './Bench.module.css'
@@ -38,40 +33,23 @@ const steps: Step[] = [
   {
     name: 'Design',
     time: 'Render in 1–4 days',
-    text: (
-      <>
-        We draw it by hand, then render it so you can see it from every side. The timing depends
-        on how complex the piece is. You approve the render before we cut any metal. We include
-        [N] rounds of changes <StepConfirm />.
-      </>
-    ),
+    text: 'We draw it by hand, then render it so you can see it from every side. The timing depends on how complex the piece is. You can ask for changes, and you approve the render before we cut any metal.',
   },
   {
     name: 'Craft',
     time: 'About 1–2 weeks at the bench',
-    text: (
-      <>
-        We make your piece by hand at our bench, in 14k to 24k gold <StepConfirm />. Your stone
-        stays at the bench. We photograph and measure it with you before work starts{' '}
-        <StepConfirm />.
-      </>
-    ),
+    text: 'We make your piece by hand at our bench, in 14k to 24k gold. Your stone stays at the bench. We photograph and measure it with you before work starts.',
   },
   {
     name: 'Delivered',
     time: 'Three ways to get your ring',
-    text: (
-      <>
-        Choose insured shipping, studio pickup by appointment, or a private handover appointment.
-        We share the studio address after you book your pickup. We include care advice for your
-        piece. Contact us to arrange a cleaning <StepConfirm />.
-      </>
-    ),
+    text: 'Choose insured shipping, studio pickup by appointment, or a private handover appointment. We share the studio address after you book your pickup. We include care advice for your piece. Contact us to arrange a cleaning.',
   },
 ]
 
 export default async function BenchPage() {
-  const { name, credential, portrait } = await getGoldsmithProfile()
+  const { name, credential, portrait, team } = await getGoldsmithProfile()
+  const goldsmiths = [{ key: 'primary', name: name ?? 'Goldsmith', role: credential, portrait }, ...team]
 
   return (
     <>
@@ -99,40 +77,27 @@ export default async function BenchPage() {
               The hands <em>that make it.</em>
             </h2>
             <p className={styles.lede}>
-              More than 35 years at the bench
-              <Confirm />. The goldsmith you meet online makes your piece
-              <Confirm />.
+              More than 35 years at the bench. The goldsmith you meet online makes your piece.
             </p>
           </div>
           <ul className={styles.smiths} role="list">
-            <li>
-              {portrait && (
-                <div className={styles.frame}>
-                  <Image
-                    src={portrait.src}
-                    alt={portrait.alt}
-                    fill
-                    sizes="(max-width: 899px) 45vw, 25vw"
-                    className={styles.photo}
-                  />
-                </div>
-              )}
-              <h3 className={styles.smithName}>{name ?? 'Goldsmith'}</h3>
-              {credential && <p className={styles.role}>{credential}</p>}
-            </li>
-            <li>
-              <div className={styles.frame}>
-                <p className={styles.placeholder}>Placeholder: portrait of [NAME], from the client</p>
-              </div>
-              <h3 className={styles.smithName}>
-                [NAME]
-                <Confirm note="client supplies" />
-              </h3>
-              <p className={styles.role}>
-                [Role, for example stone setter]
-                <Confirm note="client supplies" />
-              </p>
-            </li>
+            {goldsmiths.map(({ key, name: smithName, role, portrait: photo }) => (
+              <li key={key}>
+                {photo && (
+                  <div className={styles.frame}>
+                    <Image
+                      src={photo.src}
+                      alt={photo.alt}
+                      fill
+                      sizes="(max-width: 899px) 45vw, 25vw"
+                      className={styles.photo}
+                    />
+                  </div>
+                )}
+                <h3 className={styles.smithName}>{smithName}</h3>
+                {role && <p className={styles.role}>{role}</p>}
+              </li>
+            ))}
           </ul>
         </div>
       </section>
@@ -151,7 +116,6 @@ export default async function BenchPage() {
             <li key={metal}>
               <MetalSwatch metal={metal} />
               {metalLooks[metal].label}
-              {metal === 'platinum' ? <Confirm /> : null}
             </li>
           ))}
         </ul>

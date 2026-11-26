@@ -4,14 +4,16 @@ import { connection } from 'next/server'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 
-import type { Faq } from '@/payload-types'
+import { faqTopicDefaults } from '@/components/pages/faq/defaults'
+import type { Faq, Media, SiteSetting } from '@/payload-types'
 
 export const getSiteSettings = unstable_cache(
   async () => {
     const payload = await getPayload({ config })
     return payload.findGlobal({ slug: 'site-settings', depth: 0, overrideAccess: false })
   },
-  ['site-settings'],
+  // Bump the version when the stored shape changes, so entries cached before a deploy are not read.
+  ['site-settings', 'v2'],
   { tags: ['site-settings'] },
 )
 
@@ -21,30 +23,73 @@ const getGoldsmithSettings = async () => {
     name: goldsmith?.name?.trim() || null,
     credential: goldsmith?.credential?.trim() || null,
     portraitId: goldsmith?.portrait,
+    team: goldsmith?.team ?? [],
   }
 }
 
 export const getGoldsmithName = async () => (await getGoldsmithSettings()).name
 
-export const getGoldsmithProfile = cache(async () => {
-  const { name, credential, portraitId } = await getGoldsmithSettings()
-  if (typeof portraitId !== 'string') return { name, credential, portrait: null }
+const canShow = ({ source }: Pick<Media, 'source'>) =>
+  source === 'client-photo' || (source === 'placeholder' && process.env.SITE_ENV !== 'production')
 
-  // Media can change independently of Site Settings.
-  await connection()
+const findMedia = async (ids: string[]) => {
   const payload = await getPayload({ config })
-  const media = await payload.findByID({
+  const { docs } = await payload.find({
     collection: 'media',
-    id: portraitId,
+    where: { id: { in: ids } },
     depth: 0,
-    disableErrors: true,
     overrideAccess: false,
+    pagination: false,
   })
-  const allowed = media?.source === 'client-photo'
-    || (media?.source === 'placeholder' && process.env.SITE_ENV !== 'production')
-  const src = media?.sizes?.card?.url || media?.url
-  const portrait = allowed && media && src ? { src, alt: media.alt } : null
-  return { name, credential, portrait }
+  return docs
+}
+
+// The header is on prerendered pages, so the logo can't make a page dynamic. Media can change
+// without a Site Settings save, so a cached read refreshes every 30 s.
+const findCachedMedia = unstable_cache(findMedia, ['site-settings-media'], {
+  tags: ['site-settings'],
+  revalidate: 30,
+})
+
+const findShownMedia = async (ids: string[], { fresh }: { fresh: boolean }) => {
+  if (ids.length === 0) return new Map<string, Media>()
+
+  // Portraits show only on the home page and The Bench, which render per request, so read them
+  // fresh: a deleted portrait then disappears at once instead of showing as a broken image.
+  if (fresh) await connection()
+  const docs = await (fresh ? findMedia : findCachedMedia)(ids)
+  return new Map(docs.filter(canShow).map((media) => [media.id, media]))
+}
+
+const imageOf = (media: Media | undefined, size: 'card' | 'detail') => {
+  const src = media?.sizes?.[size]?.url || media?.url
+  return media && src ? { src, alt: media.alt } : null
+}
+
+const idOf = (value: string | Media | null | undefined) => (typeof value === 'string' ? value : null)
+
+export const getGoldsmithProfile = cache(async () => {
+  const { name, credential, portraitId, team } = await getGoldsmithSettings()
+  const ids = [portraitId, ...team.map(({ portrait }) => portrait)].map(idOf).filter((id) => id !== null)
+  const portraits = await findShownMedia([...new Set(ids)], { fresh: true })
+  const portraitFor = (value: string | Media | null | undefined) => imageOf(portraits.get(idOf(value) ?? ''), 'card')
+
+  return {
+    name,
+    credential,
+    portrait: portraitFor(portraitId),
+    team: team.flatMap(({ id, name: memberName, role, portrait }, index) => {
+      const trimmed = memberName.trim()
+      if (!trimmed) return []
+      return [{ key: id ?? String(index), name: trimmed, role: role?.trim() || null, portrait: portraitFor(portrait) }]
+    }),
+  }
+})
+
+export const getSiteLogo = cache(async () => {
+  const id = idOf((await getSiteSettings()).logo)
+  if (id === null) return null
+  return imageOf((await findShownMedia([id], { fresh: false })).get(id), 'detail')
 })
 
 const findPublishedFaqs = async (ids: string[]) => {
@@ -75,25 +120,49 @@ export const getHomeQuestions = async () => {
   return ids.map((id) => byId.get(id)).filter((doc) => doc !== undefined)
 }
 
-export const getFaqPageQuestions = async () => {
-  // The page can switch to published questions after a build with no selection.
-  await connection()
-  const { faqPage } = await getSiteSettings()
-  if (!faqPage?.usePublishedQuestions) return null
+type FaqPageSettings = NonNullable<SiteSetting['faqPage']>
+type FaqTopicSource = { title: string; questions: { id?: string | null; faq: string | Faq; questionLabel?: string | null }[] }
 
-  const rows = faqPage.questions ?? []
-  const ids = [...new Set(rows.map(({ faq }) => faq).filter((id) => typeof id === 'string'))]
-  const byId = await findPublishedFaqs(ids)
-  return rows.flatMap(({ id, topic, faq, questionLabel }, index) => {
-    const record = typeof faq === 'string' ? byId.get(faq) : undefined
-    if (!record) return []
-    return [{
-      key: id ?? index,
-      topic,
-      question: questionLabel?.trim() || record.question,
-      answer: record.answer,
-    }]
+// Before topics existed, a checkbox switched the page to rows that each named a built-in topic.
+const earlierTopics = ({ usePublishedQuestions, questions }: FaqPageSettings): FaqTopicSource[] => {
+  if (!usePublishedQuestions) return []
+  return faqTopicDefaults.map(({ id, title }) => ({
+    title,
+    questions: (questions ?? []).filter(({ topic }) => topic === id),
+  }))
+}
+
+export const getFaqPage = async () => {
+  // Linked FAQs can be published or unpublished without a Site Settings save.
+  await connection()
+  const faqPage = (await getSiteSettings()).faqPage ?? {}
+  const saved = (faqPage.topics ?? []).map(({ title, questions }) => ({ title, questions: questions ?? [] }))
+  const earlier = earlierTopics(faqPage)
+  const ids = [...saved, ...earlier].flatMap(({ questions }) => questions.map(({ faq }) => faq))
+    .filter((id) => typeof id === 'string')
+  const byId = await findPublishedFaqs([...new Set(ids)])
+
+  const shown = (sources: FaqTopicSource[]) => sources.flatMap(({ title, questions }, topicIndex) => {
+    const rows = questions.flatMap(({ id: rowId, faq, questionLabel }, index) => {
+      const record = typeof faq === 'string' ? byId.get(faq) : undefined
+      if (!record) return []
+      return [{
+        key: rowId ?? `${topicIndex}-${index}`,
+        question: questionLabel?.trim() || record.question,
+        answer: record.answer,
+      }]
+    })
+    return rows.length > 0 ? [{ title: title.trim(), questions: rows }] : []
   })
+  // Saved topics win once one of them has a published question; until then the earlier selection shows.
+  const savedTopics = shown(saved)
+
+  return {
+    heading: faqPage.heading?.trim() || null,
+    headingItalic: faqPage.headingItalic?.trim() || null,
+    lede: faqPage.lede?.trim() || null,
+    topics: savedTopics.length > 0 ? savedTopics : shown(earlier),
+  }
 }
 
 export const getPublishedPieces = unstable_cache(

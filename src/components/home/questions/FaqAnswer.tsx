@@ -1,11 +1,26 @@
+import type { SerializedLexicalNode } from '@payloadcms/richtext-lexical/lexical'
 import { type JSXConvertersFunction, RichText } from '@payloadcms/richtext-lexical/react'
-import { Fragment } from 'react'
 
-import { Confirm } from '@/components/pages/Confirm'
 import type { Faq } from '@/payload-types'
+
+// Older answers can hold a [confirm] note for the client; it never shows on the site. The note can sit
+// in a text run of its own, so a run followed by one also drops its trailing space.
+const CONFIRM_NOTE = /\s*\[confirm\]/g
+const startsWithNote = (node: SerializedLexicalNode | undefined) =>
+  node?.type === 'text' && 'text' in node && typeof node.text === 'string' && /^\s*\[confirm\]/.test(node.text)
 
 const answerConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
+  text: (args) => {
+    const renderText = defaultConverters.text
+    if (typeof renderText !== 'function') return renderText
+    const { node, parent, childIndex } = args
+    const siblings = 'children' in parent && Array.isArray(parent.children) ? parent.children : []
+    let text = node.text.replace(CONFIRM_NOTE, '')
+    if (startsWithNote(siblings[childIndex + 1])) text = text.trimEnd()
+    if (text === node.text) return renderText(args)
+    return text ? renderText({ ...args, node: { ...node, text } }) : null
+  },
   link: (args) => {
     const { node, nodesToJSX } = args
     const { doc, linkType, newTab } = node.fields
@@ -41,27 +56,6 @@ const answerConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   },
 })
 
-export function FaqConfirmText({ text }: { text: string }) {
-  return text.split(' [confirm]').map((part, index) => (
-    <Fragment key={index}>
-      {index > 0 && <Confirm />}
-      {part}
-    </Fragment>
-  ))
-}
-
-const pageAnswerConverters: JSXConvertersFunction = (args) => ({
-  ...answerConverters(args),
-  text: (textArgs) => {
-    const { text, format } = textArgs.node
-    if (!format && text.includes(' [confirm]')) return <FaqConfirmText text={text} />
-
-    const renderText = args.defaultConverters.text
-    return typeof renderText === 'function' ? renderText(textArgs) : renderText
-  },
-})
-
-export function FaqAnswer({ answer, showConfirmMarkers }: Pick<Faq, 'answer'> & { showConfirmMarkers?: boolean }) {
-  const converters = showConfirmMarkers ? pageAnswerConverters : answerConverters
-  return <RichText data={answer} converters={converters} disableContainer />
+export function FaqAnswer({ answer }: Pick<Faq, 'answer'>) {
+  return <RichText data={answer} converters={answerConverters} disableContainer />
 }

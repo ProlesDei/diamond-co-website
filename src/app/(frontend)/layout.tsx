@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 
 import { Footer } from '@/components/site/Footer'
 import { SiteHeader } from '@/components/site/SiteHeader'
-import { getSiteSettings } from '@/lib/content'
+import { getSiteLogo, getSiteSettings } from '@/lib/content'
 import { isProduction } from '@/lib/site'
 import { storeJsonLd } from '@/lib/storeJsonLd'
 import '@/styles/tokens.css'
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const settings = await getSiteSettings()
+  const [settings, logo] = await Promise.all([getSiteSettings(), getSiteLogo()])
 
   return (
     <html lang="en" className={`${bodoniModa.variable} ${jost.variable}`}>
@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <SiteHeader />
+        <SiteHeader logo={logo} />
         <main id="main">{children}</main>
         <Footer />
       </body>
