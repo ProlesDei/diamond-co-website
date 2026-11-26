@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import type { Field } from 'payload'
 
 import { toShownTestimonial } from '../components/home/trust/testimonials'
-import { TestimonialProofs } from '../media/TestimonialProofs'
+import { TestimonialProofs } from './TestimonialProofs'
 import { Testimonials } from './Testimonials'
 
 const field = (name: string) => {

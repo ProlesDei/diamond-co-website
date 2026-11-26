@@ -62,9 +62,9 @@ The password is printed only once. If you lose it, stop the app, delete `.data/`
 
 `src/payload.config.ts` reads collections, globals and plugins from three folders. Add yours to the folder it belongs in:
 
-- `src/content/index.ts`: site content.
+- `src/content/index.ts`: site content, including `testimonial-proofs`, the screenshots behind testimonials, kept in the private inquiry Blob store.
 - `src/inquiry/index.ts`: inquiries from visitors.
-- `src/media/index.ts`: images and other uploads. The `media` collection is here. Each file needs alt text and a source: a client photo, an atmosphere image (generated, never the client's work) or a placeholder (sample only). The `testimonial-proofs` collection holds testimonial screenshots, at any size.
+- `src/media/index.ts`: images and other uploads. The `media` collection is here. Each file needs alt text and a source: a client photo, an atmosphere image (generated, never the client's work) or a placeholder (sample only).
 
 The `users` collection is in `src/users/`. Users are admins or editors. Five wrong passwords in a row lock an account for 10 minutes.
 
@@ -76,7 +76,7 @@ PLACEHOLDER: until someone saves a link there, bookings go to `https://calendly.
 
 ## Testimonials
 
-In the admin, open Testimonials. Each one has a source (Google review or personal testimonial), a name, the quote and an optional proof screenshot. The home page shows the source under each name and the screenshot under the quote. Upload screenshots from the proof field; they go to Testimonial proofs. Testimonials saved before the source field existed show as personal ones. Only published testimonials with consent on file show.
+In the admin, open Testimonials. Each one has a source (Google review or personal testimonial), a name, the quote and an optional proof screenshot. The home page shows the source under each name and the screenshot under the quote. Upload screenshots from the proof field; they go to Testimonial proofs. A screenshot is visible to visitors only while a published testimonial with consent on file uses it. Testimonials saved before the source field existed show as personal ones. Only published testimonials with consent on file show.
 
 ## Designer and home questions
 
@@ -107,8 +107,8 @@ Production writes nothing to the server's disk, so a build or start with `SITE_E
 - `RESEND_API_KEY` (parked): the Resend key. It sends the admin password-reset email only; the booking forms send no email.
 - `EMAIL_FROM_ADDRESS` (parked): the address the admin password-reset email comes from. The booking forms send no email.
 - `EMAIL_FROM_NAME` (parked): the name the admin password-reset email comes from. The booking forms send no email.
-- `BLOB_READ_WRITE_TOKEN`: the read-write token of the public Vercel Blob store, where media and testimonial proofs go.
-- `INQUIRY_BLOB_READ_WRITE_TOKEN`: the read-write token for the private Vercel Blob store that holds inquiry photos. Visitors' photos upload straight to it, and the admin uses it to show them.
+- `BLOB_READ_WRITE_TOKEN`: the read-write token of the public Vercel Blob store, where media go.
+- `INQUIRY_BLOB_READ_WRITE_TOKEN`: the read-write token for the private Vercel Blob store that holds inquiry photos and testimonial proof screenshots. Visitors' photos upload straight to it. The site serves both only through its own file routes, after their access checks.
 
 PARKED (owner, Nov 19, 2026): online booking and email are off for the .vercel.app run, so the five parked names only warn when unset. With both Turnstile keys unset, the spam check is skipped and the booking forms save and end normally. Move them back into `productionVariables` in `next.config.ts` to turn the refusal back on.
 

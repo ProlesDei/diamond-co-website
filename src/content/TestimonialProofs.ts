@@ -1,8 +1,8 @@
+import path from 'path'
 import type { Access, CollectionConfig } from 'payload'
+import { fileURLToPath } from 'url'
 
-import { giveNewUploadAFreeName } from './fileName'
-
-export const TESTIMONIAL_PROOFS_PREFIX = 'testimonial-proofs'
+const staticDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.data/testimonial-proofs')
 
 // Visitors see a screenshot only while a published testimonial with consent on file shows it,
 // so a proof attached to a draft, or to a testimonial taken down, stays private.
@@ -23,14 +23,12 @@ export const shownProofsOrStaff: Access = async ({ req }) => {
 }
 
 // Screenshots that back a testimonial, such as the Google review itself. Any size, unlike Media.
+// Stored in the private Blob store (src/content/index.ts), so the read rule above guards every copy.
 export const TestimonialProofs: CollectionConfig = {
   slug: 'testimonial-proofs',
   labels: { singular: 'Testimonial proof', plural: 'Testimonial proofs' },
   access: {
     read: shownProofsOrStaff,
-  },
-  hooks: {
-    beforeOperation: [giveNewUploadAFreeName],
   },
   fields: [
     {
@@ -41,6 +39,7 @@ export const TestimonialProofs: CollectionConfig = {
     },
   ],
   upload: {
+    staticDir,
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
   },
 }
