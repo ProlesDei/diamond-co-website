@@ -1,12 +1,17 @@
+@property --iris {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* Without data-intro motion rules the loader shows its finished, still state. */
 .loader {
+  --draw: cubic-bezier(.65, 0, .35, 1);
   display: none;
   position: fixed;
   inset: 0;
   z-index: 100;
-  place-content: center;
-  justify-items: center;
-  gap: var(--space-4);
-  background: var(--stage);
+  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--evergreen) 55%, var(--stage)), var(--stage) 62%);
   color: var(--on-evergreen);
   touch-action: none;
 }
@@ -15,42 +20,244 @@
   display: grid;
 }
 
-:global(html):has(.loader[data-loading]) :global(:is(body > :not(main), main > :not(#home-loader))) {
+:global(html):has(.loader[data-loading]:not([data-leaving])) :global(:is(body > :not(main), main > :not(#home-loader))) {
   visibility: hidden;
   interactivity: inert;
 }
 
-.mark {
-  width: var(--space-6);
-  aspect-ratio: 1;
-  border: 1px solid var(--gold);
-  rotate: 45deg;
-  animation: pulse 1.4s var(--ease) infinite alternate;
+.stage {
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  justify-items: center;
 }
 
-@keyframes pulse {
-  from {
-    opacity: .45;
-    scale: .85;
-  }
+.mark {
+  grid-row: 2;
+  width: clamp(112px, 12vw, 184px);
+  overflow: visible;
+}
+
+.lines {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1.1;
+}
+
+.outline,
+.facets {
+  stroke-dasharray: 1;
+}
+
+.facets {
+  stroke-opacity: .55;
+}
+
+.girdle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.glint {
+  transform: translateX(-20px) skewX(-18deg);
+  opacity: 0;
+}
+
+.words {
+  grid-row: 3;
+  align-self: start;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
 }
 
 .name {
+  /* Room for the letters to rise from below the clipped baseline. */
+  padding: .1em .15em .12em;
+  clip-path: inset(-50% -10% 0 -10%);
   font: 400 clamp(32px, 6vw, 52px)/1 var(--font-display);
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.letter {
+  display: inline-block;
+}
+
+.rule {
+  width: var(--space-12);
+  height: 1px;
+  background: var(--gold);
+  opacity: .7;
 }
 
 .label {
   color: var(--on-evergreen-muted);
   /* Keep the status readable while the site fonts download. */
-  font: 400 14px/1.5 system-ui, sans-serif;
+  font: 400 12px/1.5 system-ui, sans-serif;
+  letter-spacing: .24em;
+  text-transform: uppercase;
 }
 
-.loader[data-motion='reduce'] .mark {
-  animation: none;
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* First visit in this browser session: draw the stone, then set the name.
+   Only the contents fade in, so the dark stage shows from the first frame. */
+.loader[data-intro='full'] .stage {
+  animation: fade-in 600ms var(--ease) both;
+}
+
+.loader[data-intro='full'] .outline {
+  animation: draw 800ms var(--draw) 100ms both;
+}
+
+.loader[data-intro='full'] .girdle {
+  animation: open 450ms var(--ease) 600ms both;
+}
+
+.loader[data-intro='full'] .crown {
+  animation: draw 450ms var(--draw) 650ms both;
+}
+
+.loader[data-intro='full'] .pavilion {
+  animation: draw 500ms var(--draw) 700ms both;
+}
+
+.loader[data-intro='full'] .letter {
+  animation: rise 600ms var(--ease) calc(350ms + var(--i) * 25ms) both;
+}
+
+.loader[data-intro='full'] .rule {
+  animation: open 450ms var(--ease) 800ms both;
+}
+
+.loader[data-intro='full'] .label {
+  animation: fade-in 350ms linear 850ms both;
+}
+
+/* Any moving visit: a slow light passes over the stone while photos load. */
+.loader:is([data-intro='full'], [data-intro='short']) .glint {
+  animation: glint 3s var(--draw) 800ms infinite;
+}
+
+.loader[data-intro='short'] .glint {
+  animation-delay: 200ms;
+}
+
+/* Leaving: the page shows through an opening that grows from the stone. */
+.loader[data-leaving] {
+  pointer-events: none;
+  animation: fade-out 240ms linear forwards;
+}
+
+.loader:is([data-intro='full'], [data-intro='short'])[data-leaving] {
+  mask-image: radial-gradient(circle at 50% 50%, transparent var(--iris), #000 calc(var(--iris) + 5vmin));
+  animation: iris 800ms var(--draw) forwards;
+}
+
+/* A repeat visit has seen the intro, so it opens faster. */
+.loader[data-intro='short'][data-leaving] {
+  animation-duration: 450ms;
+}
+
+.loader:is([data-intro='full'], [data-intro='short'])[data-leaving] .stage {
+  animation: settle 450ms var(--ease) forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes open {
+  from {
+    scale: 0 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    translate: 0 .9em;
+    opacity: 0;
+  }
+}
+
+@keyframes glint {
+  0% {
+    transform: translateX(-20px) skewX(-18deg);
+    opacity: 0;
+  }
+
+  5% {
+    opacity: 1;
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  40%,
+  100% {
+    transform: translateX(160px) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes iris {
+  from {
+    --iris: -5vmin;
+  }
+
+  /* 100% is the farthest corner on any screen shape, so the opening is on
+     screen for the whole exit. */
+  to {
+    --iris: 100%;
+  }
+}
+
+@keyframes settle {
+  to {
+    opacity: 0;
+    scale: 1.04;
+  }
+}
+
+/* Short screens, such as a phone on its side: keep the label on screen. */
+@media (max-height: 480px) {
   .mark {
-    animation: none;
+    width: 72px;
+  }
+
+  .words {
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .name {
+    font-size: 28px;
   }
 }
