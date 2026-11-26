@@ -68,15 +68,6 @@
   color: var(--ink-muted);
 }
 
-.confirm {
-  margin-left: .35em;
-  font: 500 11px/1 var(--font-sans);
-  letter-spacing: .04em;
-  color: var(--ink-muted);
-  white-space: nowrap;
-  vertical-align: .15em;
-}
-
 @media (min-width: 760px) {
   .menu {
     display: none;

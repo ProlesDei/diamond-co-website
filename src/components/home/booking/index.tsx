@@ -3,6 +3,7 @@ import { connection } from 'next/server'
 import { getPayload } from 'payload'
 
 import { Form } from '@/components/pages/book/Form'
+import { getStudioContact } from '@/components/site/studio'
 import { getBookOptions } from '@/inquiry/options'
 import { getGoldsmithName } from '@/lib/content'
 
@@ -11,7 +12,7 @@ import styles from './booking.module.css'
 export async function Booking() {
   await connection()
   const { calendlyLink, ...options } = await getBookOptions(await getPayload({ config }))
-  const goldsmithName = await getGoldsmithName()
+  const [goldsmithName, contact] = await Promise.all([getGoldsmithName(), getStudioContact()])
 
   return (
     <section className={styles.book} id="book" aria-labelledby="book-heading">
@@ -28,7 +29,7 @@ export async function Booking() {
           <dl className={styles.visit}>
             <dt>When</dt>
             <dd>
-              Tuesday to Saturday, 10 am to 5 pm<span className={styles.confirm}>[confirm]</span>
+              Tuesday to Saturday, 10 am to 5 pm
               <br />
               By appointment
             </dd>
@@ -42,6 +43,7 @@ export async function Booking() {
             goldsmithName={goldsmithName}
             options={options}
             calendlyLink={calendlyLink}
+            contact={contact}
             piece={null}
             initialPieceType={null}
           />

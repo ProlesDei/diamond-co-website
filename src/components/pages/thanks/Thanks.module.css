@@ -100,10 +100,6 @@
   line-height: 1.55;
 }
 
-.phone {
-  font-weight: 500;
-}
-
 .side {
   display: grid;
   gap: var(--space-4);

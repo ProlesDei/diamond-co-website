@@ -2,14 +2,13 @@ import config from '@payload-config'
 import { connection } from 'next/server'
 import { getPayload } from 'payload'
 
-import { studio } from '@/components/site/studio'
+import { getStudioContact, studio } from '@/components/site/studio'
 import { getBookOptions } from '@/inquiry/options'
 import { getGoldsmithName } from '@/lib/content'
 
 import { pageMetadata } from '../metadata'
 import styles from './book.module.css'
 import { Form } from './Form'
-import { Mark } from './Mark'
 import { findAskedPiece } from './piece/lookup'
 
 const { hours, appointment } = studio
@@ -20,12 +19,11 @@ const steps = (calendlyLink: string | null) => [
   calendlyLink
     ? {
         title: 'You pick a time on this page',
-        mark: 'confirm',
         text: 'Right after the form, from our open consultation times.',
       }
     : {
-        title: 'You call or email us',
-        text: 'Quote your reference to set a time.',
+        title: 'Contact us to set a time',
+        text: 'Have your reference handy.',
       },
   { title: 'You meet with us online', text: 'We talk through your design, budget and timing.' },
 ]
@@ -39,7 +37,7 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
   await connection()
   const { piece: pieceParam } = await searchParams
   const { calendlyLink, ...options } = await getBookOptions(await getPayload({ config }))
-  const goldsmithName = await getGoldsmithName()
+  const [goldsmithName, contact] = await Promise.all([getGoldsmithName(), getStudioContact()])
   const { piece, initialPieceType } = await findAskedPiece(
     typeof pieceParam === 'string' ? pieceParam : undefined,
     options,
@@ -61,10 +59,7 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
             {steps(calendlyLink).map((step) => (
               <li key={step.title}>
                 <span>
-                  <b>
-                    {step.title}
-                    {step.mark && <Mark note={step.mark} />}
-                  </b>
+                  <b>{step.title}</b>
                   {step.text}
                 </span>
               </li>
@@ -74,10 +69,8 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
             <dt>When</dt>
             <dd>
               {openHours.days}, {openHours.time}
-              <Mark note={openHours.marker} />
               <br />
               {appointment.text}
-              <Mark note={appointment.marker} />
             </dd>
           </dl>
         </div>
@@ -87,6 +80,7 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
             goldsmithName={goldsmithName}
             options={options}
             calendlyLink={calendlyLink}
+            contact={contact}
             piece={piece}
             initialPieceType={initialPieceType}
           />

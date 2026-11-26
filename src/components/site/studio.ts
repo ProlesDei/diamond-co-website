@@ -1,27 +1,34 @@
-export type Marker = 'confirm' | 'client supplies'
+import { getSiteSettings } from '@/lib/content'
 
-export type Fact = {
+type ContactLink = {
   text: string
-  marker: Marker
+  href: string
 }
 
-export type Contact = Fact & {
-  href: string
+export type StudioContact = {
+  phone: ContactLink | null
+  email: ContactLink | null
+}
+
+export async function getStudioContact(): Promise<StudioContact> {
+  const { phone, email } = await getSiteSettings()
+  const phoneText = phone?.trim() ?? ''
+  const number = phoneText.replace(/[().\s-]/g, '')
+  const emailText = email?.trim() ?? ''
+
+  return {
+    phone: /^\+?\d{7,15}$/.test(number) ? { text: phoneText, href: `tel:${number}` } : null,
+    email: /^[^\s@[\]]+@[^\s@[\]]+\.[^\s@[\]]+$/.test(emailText) && !/@example\.ca$/i.test(emailText)
+      ? { text: emailText, href: `mailto:${emailText}` }
+      : null,
+  }
 }
 
 export const studio = {
   tagline: 'Private jewellers. Custom design only.',
   hours: [
-    { days: 'Tuesday to Saturday', time: '10 am to 5 pm', marker: 'confirm' },
-    { days: 'Sunday and Monday', time: 'Closed', marker: 'confirm' },
+    { days: 'Tuesday to Saturday', time: '10 am to 5 pm' },
+    { days: 'Sunday and Monday', time: 'Closed' },
   ],
-  appointment: { text: 'By appointment', marker: 'confirm' },
-  phone: { text: '[PHONE]', href: 'tel:+1', marker: 'client supplies' },
-  email: { text: '[EMAIL]', href: 'mailto:hello@example.ca', marker: 'client supplies' },
-} as const satisfies {
-  tagline: string
-  hours: readonly { days: string; time: string; marker: Marker }[]
-  appointment: Fact
-  phone: Contact
-  email: Contact
-}
+  appointment: { text: 'By appointment' },
+} as const

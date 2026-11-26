@@ -1,14 +1,8 @@
 import Image from 'next/image'
 
-import { Confirm } from '@/components/pages/Confirm'
 import { getGoldsmithProfile } from '@/lib/content'
 
 import styles from './Goldsmith.module.css'
-
-const quoteSlots = [
-  "Slot for a real Google review, quoted word for word with the client's permission.",
-  'Slot for a second real review, ideally an heirloom redesign.',
-]
 
 export async function Goldsmith() {
   const { name, credential, portrait } = await getGoldsmithProfile()
@@ -34,30 +28,8 @@ export async function Goldsmith() {
           </h2>
           {credential && <p className={styles.credential}>{credential}</p>}
           <p className={styles.lede}>
-            We make each piece at our bench
-            <Confirm />. The goldsmith you meet online makes your piece
-            <Confirm />.
+            We make each piece at our bench. The goldsmith you meet online makes your piece.
           </p>
-          <div className={styles.proof}>
-            <p className={styles.rating}>
-              <span className={styles.star} aria-hidden="true">
-                ★
-              </span>{' '}
-              [X.X] from [N] Google reviews
-              <Confirm note="client supplies" />
-            </p>
-            <ul className={styles.quotes} role="list">
-              {quoteSlots.map((slot) => (
-                <li className={styles.slot} key={slot}>
-                  <p>{slot}</p>
-                  <p className={styles.by}>
-                    [First name], [piece]
-                    <Confirm note="client supplies" />
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       </div>
     </section>

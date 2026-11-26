@@ -4,7 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import type { HomePiece } from '@/components/home/pieces'
-import { Confirm } from '@/components/pages/Confirm'
 import { useReducedMotion } from '@/components/site/useReducedMotion'
 import { mediaLoader } from '@/media/loader'
 
@@ -53,7 +52,6 @@ export function PieceCard({ piece, grid = false }: { piece: HomePiece; grid?: bo
           <li key={metal}>
             <MetalSwatch metal={metal} />
             {metalLooks[metal].label}
-            {metal === 'platinum' ? <Confirm /> : null}
           </li>
         ))}
         {detail ? <li>{detail}</li> : null}

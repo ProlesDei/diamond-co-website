@@ -9,7 +9,6 @@ import { links } from '@/components/site/nav'
 import { getGoldsmithName } from '@/lib/content'
 import type { Piece } from '@/payload-types'
 
-import { Confirm } from '../Confirm'
 import { categoryName, stoneLines } from './materials'
 import styles from './Piece.module.css'
 
@@ -41,7 +40,6 @@ export async function Words({ piece }: { piece: Piece }) {
                   <span key={metal} className={styles.line}>
                     <MetalSwatch metal={metal} />
                     {metalLooks[metal].label}
-                    {metal === 'platinum' ? <Confirm /> : null}
                   </span>
                 ))}
               </dd>

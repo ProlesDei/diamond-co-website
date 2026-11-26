@@ -94,25 +94,11 @@
   margin: 0;
 }
 
-.confirm {
-  margin-left: .35em;
-  font: 500 11px/1 var(--font-sans);
-  letter-spacing: .04em;
-  color: var(--on-evergreen-muted);
-  white-space: nowrap;
-  vertical-align: .15em;
-}
-
 .panel {
   --focus-ring: var(--evergreen);
   padding: var(--space-12);
   background: var(--surface-sunken);
   color: var(--ink);
-}
-
-/* On the form, not the panel: the home page's #book section renders this form in a panel of its own. */
-.form .confirm {
-  color: var(--ink-muted);
 }
 
 .panel a {

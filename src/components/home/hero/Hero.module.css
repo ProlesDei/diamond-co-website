@@ -5,7 +5,7 @@
 }
 
 .hero {
-  --hl-size: clamp(76px, 12vw, 176px);
+  --hl-size: clamp(58.9px, 9.3vw, 136.4px);
   --col-gap: 24px;
   max-width: var(--page-max);
   margin: 0 auto;
@@ -156,7 +156,7 @@
 
 @media (max-width: 759px) {
   .hero {
-    --hl-size: clamp(52px, 16vw, 76px);
+    --hl-size: clamp(40.3px, 12.4vw, 58.9px);
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
     padding: 36px var(--gut) 72px;

@@ -7,19 +7,19 @@ export const homeTimingQuestion = {
 export const keepStoneQuestion = {
   key: 'keep-stone',
   question: 'Will it still be my stone?',
-  answer: 'Yes. Your stone never leaves our bench. We photograph and measure it with you before work starts, and you keep the record [confirm].',
+  answer: 'Yes. Your stone never leaves our bench. We photograph and measure it with you before work starts, and you keep the record.',
 }
 
 export const approveDesignQuestion = {
   key: 'approve-design',
   question: 'How do I know it will be what I asked for?',
-  answer: 'The Render-First Promise: you approve a drawing and a render before any metal is cut. [N] rounds of changes are included [confirm].',
+  answer: 'The Render-First Promise: you approve a drawing and a render before any metal is cut. Changes to the render are included.',
 }
 
 export const redrawDesignQuestion = {
   key: 'redraw-design',
   question: 'What if I don’t like the design?',
-  answer: 'We redraw it. If it still isn’t right, you can walk away owing [nothing / only the design deposit] [confirm].',
+  answer: 'We redraw it. If it still isn’t right, you can decide whether to go ahead.',
 }
 
 export const homeQuestionDefaults = [

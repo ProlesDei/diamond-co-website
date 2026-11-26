@@ -69,10 +69,6 @@
   color: var(--evergreen);
 }
 
-.time .confirm {
-  color: var(--evergreen);
-}
-
 .stepText {
   margin: 0;
   max-width: 22em;

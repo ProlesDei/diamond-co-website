@@ -1,5 +1,5 @@
 import styles from './Process.module.css'
-import { Confirm, ProcessSteps, type Step } from './ProcessSteps'
+import { ProcessSteps, type Step } from './ProcessSteps'
 
 const steps: Step[] = [
   {
@@ -15,11 +15,7 @@ const steps: Step[] = [
   {
     name: 'Craft',
     time: 'About 1–2 weeks at the bench',
-    text: (
-      <>
-        Made by hand at our bench, in 14k to 24k gold <Confirm />.
-      </>
-    ),
+    text: 'Made by hand at our bench, in 14k to 24k gold.',
   },
   {
     name: 'Delivered',

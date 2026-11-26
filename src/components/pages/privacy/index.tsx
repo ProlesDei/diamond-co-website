@@ -1,6 +1,8 @@
+import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { Confirm } from '../Confirm'
+import { getStudioContact, type StudioContact } from '@/components/site/studio'
+
 import { pageMetadata } from '../metadata'
 import { PageHead } from '../PageHead'
 import styles from './Privacy.module.css'
@@ -11,15 +13,13 @@ type Section = {
   body: ReactNode
 }
 
-const sections: Section[] = [
+const privacySections = ({ phone, email }: StudioContact): Section[] => [
   {
     id: 'p-who',
     title: 'Who we are',
     body: (
       <p>
-        Diamond &amp; Co. is a private jeweller. Email us at [EMAIL]
-        <Confirm note="client supplies" /> or call [PHONE]
-        <Confirm note="client supplies" />. This policy explains what personal information we
+        Diamond &amp; Co. is a private jeweller. This policy explains what personal information we
         collect through this website, why, how long we keep it, and what you can ask of us. It follows
         British Columbia&rsquo;s Personal Information Protection Act (PIPA) and, where it applies,
         the federal Personal Information Protection and Electronic Documents Act (PIPEDA).
@@ -47,8 +47,7 @@ const sections: Section[] = [
         </ul>
         <p>
           When you choose a consultation time on this site, the booking goes through Calendly, which
-          keeps your name, email address, the answers you send it and the time you choose
-          <Confirm />.
+          keeps your name, email address, the answers you send it and the time you choose.
         </p>
         <p>
           We also keep basic, anonymous counts of visits to improve the site. We don&rsquo;t use
@@ -74,8 +73,7 @@ const sections: Section[] = [
     body: (
       <p>
         Photos you send are private. Only our staff can see them, through links that expire after a
-        few minutes
-        <Confirm />. We never post them anywhere without asking you first in writing.
+        few minutes. We never post them anywhere without asking you first in writing.
       </p>
     ),
   },
@@ -85,10 +83,9 @@ const sections: Section[] = [
     body: (
       <p>
         If you don&rsquo;t go ahead, we delete or anonymise your request and photos 24 months after
-        our last contact
-        <Confirm />. If you commission a piece, we keep your record with your order for as long as
-        the law requires for business records
-        <Confirm />. Photos added to a form that was never sent are deleted within 24 hours.
+        our last contact. If you commission a piece, we keep your record with your order for as long as
+        the law requires for business records. Photos added to a form that was never sent are
+        deleted within 24 hours.
       </p>
     ),
   },
@@ -108,10 +105,9 @@ const sections: Section[] = [
     title: 'Where it’s stored',
     body: (
       <p>
-        Your information is stored with our hosting and email providers in [Canada / the United
-        States]
-        <Confirm />, protected by encryption in transit and access controls. Where it&rsquo;s
-        stored outside Canada, it may be subject to the laws of that country.
+        Our hosting and email providers store your information. Encryption in transit and access
+        controls protect it. Where it&rsquo;s stored outside Canada, it may be subject to the laws
+        of that country.
       </p>
     ),
   },
@@ -121,7 +117,7 @@ const sections: Section[] = [
     body: (
       <p>
         You can ask to see the personal information we hold about you, to correct it, or to
-        withdraw your consent to our using it. Write to our privacy contact below. We&rsquo;ll reply
+        withdraw your consent to our using it. Use the contact details below. We&rsquo;ll reply
         within 30 days.
       </p>
     ),
@@ -131,11 +127,12 @@ const sections: Section[] = [
     title: 'Contact',
     body: (
       <p>
-        Contact [NAME]
-        <Confirm note="client supplies" /> at Diamond &amp; Co. about your privacy. Email [EMAIL]
-        <Confirm note="client supplies" /> or call [PHONE]
-        <Confirm note="client supplies" />. If you&rsquo;re not satisfied with our answer, you can
-        contact the Office of the Information and Privacy Commissioner for British Columbia.
+        Contact Diamond &amp; Co. about your privacy.{' '}
+        {email && <>Email <a href={email.href}>{email.text}</a>{phone ? ' or call ' : '. '}</>}
+        {phone && <>{email ? '' : 'Call '}<a href={phone.href}>{phone.text}</a>. </>}
+        {!email && !phone && <>See our <Link href="/contact">contact page</Link>. </>}
+        If you&rsquo;re not satisfied with our answer, you can contact the Office of the Information
+        and Privacy Commissioner for British Columbia.
       </p>
     ),
   },
@@ -144,9 +141,7 @@ const sections: Section[] = [
     title: 'Changes',
     body: (
       <p>
-        If we change this policy, we&rsquo;ll post the new version here with its date. Last updated
-        [date]
-        <Confirm />.
+        If we change this policy, we&rsquo;ll post the new version here with its date.
       </p>
     ),
   },
@@ -156,7 +151,9 @@ export function generateMetadata() {
   return pageMetadata('Privacy')
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const sections = privacySections(await getStudioContact())
+
   return (
     <>
       <div className={styles.head}>
@@ -180,10 +177,7 @@ export default function PrivacyPage() {
           </ol>
         </nav>
         <div className={styles.body}>
-          <p className={styles.draft}>
-            <b>Draft for review by Diamond &amp; Co.&rsquo;s counsel.</b> Not legal advice and not
-            yet in force. Every fact marked [confirm] needs the client&rsquo;s answer before launch.
-          </p>
+          <p className={styles.draft}>This policy is a draft and is not yet in effect.</p>
           {sections.map(({ id, title, body }) => (
             <section key={id} aria-labelledby={id}>
               <h2 id={id}>{title}</h2>
