@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { flushSync } from 'react-dom'
 
@@ -69,6 +69,19 @@ export function Form({ heading: Heading, calendlyLink, piece }: FormProps) {
     id: FIELD_IDS[field],
     label: SUMMARY_LABELS[field],
   }))
+
+  // Back from Calendly can restore this page from the browser's cache, still marked as opening it.
+  // Listens only while the form is on the page; React runs the returned cleanup when it leaves.
+  const resetOnRestore = useCallback((form: HTMLFormElement | null) => {
+    if (!form) return
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return
+      sendingRef.current = false
+      setSendState('idle')
+    }
+    window.addEventListener('pageshow', onPageShow)
+    return () => window.removeEventListener('pageshow', onPageShow)
+  }, [])
 
   function stop(state: 'idle' | 'rate-limited' | 'failed', found: BookErrors = {}) {
     sendingRef.current = false
@@ -152,7 +165,7 @@ export function Form({ heading: Heading, calendlyLink, piece }: FormProps) {
   }
 
   return (
-    <form className={styles.form} method="post" noValidate onSubmit={submit}>
+    <form className={styles.form} method="post" noValidate onSubmit={submit} ref={resetOnRestore}>
       <Heading className={styles.formHeading}>Book a free consultation</Heading>
       <p className={styles.formIntro}>Send your name and email, then pick a time on Calendly.</p>
 
