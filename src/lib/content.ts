@@ -32,26 +32,32 @@ export const getGoldsmithName = async () => (await getGoldsmithSettings()).name
 const canShow = ({ source }: Pick<Media, 'source'>) =>
   source === 'client-photo' || (source === 'placeholder' && process.env.SITE_ENV !== 'production')
 
-const findSettingsMedia = unstable_cache(
-  async (ids: string[]) => {
-    const payload = await getPayload({ config })
-    const { docs } = await payload.find({
-      collection: 'media',
-      where: { id: { in: ids } },
-      depth: 0,
-      overrideAccess: false,
-      pagination: false,
-    })
-    return docs
-  },
-  ['site-settings-media'],
-  { tags: ['site-settings'], revalidate: 30 },
-)
+const findMedia = async (ids: string[]) => {
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'media',
+    where: { id: { in: ids } },
+    depth: 0,
+    overrideAccess: false,
+    pagination: false,
+  })
+  return docs
+}
 
-const findShownMedia = async (ids: string[]) => {
+// The header is on prerendered pages, so the logo can't make a page dynamic. Media can change
+// without a Site Settings save, so a cached read refreshes every 30 s.
+const findCachedMedia = unstable_cache(findMedia, ['site-settings-media'], {
+  tags: ['site-settings'],
+  revalidate: 30,
+})
+
+const findShownMedia = async (ids: string[], { fresh }: { fresh: boolean }) => {
   if (ids.length === 0) return new Map<string, Media>()
 
-  const docs = await findSettingsMedia(ids)
+  // Portraits show only on the home page and The Bench, which render per request, so read them
+  // fresh: a deleted portrait then disappears at once instead of showing as a broken image.
+  if (fresh) await connection()
+  const docs = await (fresh ? findMedia : findCachedMedia)(ids)
   return new Map(docs.filter(canShow).map((media) => [media.id, media]))
 }
 
@@ -65,7 +71,7 @@ const idOf = (value: string | Media | null | undefined) => (typeof value === 'st
 export const getGoldsmithProfile = cache(async () => {
   const { name, credential, portraitId, team } = await getGoldsmithSettings()
   const ids = [portraitId, ...team.map(({ portrait }) => portrait)].map(idOf).filter((id) => id !== null)
-  const portraits = await findShownMedia([...new Set(ids)])
+  const portraits = await findShownMedia([...new Set(ids)], { fresh: true })
   const portraitFor = (value: string | Media | null | undefined) => imageOf(portraits.get(idOf(value) ?? ''), 'card')
 
   return {
@@ -83,7 +89,7 @@ export const getGoldsmithProfile = cache(async () => {
 export const getSiteLogo = cache(async () => {
   const id = idOf((await getSiteSettings()).logo)
   if (id === null) return null
-  return imageOf((await findShownMedia([id])).get(id), 'detail')
+  return imageOf((await findShownMedia([id], { fresh: false })).get(id), 'detail')
 })
 
 const findPublishedFaqs = async (ids: string[]) => {
