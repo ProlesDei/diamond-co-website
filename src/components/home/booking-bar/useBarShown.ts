@@ -4,14 +4,15 @@ const HERO_BUTTON_ID = 'hero-book'
 const FORM_ID = 'book'
 const MENU_OPEN_ATTRIBUTE = 'data-menu-open'
 const WHOLLY_ABOVE_VIEWPORT = { rootMargin: '100000px 0px -100% 0px', threshold: 1 }
+const ON_SCREEN_OR_ABOVE = { rootMargin: '100000px 0px 0px 0px' }
 
-type Sightings = { heroButtonAbove: boolean; formOnScreen: boolean; menuOpen: boolean }
+type Sightings = { heroButtonAbove: boolean; formReached: boolean; menuOpen: boolean }
 
-const hidden: Sightings = { heroButtonAbove: false, formOnScreen: false, menuOpen: false }
+const hidden: Sightings = { heroButtonAbove: false, formReached: false, menuOpen: false }
 let sightings = hidden
 
-function isShown({ heroButtonAbove, formOnScreen, menuOpen }: Sightings) {
-  return heroButtonAbove && !formOnScreen && !menuOpen
+function isShown({ heroButtonAbove, formReached, menuOpen }: Sightings) {
+  return heroButtonAbove && !formReached && !menuOpen
 }
 
 function subscribe(onChange: () => void) {
@@ -30,9 +31,10 @@ function subscribe(onChange: () => void) {
   const heroObserver = new IntersectionObserver((entries) => {
     for (const entry of entries) update({ heroButtonAbove: entry.intersectionRatio >= 1 })
   }, WHOLLY_ABOVE_VIEWPORT)
+  // On or past the form, the sections below carry their own booking button.
   const formObserver = new IntersectionObserver((entries) => {
-    for (const entry of entries) update({ formOnScreen: entry.isIntersecting })
-  })
+    for (const entry of entries) update({ formReached: entry.isIntersecting })
+  }, ON_SCREEN_OR_ABOVE)
   heroObserver.observe(heroButton)
   formObserver.observe(form)
 
