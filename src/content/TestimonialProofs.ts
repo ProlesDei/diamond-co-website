@@ -6,9 +6,11 @@ import { fileURLToPath } from 'url'
 const staticDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.data/testimonial-proofs')
 
 // Visitors see a screenshot only while a published testimonial with consent on file shows it,
-// so a proof attached to a draft, or to a testimonial taken down, stays private.
-export const shownProofsOrStaff: Access = async ({ req }) => {
-  if (req.user) return true
+// so a proof attached to a draft, or to a testimonial taken down, stays private. For a file, staff
+// get a condition, not true, so Payload still looks the filename up: a replaced file that no
+// record names stays unreachable.
+export const shownProofsOrStaff: Access = async ({ req, isReadingStaticFile }) => {
+  if (req.user) return isReadingStaticFile ? { id: { exists: true } } : true
   const { docs } = await req.payload.find({
     collection: 'testimonials',
     where: { _status: { equals: 'published' }, consentOnFile: { equals: true }, proof: { exists: true } },

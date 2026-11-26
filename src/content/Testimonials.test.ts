@@ -54,6 +54,7 @@ test('visitors see only proofs that a published testimonial with consent shows',
     proof: { exists: true },
   })
   assert.equal(await read({ req: { ...req, user: { id: 'staff' } } } as never), true)
+  assert.deepEqual(await read({ req: { ...req, user: { id: 'staff' } }, isReadingStaticFile: true } as never), { id: { exists: true } })
 })
 
 test('each shown testimonial carries its source label and any proof', () => {
