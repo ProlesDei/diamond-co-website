@@ -1,13 +1,6 @@
 import { del, get, put } from '@vercel/blob'
 import { openAsBlob } from 'node:fs'
-import type {
-  CollectionAfterChangeHook,
-  CollectionAfterDeleteHook,
-  CollectionBeforeChangeHook,
-  CollectionConfig,
-  Plugin,
-  UploadConfig,
-} from 'payload'
+import type { CollectionAfterDeleteHook, CollectionBeforeChangeHook, CollectionConfig, Plugin, UploadConfig } from 'payload'
 
 import { readBlobToken, requireBlobToken } from '../lib/blob'
 import { isProduction } from '../lib/site'
@@ -53,17 +46,6 @@ const deleteFile =
     return doc
   }
 
-// A new file on an existing record leaves the old one unused, and the store never overwrites, so delete it.
-const deleteReplacedFile =
-  (token: string, slug: string): CollectionAfterChangeHook =>
-  async ({ doc, previousDoc, operation }) => {
-    const old = previousDoc?.filename
-    if (operation === 'update' && typeof old === 'string' && old !== doc.filename) {
-      await del(pathIn(slug, old), { abortSignal: abortAfterTimeout(), token })
-    }
-    return doc
-  }
-
 // Payload runs the collection's read access before this handler, and no shared cache may keep the file.
 const serveFile =
   (token: string, slug: string): NonNullable<UploadConfig['handlers']>[number] =>
@@ -88,7 +70,6 @@ const storeInBlob =
       hooks: {
         ...collection.hooks,
         beforeChange: [...(collection.hooks?.beforeChange ?? []), putFile(token, slug)],
-        afterChange: [...(collection.hooks?.afterChange ?? []), deleteReplacedFile(token, slug)],
         afterDelete: [...(collection.hooks?.afterDelete ?? []), deleteFile(token, slug)],
       },
       upload: {

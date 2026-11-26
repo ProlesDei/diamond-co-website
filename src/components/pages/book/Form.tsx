@@ -63,6 +63,7 @@ export function Form({ heading: Heading, calendlyLink, piece }: FormProps) {
   const noticeRef = useRef<HTMLDivElement>(null)
   const photoRef = useRef<HTMLInputElement>(null)
   const sendingRef = useRef(false)
+  const openingRef = useRef(false)
   const { getToken } = useTurnstile()
 
   const summaryItems = BOOK_FIELDS.filter((field) => errors[field] !== undefined).map((field) => ({
@@ -71,11 +72,13 @@ export function Form({ heading: Heading, calendlyLink, piece }: FormProps) {
   }))
 
   // Back from Calendly can restore this page from the browser's cache, still marked as opening it.
-  // Listens only while the form is on the page; React runs the returned cleanup when it leaves.
+  // Only that state resets: a send still in flight keeps its lock. Listens only while the form is on
+  // the page; React runs the returned cleanup when it leaves.
   const resetOnRestore = useCallback((form: HTMLFormElement | null) => {
     if (!form) return
     const onPageShow = (event: PageTransitionEvent) => {
-      if (!event.persisted) return
+      if (!event.persisted || !openingRef.current) return
+      openingRef.current = false
       sendingRef.current = false
       setSendState('idle')
     }
@@ -122,6 +125,7 @@ export function Form({ heading: Heading, calendlyLink, piece }: FormProps) {
     const result = await send(input)
     if (result.outcome === 'photo') return stop('idle', { photo: result.message })
     if (result.outcome !== 'sent') return stop(result.outcome)
+    openingRef.current = true
     setSendState('opening')
     window.location.assign(calendlyPrefillUrl(calendlyLink, { name: input.name, email: input.email }))
   }

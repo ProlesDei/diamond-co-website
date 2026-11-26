@@ -1,5 +1,6 @@
+import { randomBytes } from 'node:crypto'
 import path from 'path'
-import type { Access, CollectionConfig } from 'payload'
+import type { Access, CollectionBeforeOperationHook, CollectionConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 const staticDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.data/testimonial-proofs')
@@ -22,6 +23,15 @@ export const shownProofsOrStaff: Access = async ({ req }) => {
   return { id: { in: ids } }
 }
 
+// The private store never overwrites a file, and a replaced screenshot's file stays there unused,
+// so every new file gets its own name.
+export const giveFileAUniqueName: CollectionBeforeOperationHook = ({ operation, req }) => {
+  if ((operation !== 'create' && operation !== 'update') || !req.file) return
+  const dot = req.file.name.lastIndexOf('.')
+  const [stem, extension] = dot > 0 ? [req.file.name.slice(0, dot), req.file.name.slice(dot)] : [req.file.name, '']
+  req.file = { ...req.file, name: `${stem}-${randomBytes(4).toString('hex')}${extension}` }
+}
+
 // Screenshots that back a testimonial, such as the Google review itself. Any size, unlike Media.
 // Stored in the private Blob store (src/content/index.ts), so the read rule above guards every copy.
 export const TestimonialProofs: CollectionConfig = {
@@ -29,6 +39,9 @@ export const TestimonialProofs: CollectionConfig = {
   labels: { singular: 'Testimonial proof', plural: 'Testimonial proofs' },
   access: {
     read: shownProofsOrStaff,
+  },
+  hooks: {
+    beforeOperation: [giveFileAUniqueName],
   },
   fields: [
     {

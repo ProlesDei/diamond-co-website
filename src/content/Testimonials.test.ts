@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import type { Field } from 'payload'
 
 import { toShownTestimonial } from '../components/home/trust/testimonials'
-import { TestimonialProofs } from './TestimonialProofs'
+import { giveFileAUniqueName, TestimonialProofs } from './TestimonialProofs'
 import { Testimonials } from './Testimonials'
 
 const field = (name: string) => {
@@ -68,4 +68,18 @@ test('each shown testimonial carries its source label and any proof', () => {
   const older = toShownTestimonial({ id: 't2', firstName: 'Jo', quote: 'Thank you.', source: null, proof: null })
   assert.equal(older.sourceLabel, 'Personal testimonial')
   assert.equal(older.proof, null)
+})
+
+test('each new proof file gets its own name, so a replaced file never blocks a later upload', () => {
+  const names = new Set<string>()
+  for (let i = 0; i < 2; i += 1) {
+    const req = { file: { name: 'review.png', data: Buffer.alloc(0), mimetype: 'image/png', size: 0 } }
+    giveFileAUniqueName({ operation: 'update', req } as never)
+    assert.match(req.file.name, /^review-[0-9a-f]{8}\.png$/)
+    names.add(req.file.name)
+  }
+  assert.equal(names.size, 2)
+  const noFile = { file: undefined }
+  giveFileAUniqueName({ operation: 'update', req: noFile } as never)
+  assert.equal(noFile.file, undefined)
 })
