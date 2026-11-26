@@ -11,6 +11,7 @@ export default defineConfig([
     '.data/**',
     '.outbox/**',
     'media/**',
+    'testimonial-proofs/**',
     'next-env.d.ts',
     'src/payload-types.ts',
     'src/app/(payload)/admin/importMap.js',

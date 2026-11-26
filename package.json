@@ -10,6 +10,7 @@
     "start": "tsx scripts/with-database.ts next start",
     "lint": "eslint .",
     "typecheck": "pnpm generate && next typegen && tsc --noEmit",
+    "test": "tsx --test \"src/**/*.test.ts\"",
     "seed": "tsx scripts/with-database.ts tsx scripts/seed.ts",
     "uploads:prune": "tsx scripts/with-database.ts tsx scripts/prune-uploads.ts"
   },

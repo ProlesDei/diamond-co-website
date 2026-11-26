@@ -44,7 +44,7 @@ const bookOnly = { ...submitted, admin: { condition: fromBook } }
 const hasValue = (value: unknown) =>
   value !== undefined && value !== null && value !== '' && value !== false && !(Array.isArray(value) && value.length === 0)
 
-// The book form no longer asks these, so the edit view shows each one only on the older inquiries that hold a value.
+// A form no longer asks some of these, so the edit view shows each one only on the inquiries that hold a value.
 const whenSet =
   (name: keyof Inquiry, also: Condition = () => true): Condition =>
   (data, siblingData, context) =>
@@ -59,8 +59,8 @@ export const Inquiries: CollectionConfig = {
   slug: 'inquiries',
   admin: {
     useAsTitle: 'reference',
-    defaultColumns: ['reference', 'status', 'pieceType', 'budget', 'createdAt'],
-    listSearchableFields: ['reference', 'email', 'contact'],
+    defaultColumns: ['reference', 'status', 'name', 'email', 'createdAt'],
+    listSearchableFields: ['reference', 'name', 'email', 'contact'],
   },
   defaultSort: '-createdAt',
   access: {
@@ -110,9 +110,9 @@ export const Inquiries: CollectionConfig = {
       ...homeOnly,
     },
     { name: 'piece', type: 'relationship', relationTo: 'pieces', ...bookOnly },
-    { name: 'pieceType', label: 'Piece type', type: 'text', required: true, ...bookOnly },
-    { name: 'budget', label: 'Budget range (CAD)', type: 'text', required: true, ...bookOnly },
-    { name: 'description', type: 'textarea', maxLength: DESCRIPTION_MAX_LENGTH, ...bookOnly },
+    { name: 'pieceType', label: 'Piece type', type: 'text', ...keptOnly('pieceType', fromBook) },
+    { name: 'budget', label: 'Budget range (CAD)', type: 'text', ...keptOnly('budget', fromBook) },
+    { name: 'description', type: 'textarea', maxLength: DESCRIPTION_MAX_LENGTH, ...keptOnly('description', fromBook) },
     { name: 'email', type: 'text', ...keptOnly('email', fromBook) },
     { name: 'phone', type: 'text', ...keptOnly('phone', fromBook) },
     {
@@ -126,7 +126,7 @@ export const Inquiries: CollectionConfig = {
     { name: 'upload', label: 'Photo or sketch', type: 'upload', relationTo: 'inquiry-uploads', ...homeOnly },
     {
       name: 'uploads',
-      label: 'Photos',
+      label: 'Reference photos',
       type: 'upload',
       relationTo: 'inquiry-uploads',
       hasMany: true,

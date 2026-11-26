@@ -25,15 +25,25 @@ export const CONTACT_WAY_LABELS: Record<ContactWay, string> = {
   text: 'Text message',
 }
 
-const requiredChoice = (message: string) => z.string({ error: message }).trim().min(1, message)
+export const EMAIL_MAX_LENGTH = 254
 
-// The visitor answers only these; Calendly asks their name and email when they pick a time.
-// Keys an older page still sends, such as name or uploadIds, are dropped, not saved.
+// The visitor gives only these. Keys an older page still sends, such as pieceType or budget, are dropped, not saved.
 export const bookInquirySchema = z.object({
   form: z.literal('book'),
-  pieceType: requiredChoice('Choose the kind of piece, or "Something else".'),
-  budget: requiredChoice('Choose a range, or "Not sure yet". It helps us suggest stones and metals.'),
-  description: z.string().trim().max(DESCRIPTION_MAX_LENGTH, 'Keep the description to 2,000 characters.').optional(),
+  name: z
+    .string({ error: 'Add your name.' })
+    .trim()
+    .min(1, 'Add your name.')
+    .max(NAME_MAX_LENGTH, `Keep your name to ${NAME_MAX_LENGTH} characters.`),
+  email: z
+    .string({ error: 'Add your email address.' })
+    .trim()
+    .max(EMAIL_MAX_LENGTH, { error: `Keep your email address to ${EMAIL_MAX_LENGTH} characters.`, abort: true })
+    .pipe(z.email('Add an email address like name@example.com.')),
+  uploadId: z
+    .string()
+    .regex(/^[0-9a-f]{24}$/, 'Not a valid upload id.')
+    .optional(),
   piece: z
     .string()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Not a valid piece.')

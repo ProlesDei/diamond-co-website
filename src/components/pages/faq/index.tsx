@@ -105,8 +105,7 @@ export default async function FaqPage() {
           </>
         }
       >
-        Ask the goldsmith who would make your piece during a free online consultation. It takes
-        15–30 minutes.
+        Ask us during a free online consultation. It takes 15–30 minutes.
       </ConsultationBand>
     </>
   )

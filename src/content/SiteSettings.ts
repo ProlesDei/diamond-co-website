@@ -85,18 +85,18 @@ export const SiteSettings: GlobalConfig = {
     ),
     {
       name: 'goldsmith',
-      label: 'Goldsmith',
+      label: 'Designer',
       type: 'group',
       fields: [
         { name: 'name', type: 'text' },
         { name: 'credential', label: 'Credential line', type: 'text' },
-        homeImage('portrait', 'Portrait', 'The primary goldsmith’s portrait on the home page and The Bench.'),
+        homeImage('portrait', 'Portrait', 'The designer’s portrait on the home page and The Bench.'),
         {
           name: 'team',
-          label: 'More goldsmiths on The Bench',
+          label: 'More people on The Bench',
           type: 'array',
-          labels: { singular: 'Goldsmith', plural: 'Goldsmiths' },
-          admin: { description: 'Cards shown after the primary goldsmith on The Bench, in this order.' },
+          labels: { singular: 'Person', plural: 'People' },
+          admin: { description: 'Cards shown after the designer on The Bench, in this order.' },
           fields: [
             homeImage('portrait', 'Portrait', 'Shown in a 4:5 frame, cropped from the centre.'),
             { name: 'name', type: 'text', required: true },
@@ -133,7 +133,7 @@ export const SiteSettings: GlobalConfig = {
         homeImage(
           'benchStudioImage',
           'Bench studio image',
-          'The “Made at our bench in White Rock” photo, on the home page and The Bench.',
+          'The studio photo, on the home page and The Bench.',
         ),
       ],
     },

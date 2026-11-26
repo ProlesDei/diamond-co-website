@@ -65,7 +65,7 @@ export const faqTopicDefaults = [
       {
         key: 'who-makes-it',
         question: 'Who makes it?',
-        answer: 'The goldsmith you meet online makes your piece at our bench.',
+        answer: 'Goldsmiths we work with make it from the design you approve.',
       },
     ],
   },
@@ -75,7 +75,7 @@ export const faqTopicDefaults = [
     questions: [
       {
         ...keepStoneQuestion,
-        answer: 'Yes. Your stone never leaves our bench. We photograph and measure it with you before work starts, and you keep the record.',
+        answer: 'Yes. We photograph and measure it with you before work starts, and you keep the record.',
       },
       {
         key: 'natural-or-lab',

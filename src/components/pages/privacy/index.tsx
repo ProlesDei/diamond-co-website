@@ -33,21 +33,13 @@ const privacySections = ({ phone, email }: StudioContact): Section[] => [
       <>
         <p>When you send the booking form, we collect:</p>
         <ul>
-          <li>
-            your name, email address and, if you give it, your phone number and how you&rsquo;d like
-            us to reach you;
-          </li>
-          <li>
-            what you tell us about the piece, your budget range and any date you need it by;
-          </li>
-          <li>
-            any photos you add, with their location and camera data removed when they arrive;
-          </li>
-          <li>whether you asked for our news by email, and when.</li>
+          <li>your name and email address;</li>
+          <li>the reference photo, if you add one;</li>
+          <li>the catalog piece you asked about, if any.</li>
         </ul>
         <p>
-          When you choose a consultation time on this site, the booking goes through Calendly, which
-          keeps your name, email address, the answers you send it and the time you choose.
+          After you send the form, you choose a time on Calendly, which keeps your name, email
+          address, the answers you send it and the time you choose.
         </p>
         <p>
           We also keep basic, anonymous counts of visits to improve the site. We don&rsquo;t use

@@ -1,87 +1,77 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { flushSync } from 'react-dom'
 
-import { CalendlyStep } from '@/components/booking/calendly/CalendlyStep'
-import { joinAnswers } from '@/components/booking/calendly/prefill'
-import type { CalendlyPrefill } from '@/components/booking/calendly/prefill'
 import { Field } from '@/components/home/booking/Field'
 import { Button } from '@/components/site/Button'
 import type { StudioContact } from '@/components/site/studio'
-import type { BookOption, BookOptions } from '@/inquiry/options'
-import { bookInquirySchema, DESCRIPTION_MAX_LENGTH, type BookInquiryInput } from '@/inquiry/schema'
-
-import { saveSent } from '../thanks/sent'
+import { bookInquirySchema, type BookInquiryInput } from '@/inquiry/schema'
+import { calendlyPrefillUrl } from '@/lib/calendly'
 
 import styles from './book.module.css'
-import { ChipGroup } from './ChipGroup'
 import { ErrorSummary } from './ErrorSummary'
+import { NOT_A_PHOTO, PHOTO_ACCEPT, sendPhoto } from './photo'
 import { PieceCard } from './piece'
 import type { BookPiece } from './piece'
 import { sendBook } from './send'
-import type { BookSendResult } from './send'
 import { Turnstile, useTurnstile } from './turnstile'
 import { BOOK_FIELDS, validateBook } from './validate'
 import type { BookErrors, BookField } from './validate'
 
 type FormProps = {
   heading: 'h2' | 'h3'
-  goldsmithName: string | null
-  options: BookOptions
-  calendlyLink: string | null
+  calendlyLink: string
   contact: StudioContact
   piece: BookPiece | null
-  initialPieceType: string | null
 }
 
 const FIELD_IDS: Record<BookField, string> = {
-  pieceType: 'book-pieceType',
-  budget: 'book-budget',
-  description: 'book-description',
+  name: 'book-name',
+  email: 'book-email',
+  photo: 'book-photo',
 }
 
 const SUMMARY_LABELS: Record<BookField, string> = {
-  pieceType: 'Choose the kind of piece',
-  budget: 'Choose a budget range',
-  description: 'Tell us about the piece',
+  name: 'Add your name',
+  email: 'Add your email address',
+  photo: 'Check the reference photo',
 }
 
-type SendState = 'idle' | 'sending' | 'rate-limited' | 'failed'
+const PHOTO_REFUSED = "We couldn't add this photo. Choose it again, or send the form without it."
+const PHOTO_DROPPED = 'The connection dropped before the photo was sent. Send the form again.'
 
-const submitLabel = (state: SendState, calendlyLink: string | null): string => {
+type SendState = 'idle' | 'sending' | 'opening' | 'rate-limited' | 'failed'
+
+const submitLabel = (state: SendState): string => {
   if (state === 'sending') return 'Sending…'
+  if (state === 'opening') return 'Opening Calendly…'
   if (state === 'failed') return 'Try again'
-  return calendlyLink ? 'Choose a time' : 'Request my consultation'
+  return 'Choose a time'
 }
 
-const formatCount = (count: number) => count.toLocaleString('en-CA')
+type Sent = { outcome: 'sent' } | { outcome: 'rate-limited' | 'failed' } | { outcome: 'photo'; message: string }
 
-const optionLabel = (choices: BookOption[], value: string) =>
-  choices.find((option) => option.value === value)?.label
-
-export function Form({ heading: Heading, goldsmithName, options, calendlyLink, contact, piece, initialPieceType }: FormProps) {
-  const [pieceType, setPieceType] = useState(initialPieceType ?? '')
-  const [budget, setBudget] = useState('')
-  const [description, setDescription] = useState('')
+export function Form({ heading: Heading, calendlyLink, contact, piece }: FormProps) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [photo, setPhoto] = useState<File | null>(null)
   const [pieceRemoved, setPieceRemoved] = useState(false)
 
   const [errors, setErrors] = useState<BookErrors>({})
   const [sendState, setSendState] = useState<SendState>('idle')
-  const [prefill, setPrefill] = useState<CalendlyPrefill | null>(null)
   const summaryRef = useRef<HTMLDivElement>(null)
   const noticeRef = useRef<HTMLDivElement>(null)
+  const photoRef = useRef<HTMLInputElement>(null)
   const sendingRef = useRef(false)
-  const router = useRouter()
   const { getToken } = useTurnstile()
-  const { phone, email } = contact
+  const { phone, email: studioEmail } = contact
   const contactAction = phone
     ? <>call <a href={phone.href}>{phone.text}</a></>
-    : email
-      ? <>email <a href={email.href}>{email.text}</a></>
+    : studioEmail
+      ? <>email <a href={studioEmail.href}>{studioEmail.text}</a></>
       : <Link href="/contact">contact us</Link>
 
   const summaryItems = BOOK_FIELDS.filter((field) => errors[field] !== undefined).map((field) => ({
@@ -89,53 +79,54 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, c
     label: SUMMARY_LABELS[field],
   }))
 
-  function refused(state: 'rate-limited' | 'failed') {
+  function stop(state: 'idle' | 'rate-limited' | 'failed', found: BookErrors = {}) {
     sendingRef.current = false
-    flushSync(() => setSendState(state))
-    noticeRef.current?.focus()
+    flushSync(() => {
+      setErrors(found)
+      setSendState(state)
+    })
+    if (state === 'idle') summaryRef.current?.focus()
+    else noticeRef.current?.focus()
   }
 
-  async function send(input: BookInquiryInput): Promise<BookSendResult> {
+  async function uploadPhoto(file: File): Promise<{ uploadId: string } | { message: string }> {
+    const result = await sendPhoto(file, await getToken())
+    if (result === 'not-a-photo') return { message: NOT_A_PHOTO }
+    if (result.outcome === 'added') return { uploadId: result.uploadId }
+    return { message: result.outcome === 'dropped' ? PHOTO_DROPPED : PHOTO_REFUSED }
+  }
+
+  async function send(input: BookInquiryInput): Promise<Sent> {
     // Offline, Turnstile takes about 40 seconds to give up on a token.
     if (!navigator.onLine) return { outcome: 'failed' }
-    let token: string
     try {
-      token = await getToken()
+      let uploadId: string | undefined
+      if (photo) {
+        const uploaded = await uploadPhoto(photo)
+        if ('message' in uploaded) return { outcome: 'photo', message: uploaded.message }
+        uploadId = uploaded.uploadId
+      }
+      return await sendBook({ ...input, uploadId }, await getToken())
     } catch (error) {
-      console.error('book: no Turnstile token for the send', error)
+      console.error('book: the send failed', error)
       return { outcome: 'failed' }
     }
-    return sendBook(input, token)
   }
 
-  // Only a send that saved opens the time step, so every booking has a saved request behind it.
+  // Only a send that saved opens Calendly, so every booking has a saved request behind it.
   async function post(input: BookInquiryInput) {
     const result = await send(input)
-    if (result.outcome !== 'sent') return refused(result.outcome)
-
-    if (calendlyLink) {
-      sendingRef.current = false
-      setSendState('idle')
-      setPrefill({
-        reference: result.reference,
-        a1: joinAnswers(
-          [optionLabel(options.pieceTypes, input.pieceType), optionLabel(options.budgetRanges, input.budget)],
-          input.description,
-        ),
-      })
-      return
-    }
-
-    const sentPiece = input.piece && piece?.photo ? { slug: piece.slug, name: piece.name, photoUrl: piece.photo } : null
-    saveSent({ reference: result.reference, piece: sentPiece })
-    router.push('/book/thanks')
+    if (result.outcome === 'photo') return stop('idle', { photo: result.message })
+    if (result.outcome !== 'sent') return stop(result.outcome)
+    setSendState('opening')
+    window.location.assign(calendlyPrefillUrl(calendlyLink, { name: input.name, email: input.email }))
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (sendingRef.current) return
 
-    const found = validateBook({ pieceType, budget, description })
+    const found = validateBook({ name, email, photo })
     flushSync(() => {
       setErrors(found)
       setSendState('idle')
@@ -147,91 +138,108 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, c
 
     const parsed = bookInquirySchema.safeParse({
       form: 'book',
-      pieceType,
-      budget,
-      description,
+      name,
+      email,
       piece: piece && !pieceRemoved ? piece.slug : undefined,
     })
-    if (!parsed.success) return refused('failed')
+    if (!parsed.success) return stop('failed')
 
     sendingRef.current = true
     setSendState('sending')
     void post(parsed.data)
   }
 
-  const form = (
-    <form className={styles.form} method="post" noValidate onSubmit={submit} hidden={prefill !== null}>
+  function choosePhoto(file: File | null) {
+    setPhoto(file)
+    setErrors((current) => ({ ...current, photo: undefined }))
+  }
+
+  function clearPhoto() {
+    choosePhoto(null)
+    if (photoRef.current) photoRef.current.value = ''
+    photoRef.current?.focus()
+  }
+
+  return (
+    <form className={styles.form} method="post" noValidate onSubmit={submit}>
       <Heading className={styles.formHeading}>Book a free consultation</Heading>
-      {calendlyLink ? (
-        <p className={styles.formIntro}>
-          One short form, then you pick a time with {goldsmithName ?? 'a goldsmith'} on this page.
-        </p>
-      ) : (
-        <p className={styles.formIntro}>
-          Send the form to get a reference. Use it when you contact us to set a time.
-        </p>
-      )}
+      <p className={styles.formIntro}>Send your name and email, then pick a time on Calendly.</p>
 
       {summaryItems.length > 0 && <ErrorSummary items={summaryItems} ref={summaryRef} />}
 
       <PieceCard piece={piece} onRemove={() => setPieceRemoved(true)} />
 
       <fieldset className={styles.group}>
-        <legend>The piece</legend>
+        <legend>You</legend>
 
-        <ChipGroup
-          id={FIELD_IDS.pieceType}
-          name="pieceType"
-          legend="What would you like made?"
-          error={errors.pieceType}
-          options={options.pieceTypes}
-          value={pieceType}
-          onChange={setPieceType}
-        />
-
-        <ChipGroup
-          id={FIELD_IDS.budget}
-          name="budget"
-          legend="Budget range (CAD)"
-          hint="A range is fine. It helps us suggest stones and metals."
-          error={errors.budget}
-          options={options.budgetRanges}
-          value={budget}
-          onChange={setBudget}
+        <Field
+          id={FIELD_IDS.name}
+          label="Your name"
+          error={errors.name}
+          control={(props) => (
+            <input
+              className={styles.control}
+              name="name"
+              autoComplete="name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              {...props}
+            />
+          )}
         />
 
         <Field
-          id={FIELD_IDS.description}
-          label="Tell us about the piece"
-          optional
-          hint="What you have in mind, who it's for, a stone you want to reuse. Up to 2,000 characters."
-          error={errors.description}
-          control={({ id, 'aria-describedby': describedBy, ...aria }) => (
-            <>
-              <textarea
-                className={`${styles.control} ${styles.textarea}`}
-                id={id}
-                name="description"
-                maxLength={DESCRIPTION_MAX_LENGTH}
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                aria-describedby={`${describedBy ?? ''} ${id}-count`.trim()}
-                {...aria}
-              />
-              <span className={styles.counter} id={`${id}-count`}>
-                {formatCount(description.length)} of {formatCount(DESCRIPTION_MAX_LENGTH)}
-              </span>
-            </>
+          id={FIELD_IDS.email}
+          label="Email"
+          error={errors.email}
+          control={(props) => (
+            <input
+              className={styles.control}
+              type="email"
+              name="email"
+              autoComplete="email"
+              inputMode="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              {...props}
+            />
           )}
         />
+
+        <Field
+          id={FIELD_IDS.photo}
+          label="Reference photo"
+          optional
+          hint="A sketch, a screenshot or the piece you want to redesign. JPG, PNG, HEIC or WebP, up to 10 MB."
+          error={errors.photo}
+          control={(props) => (
+            <span className={styles.drop}>
+              <input
+                ref={photoRef}
+                className={styles.dropInput}
+                type="file"
+                name="photo"
+                accept={PHOTO_ACCEPT}
+                onChange={(event) => choosePhoto(event.target.files?.[0] ?? null)}
+                {...props}
+              />
+              <span className={styles.dropButton} aria-hidden="true">
+                Choose a photo
+              </span>
+              <span className={styles.dropName}>{photo ? photo.name : 'No photo chosen'}</span>
+            </span>
+          )}
+        />
+        {photo && (
+          <Button variant="secondary" type="button" onClick={clearPhoto}>
+            Remove {photo.name}
+          </Button>
+        )}
       </fieldset>
 
       <div className={styles.promise}>
         <p className={styles.promiseHeading}>The Render-First Promise</p>
-        <p>
-          You approve a drawing and a render before any metal is cut, and your stone never leaves
-          our bench.
-        </p>
+        <p>You approve a drawing and a render before any metal is cut.</p>
       </div>
 
       {sendState === 'rate-limited' && (
@@ -255,37 +263,14 @@ export function Form({ heading: Heading, goldsmithName, options, calendlyLink, c
       <Turnstile />
 
       <Button variant="primary" type="submit" className={styles.submit}>
-        {submitLabel(sendState, calendlyLink)}
+        {submitLabel(sendState)}
       </Button>
 
-      {sendState === 'sending' ? (
-        <p className={styles.after}>Sending your answers. Keep this page open.</p>
-      ) : calendlyLink ? (
-        <p className={styles.after}>
-          Next, you pick a consultation time on this page. Nothing is charged until you agree.
-        </p>
-      ) : (
-        <p className={styles.after}>
-          Next, contact us with your reference to set a time. Nothing is booked or charged until
-          you agree.
-        </p>
-      )}
-      <p className={styles.call}>For help, {contactAction}.</p>
+      <p className={styles.after}>
+        {sendState === 'sending'
+          ? 'Sending your answers. Keep this page open.'
+          : 'Next, you pick a time on Calendly. Nothing is charged until you agree.'}
+      </p>
     </form>
-  )
-
-  return (
-    <>
-      {form}
-      {calendlyLink && prefill && (
-        <CalendlyStep
-          link={calendlyLink}
-          heading={Heading}
-          prefill={prefill}
-          contact={contact}
-          onBack={() => setPrefill(null)}
-        />
-      )}
-    </>
   )
 }

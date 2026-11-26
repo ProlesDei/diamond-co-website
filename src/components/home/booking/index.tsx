@@ -4,15 +4,18 @@ import { getPayload } from 'payload'
 
 import { Form } from '@/components/pages/book/Form'
 import { getStudioContact } from '@/components/site/studio'
-import { getBookOptions } from '@/inquiry/options'
+import { getCalendlyLink } from '@/inquiry/options'
 import { getGoldsmithName } from '@/lib/content'
 
 import styles from './booking.module.css'
 
 export async function Booking() {
   await connection()
-  const { calendlyLink, ...options } = await getBookOptions(await getPayload({ config }))
-  const [goldsmithName, contact] = await Promise.all([getGoldsmithName(), getStudioContact()])
+  const [calendlyLink, goldsmithName, contact] = await Promise.all([
+    getCalendlyLink(await getPayload({ config })),
+    getGoldsmithName(),
+    getStudioContact(),
+  ])
 
   return (
     <section className={styles.book} id="book" aria-labelledby="book-heading">
@@ -20,7 +23,7 @@ export async function Booking() {
         <div className={styles.intro}>
           <p className={styles.eyebrow}>Your free consultation</p>
           <h2 className={styles.heading} id="book-heading">
-            Talk with <em>{goldsmithName ?? 'a goldsmith'}.</em>
+            Talk with <em>{goldsmithName ?? 'us'}.</em>
           </h2>
           <p className={styles.lead}>
             Meet online for a free 15–30 minute consultation. You leave with a direction for your
@@ -38,15 +41,7 @@ export async function Booking() {
           </dl>
         </div>
         <div className={styles.panel}>
-          <Form
-            heading="h3"
-            goldsmithName={goldsmithName}
-            options={options}
-            calendlyLink={calendlyLink}
-            contact={contact}
-            piece={null}
-            initialPieceType={null}
-          />
+          <Form heading="h3" calendlyLink={calendlyLink} contact={contact} piece={null} />
         </div>
       </div>
     </section>

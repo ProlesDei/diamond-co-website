@@ -4,15 +4,15 @@ import path from 'node:path'
 import type { Payload } from 'payload'
 
 import { readBlobToken } from '../lib/blob'
+import { CLIENT_TOKEN_MS, PENDING_PREFIX } from './directUpload'
 import { abortAfterTimeout, INQUIRY_BLOB_PREFIX, pathnameOf } from './storage'
 import { claimUploads, UPLOAD_LINKS, uploadIdsOf } from './submit'
 
 const MINUTE_MS = 60 * 1000
-const CLIENT_TOKEN_MS = 5 * MINUTE_MS
-const PENDING_PREFIX = `${INQUIRY_BLOB_PREFIX}pending/`
 
 export const UNLINKED_UPLOAD_MAX_AGE_MS = 24 * 60 * 60 * 1000
-// Keep the old direct-upload token lifetime and transfer margin for pending blobs.
+// Past the token's lifetime, the margin lets an upload that started just before it ran out finish,
+// within the page's own transfer timeout, and be confirmed.
 export const PENDING_BLOB_MAX_AGE_MS = CLIENT_TOKEN_MS + 15 * MINUTE_MS
 
 export type PrunedUpload = { id: string; fileGone: boolean }

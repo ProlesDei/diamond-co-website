@@ -5,8 +5,9 @@ import type { CollectionConfig, GlobalConfig, PayloadHandler, Plugin } from 'pay
 
 import { readBlobToken } from '@/lib/blob'
 
-import { freeMediaFileName } from './fileName'
+import { freeUploadFileName, isPublicUploadSlug } from './fileName'
 import { Media } from './Media'
+import { TestimonialProofs } from './TestimonialProofs'
 
 const CLIENT_UPLOAD_ROUTE = '/vercel-blob-client-upload-route'
 
@@ -22,10 +23,11 @@ const issueNewKeyWithFreeName =
     await handler(req)
 
     const { collectionSlug, docPrefix, filename } = (await requestCopy.json()) as ClientUploadRequest
+    if (!isPublicUploadSlug(collectionSlug)) throw new APIError('This collection takes no uploads here.', 400)
     const fresh = await resolveSignedURLKey({
       collectionSlug,
       docPrefix,
-      filename: await freeMediaFileName(req, filename),
+      filename: await freeUploadFileName(req, collectionSlug, filename),
       req,
     })
     return Response.json({
@@ -51,11 +53,11 @@ const neverOverwriteOnClientUpload: Plugin = (config) => {
 
 const token = readBlobToken('media')
 
-export const collections: CollectionConfig[] = [Media]
+export const collections: CollectionConfig[] = [Media, TestimonialProofs]
 export const globals: GlobalConfig[] = []
 export const plugins: Plugin[] = [
   vercelBlobStorage({
-    collections: { media: true },
+    collections: { media: true, 'testimonial-proofs': { prefix: 'testimonial-proofs' } },
     token,
     clientUploads: true,
   }),

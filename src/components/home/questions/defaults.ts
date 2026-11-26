@@ -1,13 +1,13 @@
 export const homeTimingQuestion = {
   key: 'timing',
   question: 'How long will it take?',
-  answer: 'About 2–4 weeks in all. After your online consultation, the render takes 1–4 days, depending on how complex the piece is. Crafting takes about 1–2 weeks at the bench. Planning a proposal? Put the date in the form.',
+  answer: 'About 2–4 weeks in all. After your online consultation, the render takes 1–4 days, depending on how complex the piece is. Making takes about 1–2 weeks.',
 }
 
 export const keepStoneQuestion = {
   key: 'keep-stone',
   question: 'Will it still be my stone?',
-  answer: 'Yes. Your stone never leaves our bench. We photograph and measure it with you before work starts, and you keep the record.',
+  answer: 'Yes. We photograph and measure it with you before work starts, and you keep the record.',
 }
 
 export const approveDesignQuestion = {

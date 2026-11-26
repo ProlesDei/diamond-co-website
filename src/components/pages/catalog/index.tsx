@@ -53,7 +53,7 @@ export default async function CatalogPage() {
       <PageHead
         eyebrow="Catalog"
         title={title}
-        lede="Every piece here was drawn with the person who wears it and made by hand at our bench. Browse them, see where each one starts, and book a free consultation about the one you like."
+        lede="Every piece here was drawn with the person who wears it. Browse them, see where each one starts, and book a free consultation about the one you like."
         aside={`${pieces.length} ${pieces.length === 1 ? 'piece' : 'pieces'}`}
       />
       <ul className={styles.pieces}>
