@@ -79,7 +79,7 @@
   }
 }
 
-/* The Bench page draws the ampersand larger than the home does. */
+/* The Studio page draws the ampersand larger than the home does. */
 .ampersand.large {
   font-size: clamp(260px, 36vw, 560px);
 }

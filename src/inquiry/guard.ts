@@ -151,7 +151,7 @@ export async function rateLimit(key: string, limit: number, windowMs: number): P
 }
 
 export function rateLimitUnavailable(): Response {
-  return refuse(503, 'rate_limit_unavailable', 'We could not take requests just now. Try again in a minute, or call us.')
+  return refuse(503, 'rate_limit_unavailable', 'We could not take requests just now. Try again in a minute.')
 }
 
 export function clientIp(request: Request): string {

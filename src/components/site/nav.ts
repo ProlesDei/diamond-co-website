@@ -1,6 +1,6 @@
 export const links = {
   catalog: '/catalog',
-  bench: '/the-bench',
+  studio: '/studio',
   contact: '/contact',
   questions: '/faq',
   privacy: '/privacy',

@@ -5,17 +5,17 @@ const steps: Step[] = [
   {
     name: 'Consult',
     time: '15–30 minutes online, free',
-    text: 'Talk with the goldsmith who will make your piece. You leave with a sketch, a firm quote and a timeline.',
+    text: 'You leave with a sketch, a firm quote and a timeline.',
   },
   {
     name: 'Design',
     time: 'Render in 1–4 days',
-    text: 'The timing depends on how complex the piece is. You approve the sketches and render before we cut any metal.',
+    text: 'The timing depends on how complex the piece is. You approve the sketches and render before any metal is cut.',
   },
   {
     name: 'Craft',
-    time: 'About 1–2 weeks at the bench',
-    text: 'Made by hand at our bench, in 14k to 24k gold.',
+    time: 'About 1–2 weeks',
+    text: 'Made in 14k to 24k gold.',
   },
   {
     name: 'Delivered',
@@ -32,7 +32,7 @@ export function Process() {
         From a conversation <em>to your hand.</em>
       </h2>
       <p className={styles.lede}>
-        About 2–4 weeks in all. Planning a proposal? Put the date in the form.
+        About 2–4 weeks in all.
       </p>
       <ProcessSteps steps={steps} />
       <div className={styles.worries}>

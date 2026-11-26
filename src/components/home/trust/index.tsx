@@ -23,11 +23,7 @@ export async function Trust() {
         <div className={styles.promises}>
           <div>
             <h3>The Render-First Promise</h3>
-            <p>See your piece from every side and approve the render before we cut any metal.</p>
-          </div>
-          <div>
-            <h3>Keep your own stone</h3>
-            <p>If you bring a stone for a new setting, it stays at our bench while we make your piece.</p>
+            <p>See your piece from every side and approve the render before any metal is cut.</p>
           </div>
         </div>
         {images.length > 0 && (
@@ -52,12 +48,28 @@ export async function Trust() {
           <div className={styles.testimonials}>
             <h3>From our clients</h3>
             <ul className={styles.quotes} role="list">
-              {testimonials.map(({ id, quote, firstName }) => (
+              {testimonials.map(({ id, quote, name, sourceLabel, proof }) => (
                 <li key={id}>
                   <figure>
                     <blockquote>{quote}</blockquote>
-                    <figcaption>{firstName}</figcaption>
+                    <figcaption>
+                      {name}
+                      <span className={styles.source}>{sourceLabel}</span>
+                    </figcaption>
                   </figure>
+                  {proof && (
+                    <a className={styles.proof} href={proof.url}>
+                      {/* A screenshot at its own size: Next's optimizer needs widths these files don't have. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={proof.url}
+                        alt={proof.alt}
+                        width={proof.width ?? undefined}
+                        height={proof.height ?? undefined}
+                        loading="lazy"
+                      />
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

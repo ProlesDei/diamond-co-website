@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 import type { Media } from '@/payload-types'
 
 import { toHomeImage, type HomeImage } from '../pieces'
+import { toShownTestimonial } from './testimonials'
 
 const proofImage = (media: string | Media | null | undefined): HomeImage | null => {
   if (!media || typeof media !== 'object') return null
@@ -39,9 +40,9 @@ export async function getTrustContent() {
       draft: false,
       where: { _status: { equals: 'published' }, consentOnFile: { equals: true } },
       sort: '-createdAt',
-      depth: 0,
+      depth: 1,
       limit: 3,
-      select: { quote: true, firstName: true },
+      select: { quote: true, firstName: true, source: true, proof: true },
     }),
   ])
 
@@ -60,5 +61,5 @@ export async function getTrustContent() {
     if (images.size === 2) break
   }
 
-  return { images: [...images.values()], testimonials: testimonials.docs }
+  return { images: [...images.values()], testimonials: testimonials.docs.map(toShownTestimonial) }
 }

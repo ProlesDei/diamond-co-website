@@ -11,7 +11,7 @@ import { pageMetadata } from '../metadata'
 import styles from './Bench.module.css'
 
 export function generateMetadata() {
-  return pageMetadata('The Bench')
+  return pageMetadata('Studio')
 }
 
 const metals: Metal[] = [
@@ -28,17 +28,17 @@ const steps: Step[] = [
   {
     name: 'Consult',
     time: '15–30 minutes online, free',
-    text: 'Share a sketch or a photo, or tell the goldsmith about a stone you want to reuse. You leave with a sketch, a firm quote and a timeline.',
+    text: 'Share a sketch or a photo, or tell us about a stone you want to reuse. You leave with a sketch, a firm quote and a timeline.',
   },
   {
     name: 'Design',
     time: 'Render in 1–4 days',
-    text: 'We draw it by hand, then render it so you can see it from every side. The timing depends on how complex the piece is. You can ask for changes, and you approve the render before we cut any metal.',
+    text: 'We draw it by hand, then render it so you can see it from every side. The timing depends on how complex the piece is. You can ask for changes, and you approve the render before any metal is cut.',
   },
   {
     name: 'Craft',
-    time: 'About 1–2 weeks at the bench',
-    text: 'We make your piece by hand at our bench, in 14k to 24k gold. Your stone stays at the bench. We photograph and measure it with you before work starts.',
+    time: 'About 1–2 weeks',
+    text: 'Made in 14k to 24k gold. We photograph and measure your stone with you before work starts.',
   },
   {
     name: 'Delivered',
@@ -49,20 +49,20 @@ const steps: Step[] = [
 
 export default async function BenchPage() {
   const { name, credential, portrait, team } = await getGoldsmithProfile()
-  const goldsmiths = [{ key: 'primary', name: name ?? 'Goldsmith', role: credential, portrait }, ...team]
+  const goldsmiths = [{ key: 'primary', name: name ?? 'Designer', role: credential, portrait }, ...team]
 
   return (
     <>
       <section className={styles.hero} aria-labelledby="bench-title">
         <div className={styles.hinge}>
           <div>
-            <p className={styles.eyebrow}>The Bench</p>
+            <p className={styles.eyebrow}>Studio</p>
             <h1 className={styles.title} id="bench-title">
-              Your idea, <em>our bench.</em>
+              Start with <em>your idea.</em>
             </h1>
             <p className={styles.lede}>
               Share a sketch or a photo, or tell us about a stone you want to reuse. We draw the
-              piece with you online, then make it by hand in the metal you choose.
+              piece with you online, in the metal you choose.
             </p>
           </div>
           <Hinge large />
@@ -72,13 +72,10 @@ export default async function BenchPage() {
       <section className={styles.section} aria-labelledby="goldsmiths-heading">
         <div className={styles.goldsmiths}>
           <div>
-            <p className={styles.eyebrow}>The goldsmiths</p>
+            <p className={styles.eyebrow}>The team</p>
             <h2 className={styles.heading} id="goldsmiths-heading">
-              The hands <em>that make it.</em>
+              Who you <em>work with.</em>
             </h2>
-            <p className={styles.lede}>
-              More than 35 years at the bench. The goldsmith you meet online makes your piece.
-            </p>
           </div>
           <ul className={styles.smiths} role="list">
             {goldsmiths.map(({ key, name: smithName, role, portrait: photo }) => (
@@ -108,7 +105,7 @@ export default async function BenchPage() {
           From a conversation <em>to your hand.</em>
         </h2>
         <p className={styles.lede}>
-          About 2–4 weeks in all. Planning a proposal? Put the date in the form.
+          About 2–4 weeks in all.
         </p>
         <ProcessSteps steps={steps} layout="rows" />
         <ul className={styles.metals} aria-label="Metals we work in">
@@ -124,7 +121,7 @@ export default async function BenchPage() {
       <ConsultationBand
         heading={
           <>
-            Talk with <em>a goldsmith.</em>
+            Talk with <em>us.</em>
           </>
         }
       >

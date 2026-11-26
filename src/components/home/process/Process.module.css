@@ -129,7 +129,7 @@
   }
 }
 
-/* The Bench page lists the steps as ruled rows: numeral, name and timing, then text. */
+/* The Studio page lists the steps as ruled rows: numeral, name and timing, then text. */
 .steps.rows {
   grid-template-columns: 1fr;
   gap: 0;

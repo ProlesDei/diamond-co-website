@@ -96,6 +96,27 @@
   font-size: 14px;
 }
 
+.source {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.proof {
+  display: block;
+  width: fit-content;
+  margin-top: var(--space-4);
+}
+
+.proof img {
+  display: block;
+  max-width: min(100%, 240px);
+  height: auto;
+  border: 1px solid var(--line);
+}
+
 @media (max-width: 899px) {
   .inner {
     grid-template-columns: minmax(0, 1fr);

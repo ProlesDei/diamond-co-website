@@ -38,8 +38,8 @@ export function Hero({ hero, reduceMotion }: HeroProps) {
       </p>
       <div className={styles.intro}>
         <p className={styles.lede}>
-          Custom engagement rings and heirloom redesigns, drawn with you and made by hand. Start from a
-          sketch, a photo or a stone you already have.
+          Custom engagement rings and heirloom redesigns, drawn with you. Start from a sketch, a photo
+          or a stone you already have.
         </p>
         <div className={styles.buttons}>
           <Button variant="primary" href="#book" id="hero-book" className={styles.button}>

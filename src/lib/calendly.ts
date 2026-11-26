@@ -1,9 +1,11 @@
 // The booking link is the Calendly link field in the admin's Inquiry settings.
-// Empty, or not a Calendly link, the forms keep their send-and-reply ending and show no time step.
-// The prefill's a1 fills the event's first invitee question, so keep that question a free-text one.
 const CALENDLY_ORIGIN = 'https://calendly.com'
 
-// Only links on https://calendly.com with a path pass, so the iframe stays inside the CSP's frame-src.
+// PLACEHOLDER: not a real Diamond & Co event. Every booking goes here until the studio saves its own
+// Calendly link in Inquiry settings.
+export const CALENDLY_PLACEHOLDER_LINK = `${CALENDLY_ORIGIN}/diamond-co-placeholder/consultation`
+
+// Only links on https://calendly.com with a path pass.
 export const readCalendlyLink = (value: string | null | undefined): string | null => {
   if (!value?.startsWith(`${CALENDLY_ORIGIN}/`)) return null
   try {
@@ -14,4 +16,14 @@ export const readCalendlyLink = (value: string | null | undefined): string | nul
   }
 }
 
-export const calendlyOrigin = CALENDLY_ORIGIN
+// An empty or invalid stored link gives the placeholder, so the form always ends on Calendly.
+export const bookingLink = (stored: string | null | undefined): string =>
+  readCalendlyLink(stored) ?? CALENDLY_PLACEHOLDER_LINK
+
+// Calendly fills its form from the name and email query parameters.
+export function calendlyPrefillUrl(link: string, prefill: { name: string; email: string }): string {
+  const url = new URL(link)
+  url.searchParams.set('name', prefill.name)
+  url.searchParams.set('email', prefill.email)
+  return url.href
+}

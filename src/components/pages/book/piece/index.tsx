@@ -24,7 +24,7 @@ export function PieceCard({ piece, onRemove }: PieceCardProps) {
   if (!piece || removed) return null
 
   function remove() {
-    document.getElementById('book-description')?.focus()
+    document.getElementById('book-name')?.focus()
     setRemoved(true)
     onRemove()
   }

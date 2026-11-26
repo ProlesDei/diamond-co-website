@@ -11,6 +11,8 @@ const DUPLICATE_KEY = 11000
 
 type UploadLink = { _id: string; linkedAt: Date; claim: string }
 
+export type SubmitResult = { ok: true; inquiry: Inquiry } | { ok: false; reason: 'upload_unavailable' }
+
 function uploadLinks(payload: Payload) {
   if (payload.db.name !== 'mongoose') {
     throw new Error(`Linking inquiry uploads needs the MongoDB adapter; this app runs ${payload.db.name}.`)
@@ -71,18 +73,28 @@ async function publishedPieceId(payload: Payload, slug: string | undefined): Pro
   return docs[0]?.id
 }
 
-export async function submitBookInquiry(payload: Payload, input: BookInquiryInput): Promise<Inquiry> {
+// The claim makes each upload belong to one request only, even when two sends name it at once.
+export async function submitBookInquiry(payload: Payload, input: BookInquiryInput): Promise<SubmitResult> {
+  const uploadIds = input.uploadId ? [input.uploadId] : []
   const piece = await publishedPieceId(payload, input.piece)
-  return payload.create({
-    collection: 'inquiries',
-    depth: 1,
-    data: {
-      status: 'new',
-      form: 'book',
-      pieceType: input.pieceType,
-      budget: input.budget,
-      description: input.description,
-      piece,
-    },
-  })
+  const claim = await claimUploads(payload, uploadIds)
+  if (!claim.ok) return { ok: false, reason: 'upload_unavailable' }
+  try {
+    const inquiry = await payload.create({
+      collection: 'inquiries',
+      depth: 0,
+      data: {
+        status: 'new',
+        form: 'book',
+        name: input.name,
+        email: input.email,
+        uploads: uploadIds,
+        piece,
+      },
+    })
+    return { ok: true, inquiry }
+  } catch (error) {
+    await claim.release()
+    throw error
+  }
 }

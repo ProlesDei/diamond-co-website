@@ -58,11 +58,6 @@ export default async function ContactPage() {
           <Button variant="primary" href="/book">
             Book a free consultation
           </Button>
-          {phone && (
-            <Button variant="secondary" href={phone.href}>
-              Call {phone.text}
-            </Button>
-          )}
         </div>
       </div>
     </>

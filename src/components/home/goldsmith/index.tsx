@@ -22,14 +22,11 @@ export async function Goldsmith() {
           </figure>
         )}
         <div>
-          {name && <p className={styles.eyebrow}>Meet your goldsmith</p>}
+          {name && <p className={styles.eyebrow}>Meet your designer</p>}
           <h2 className={styles.heading} id="goldsmith-heading">
-            {name ?? 'Meet your goldsmith'}
+            {name ?? 'Meet your designer'}
           </h2>
           {credential && <p className={styles.credential}>{credential}</p>}
-          <p className={styles.lede}>
-            We make each piece at our bench. The goldsmith you meet online makes your piece.
-          </p>
         </div>
       </div>
     </section>

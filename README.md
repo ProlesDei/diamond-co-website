@@ -35,11 +35,11 @@ To try the site with sample content on your own machine:
 3. Start the app: `pnpm dev`. Leave it running.
 4. In a second terminal, in this folder, fill the database with samples: `pnpm seed`.
 5. Open http://localhost:3000 for the site.
-6. Send a test consultation. On the home page, scroll to "Book a free consultation", choose a kind of piece and a budget range, and press "Request my consultation". The note is optional, and the form asks no name or email. The page moves to "Request sent" and shows your reference. No email is sent, and nothing is written to `.outbox/` for it.
+6. Send a test consultation. On the home page, scroll to "Book a free consultation", fill in your name and email, add a reference photo if you like, and press "Choose a time". The page saves the request, then opens the Calendly link with your name and email filled in. With no link saved in the admin, that is the placeholder link, which is not a real event. No email is sent, and nothing is written to `.outbox/` for it.
 7. Open http://localhost:3000/admin and sign in as `owner@example.test`. The password is the one `pnpm seed` printed. To choose your own, set `SEED_ADMIN_PASSWORD` before the first `pnpm seed`.
-8. In the admin, open Inquiries (press "Open Menu" first if the menu is closed), then open your test consultation. It shows as New, with its reference.
+8. In the admin, open Inquiries (press "Open Menu" first if the menu is closed), then open your test consultation. It shows as New, with your name, email and photo.
 
-`pnpm seed` adds an admin user, sample site settings, a sample Calendly link, 6 sample pieces with placeholder images, and 15 FAQs. Fresh settings select 5 questions for home and 14 for the FAQ page in display order. Four records, including timing, serve both pages. The seed draws the placeholder images as it runs and marks them as placeholders. Rerun it to fill missing samples in a sample database. If any FAQ lacks a recognized sample key, the seed skips all writes. Use a separate fresh database for samples if you already have editorial content. It refuses to run when `SITE_ENV` is `production`, or when `DATABASE_URL` points at any host but `127.0.0.1`, `localhost` or `[::1]`.
+`pnpm seed` adds an admin user, sample site settings, 6 sample pieces with placeholder images, and 15 FAQs. Fresh settings select 5 questions for home and 14 for the FAQ page in display order. Four records, including timing, serve both pages. The seed draws the placeholder images as it runs and marks them as placeholders. Rerun it to fill missing samples in a sample database. If any FAQ lacks a recognized sample key, the seed skips all writes. Use a separate fresh database for samples if you already have editorial content. It refuses to run when `SITE_ENV` is `production`, or when `DATABASE_URL` points at any host but `127.0.0.1`, `localhost` or `[::1]`.
 
 The password is printed only once. If you lose it, stop the app, delete `.data/` and `media/`, and run steps 3 and 4 again.
 
@@ -52,6 +52,7 @@ The password is printed only once. If you lose it, stop the app, delete `.data/`
 | `pnpm start` | Runs the production build. |
 | `pnpm lint` | Runs ESLint. |
 | `pnpm typecheck` | Runs the TypeScript compiler. |
+| `pnpm test` | Runs the unit tests (`src/**/*.test.ts`) with Node's test runner. |
 | `pnpm seed` | Runs `scripts/seed.ts` against the database. |
 | `pnpm uploads:prune` | Runs `scripts/prune-uploads.ts` against the database. |
 
@@ -61,7 +62,7 @@ The password is printed only once. If you lose it, stop the app, delete `.data/`
 
 `src/payload.config.ts` reads collections, globals and plugins from three folders. Add yours to the folder it belongs in:
 
-- `src/content/index.ts`: site content.
+- `src/content/index.ts`: site content, including `testimonial-proofs`, the screenshots behind testimonials, kept in the private inquiry Blob store.
 - `src/inquiry/index.ts`: inquiries from visitors.
 - `src/media/index.ts`: images and other uploads. The `media` collection is here. Each file needs alt text and a source: a client photo, an atmosphere image (generated, never the client's work) or a placeholder (sample only).
 
@@ -69,11 +70,17 @@ The `users` collection is in `src/users/`. Users are admins or editors. Five wro
 
 ## Booking link
 
-The booking forms open a Calendly event after a send that saved. The studio sets that event in the admin: Inquiry settings → Calendly link. Any signed-in user can change it; piece types and budget ranges stay admin-only. The field takes only links that start with `https://calendly.com/` and have a path after it. Leave it empty and the forms end by asking the visitor to call or email with their reference, with no time step. A change shows on the next page load, with no rebuild or redeploy. When seeding sample data, `pnpm seed` fills an empty field with a sample link.
+Every booking ends on Calendly. The visitor gives a name and email, and may add one reference photo. The form saves the request with its photo, then opens the Calendly event with the name and email filled in through Calendly's `name` and `email` link parameters. Set the event in the admin: Inquiry settings → Calendly link. Any signed-in user can change it. The field takes only links that start with `https://calendly.com/` and have a path after it. A change shows on the next page load, with no rebuild or redeploy.
 
-## Goldsmith and home questions
+PLACEHOLDER: until someone saves a link there, bookings go to `https://calendly.com/diamond-co-placeholder/consultation` (`CALENDLY_PLACEHOLDER_LINK` in `src/lib/calendly.ts`), which is not a real event. Save the studio's real Calendly link before the site takes bookings.
 
-In the admin, open Site Settings → Goldsmith to set the name, credential line and portrait. Use a client photo in production. Local and preview sites also accept placeholder images. Blank fields give visitors a generic name and hide the credential or photo.
+## Testimonials
+
+In the admin, open Testimonials. Each one has a source (Google review or personal testimonial), a name, the quote and an optional proof screenshot. The home page shows the source under each name and the screenshot under the quote. Upload screenshots from the proof field; they go to Testimonial proofs. A screenshot is visible to visitors only while a published testimonial with consent on file uses it. Testimonials saved before the source field existed show as personal ones. Only published testimonials with consent on file show.
+
+## Designer and home questions
+
+In the admin, open Site Settings → Designer to set the name, credential line and portrait. Use a client photo in production. Local and preview sites also accept placeholder images. Blank fields give visitors a generic name and hide the credential or photo.
 
 Create and publish answers in FAQs. In Site Settings → Home questions, choose which ones to show and drag them into order. Save an empty list to hide the Questions section. Drafts, unpublished answers and deleted records stay off the public page. Published answers can show Media images and link to published commissions. If a linked commission is unavailable, the answer shows its link text as plain text.
 
@@ -101,7 +108,7 @@ Production writes nothing to the server's disk, so a build or start with `SITE_E
 - `EMAIL_FROM_ADDRESS` (parked): the address the admin password-reset email comes from. The booking forms send no email.
 - `EMAIL_FROM_NAME` (parked): the name the admin password-reset email comes from. The booking forms send no email.
 - `BLOB_READ_WRITE_TOKEN`: the read-write token of the public Vercel Blob store, where media go.
-- `INQUIRY_BLOB_READ_WRITE_TOKEN`: the read-write token for the private Vercel Blob store that holds photos and sketches from older inquiries. The admin uses it to show those files.
+- `INQUIRY_BLOB_READ_WRITE_TOKEN`: the read-write token for the private Vercel Blob store that holds inquiry photos and testimonial proof screenshots. Visitors' photos upload straight to it. The site serves both only through its own file routes, after their access checks.
 
 PARKED (owner, Nov 19, 2026): online booking and email are off for the .vercel.app run, so the five parked names only warn when unset. With both Turnstile keys unset, the spam check is skipped and the booking forms save and end normally. Move them back into `productionVariables` in `next.config.ts` to turn the refusal back on.
 

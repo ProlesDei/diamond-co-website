@@ -6,7 +6,6 @@ import { MetalSwatch } from '@/components/home/commissions/MetalSwatch'
 import { startingPrice } from '@/components/home/commissions/price'
 import { Button } from '@/components/site/Button'
 import { links } from '@/components/site/nav'
-import { getGoldsmithName } from '@/lib/content'
 import type { Piece } from '@/payload-types'
 
 import { categoryName, stoneLines } from './materials'
@@ -19,8 +18,7 @@ const hasText = (node: unknown): boolean => {
   return 'children' in node && Array.isArray(node.children) && node.children.some(hasText)
 }
 
-export async function Words({ piece }: { piece: Piece }) {
-  const goldsmithName = await getGoldsmithName()
+export function Words({ piece }: { piece: Piece }) {
   const metals = piece.metals ?? []
   const stones = stoneLines(piece)
   const { story } = piece
@@ -81,8 +79,7 @@ export async function Words({ piece }: { piece: Piece }) {
           Book a consultation about this piece
         </Button>
         <p className={styles.micro}>
-          Your request will name this piece, so {goldsmithName ?? 'the goldsmith'} has it in front of
-          them. Pick a time online.
+          Your request will name this piece. Pick a time on Calendly.
         </p>
         <Link href={links.catalog} className={styles.all}>
           See the whole catalog

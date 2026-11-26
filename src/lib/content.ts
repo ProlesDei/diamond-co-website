@@ -54,7 +54,7 @@ const findCachedMedia = unstable_cache(findMedia, ['site-settings-media'], {
 const findShownMedia = async (ids: string[], { fresh }: { fresh: boolean }) => {
   if (ids.length === 0) return new Map<string, Media>()
 
-  // Portraits show only on the home page and The Bench, which render per request, so read them
+  // Portraits show only on the home page and the Studio page, which render per request, so read them
   // fresh: a deleted portrait then disappears at once instead of showing as a broken image.
   if (fresh) await connection()
   const docs = await (fresh ? findMedia : findCachedMedia)(ids)
