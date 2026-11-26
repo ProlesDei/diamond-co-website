@@ -34,7 +34,7 @@ function invalid(error: z.ZodError<Record<string, unknown>>): Response {
 
 function saveFailed(error: unknown): Response {
   console.error(`inquiry: save failed (${error instanceof Error ? error.name : 'unknown error'}).`)
-  return refuse(500, 'save_failed', 'We could not save your request. Try again in a minute, or call us.')
+  return refuse(500, 'save_failed', 'We could not save your request. Try again in a minute.')
 }
 
 async function readText(request: Request): Promise<string | 'too-large'> {
@@ -61,7 +61,7 @@ export async function POST(request: Request): Promise<Response> {
   if (!limit.ok) {
     if (limit.reason === 'unavailable') return rateLimitUnavailable()
     const minutes = Math.ceil(limit.retryAfterSeconds / 60)
-    const response = refuse(429, 'rate_limited', `Too many requests from here. Try again in ${minutes} minutes, or call us.`)
+    const response = refuse(429, 'rate_limited', `Too many requests from here. Try again in ${minutes} minutes.`)
     response.headers.set('retry-after', String(limit.retryAfterSeconds))
     return response
   }

@@ -2,7 +2,7 @@ import config from '@payload-config'
 import { connection } from 'next/server'
 import { getPayload } from 'payload'
 
-import { getStudioContact, studio } from '@/components/site/studio'
+import { studio } from '@/components/site/studio'
 import { getCalendlyLink } from '@/inquiry/options'
 import { getGoldsmithName } from '@/lib/content'
 
@@ -28,10 +28,9 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
   // The Calendly link comes from the CMS and an edit shows on the next load, so never prerender.
   await connection()
   const { piece: pieceParam } = await searchParams
-  const [calendlyLink, goldsmithName, contact, piece] = await Promise.all([
+  const [calendlyLink, goldsmithName, piece] = await Promise.all([
     getCalendlyLink(await getPayload({ config })),
     getGoldsmithName(),
-    getStudioContact(),
     findAskedPiece(typeof pieceParam === 'string' ? pieceParam : undefined),
   ])
 
@@ -67,7 +66,7 @@ export default async function BookPage({ searchParams }: PageProps<'/book'>) {
           </dl>
         </div>
         <div className={styles.panel}>
-          <Form heading="h2" calendlyLink={calendlyLink} contact={contact} piece={piece} />
+          <Form heading="h2" calendlyLink={calendlyLink} piece={piece} />
         </div>
       </div>
     </section>

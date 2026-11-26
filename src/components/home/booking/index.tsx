@@ -3,7 +3,6 @@ import { connection } from 'next/server'
 import { getPayload } from 'payload'
 
 import { Form } from '@/components/pages/book/Form'
-import { getStudioContact } from '@/components/site/studio'
 import { getCalendlyLink } from '@/inquiry/options'
 import { getGoldsmithName } from '@/lib/content'
 
@@ -11,10 +10,9 @@ import styles from './booking.module.css'
 
 export async function Booking() {
   await connection()
-  const [calendlyLink, goldsmithName, contact] = await Promise.all([
+  const [calendlyLink, goldsmithName] = await Promise.all([
     getCalendlyLink(await getPayload({ config })),
     getGoldsmithName(),
-    getStudioContact(),
   ])
 
   return (
@@ -41,7 +39,7 @@ export async function Booking() {
           </dl>
         </div>
         <div className={styles.panel}>
-          <Form heading="h3" calendlyLink={calendlyLink} contact={contact} piece={null} />
+          <Form heading="h3" calendlyLink={calendlyLink} piece={null} />
         </div>
       </div>
     </section>

@@ -23,7 +23,7 @@ export async function Trust() {
         <div className={styles.promises}>
           <div>
             <h3>The Render-First Promise</h3>
-            <p>See your piece from every side and approve the render before we cut any metal.</p>
+            <p>See your piece from every side and approve the render before any metal is cut.</p>
           </div>
         </div>
         {images.length > 0 && (

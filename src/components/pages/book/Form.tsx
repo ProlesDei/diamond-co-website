@@ -1,13 +1,11 @@
 'use client'
 
-import Link from 'next/link'
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { flushSync } from 'react-dom'
 
 import { Field } from '@/components/home/booking/Field'
 import { Button } from '@/components/site/Button'
-import type { StudioContact } from '@/components/site/studio'
 import { bookInquirySchema, type BookInquiryInput } from '@/inquiry/schema'
 import { calendlyPrefillUrl } from '@/lib/calendly'
 
@@ -24,7 +22,6 @@ import type { BookErrors, BookField } from './validate'
 type FormProps = {
   heading: 'h2' | 'h3'
   calendlyLink: string
-  contact: StudioContact
   piece: BookPiece | null
 }
 
@@ -54,7 +51,7 @@ const submitLabel = (state: SendState): string => {
 
 type Sent = { outcome: 'sent' } | { outcome: 'rate-limited' | 'failed' } | { outcome: 'photo'; message: string }
 
-export function Form({ heading: Heading, calendlyLink, contact, piece }: FormProps) {
+export function Form({ heading: Heading, calendlyLink, piece }: FormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
@@ -67,12 +64,6 @@ export function Form({ heading: Heading, calendlyLink, contact, piece }: FormPro
   const photoRef = useRef<HTMLInputElement>(null)
   const sendingRef = useRef(false)
   const { getToken } = useTurnstile()
-  const { phone, email: studioEmail } = contact
-  const contactAction = phone
-    ? <>call <a href={phone.href}>{phone.text}</a></>
-    : studioEmail
-      ? <>email <a href={studioEmail.href}>{studioEmail.text}</a></>
-      : <Link href="/contact">contact us</Link>
 
   const summaryItems = BOOK_FIELDS.filter((field) => errors[field] !== undefined).map((field) => ({
     id: FIELD_IDS[field],
@@ -247,7 +238,7 @@ export function Form({ heading: Heading, calendlyLink, contact, piece }: FormPro
           <p className={styles.summaryHeading}>Too many tries from this connection</p>
           <p className={styles.summaryText}>
             We&apos;ve had several requests from here in the last hour. Wait an hour and send it
-            again, or {contactAction}. Your answers are still here.
+            again. Your answers are still here.
           </p>
         </div>
       )}
@@ -255,7 +246,7 @@ export function Form({ heading: Heading, calendlyLink, contact, piece }: FormPro
         <div className={styles.summary} role="alert" tabIndex={-1} ref={noticeRef}>
           <p className={styles.summaryHeading}>We couldn&apos;t send this</p>
           <p className={styles.summaryText}>
-            Something went wrong on our side. Try again, or {contactAction}. Your answers are still here.
+            Something went wrong on our side. Try again in a minute. Your answers are still here.
           </p>
         </div>
       )}

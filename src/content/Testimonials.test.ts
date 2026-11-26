@@ -32,7 +32,28 @@ test('the proof screenshot is an optional upload to its own collection', () => {
   assert.equal(proof.relationTo, TestimonialProofs.slug)
   assert.notEqual(proof.required, true)
   assert.ok(TestimonialProofs.upload)
-  assert.equal(TestimonialProofs.access?.read?.({} as never), true)
+})
+
+test('visitors see only proofs that a published testimonial with consent shows', async () => {
+  let asked: unknown
+  const req = {
+    user: null,
+    payload: {
+      find: async (args: unknown) => {
+        asked = args
+        return { docs: [{ proof: 'p1' }, { proof: { id: 'p2' } }, { proof: null }] }
+      },
+    },
+  }
+  const read = TestimonialProofs.access?.read
+  assert.ok(read)
+  assert.deepEqual(await read({ req } as never), { id: { in: ['p1', 'p2'] } })
+  assert.deepEqual((asked as { where: unknown }).where, {
+    _status: { equals: 'published' },
+    consentOnFile: { equals: true },
+    proof: { exists: true },
+  })
+  assert.equal(await read({ req: { ...req, user: { id: 'staff' } } } as never), true)
 })
 
 test('each shown testimonial carries its source label and any proof', () => {

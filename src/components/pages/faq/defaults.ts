@@ -8,7 +8,7 @@ import {
 export const faqPageDefaults = {
   heading: 'Fair questions,',
   headingItalic: 'plain answers.',
-  lede: "If yours isn't here, ask it in the form or call us. We'd rather you asked.",
+  lede: "If yours isn't here, ask us at your consultation. We'd rather you asked.",
 }
 
 export const faqTopicDefaults = [
@@ -29,7 +29,7 @@ export const faqTopicDefaults = [
       {
         key: 'walk-in',
         question: 'How do I book a consultation?',
-        answer: 'Send the form or call us to book a free online consultation. It takes 15–30 minutes.',
+        answer: 'Send the form, then pick a time on Calendly. The online consultation is free and takes 15–30 minutes.',
       },
     ],
   },

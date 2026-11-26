@@ -10,7 +10,7 @@ const steps: Step[] = [
   {
     name: 'Design',
     time: 'Render in 1–4 days',
-    text: 'The timing depends on how complex the piece is. You approve the sketches and render before we cut any metal.',
+    text: 'The timing depends on how complex the piece is. You approve the sketches and render before any metal is cut.',
   },
   {
     name: 'Craft',
