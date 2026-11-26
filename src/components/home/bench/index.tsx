@@ -6,7 +6,7 @@ export function Bench() {
     <section id="bench" className={styles.section} aria-labelledby="bench-heading">
       <div className={styles.hinge}>
         <div>
-          <p className={styles.eyebrow}>The Bench</p>
+          <p className={styles.eyebrow}>Studio</p>
           <h2 className={styles.heading} id="bench-heading">
             Start with <em>your idea.</em>
           </h2>

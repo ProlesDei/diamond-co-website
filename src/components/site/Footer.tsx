@@ -22,7 +22,7 @@ export async function Footer() {
               <Link href={links.catalog}>Catalog</Link>
             </li>
             <li>
-              <Link href={links.bench}>The Bench</Link>
+              <Link href={links.studio}>Studio</Link>
             </li>
             <li>
               <Link href={links.contact}>Contact</Link>

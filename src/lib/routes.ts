@@ -1,1 +1,1 @@
-export const routes = ['/', '/catalog', '/the-bench', '/book', '/contact', '/faq', '/privacy'] as const
+export const routes = ['/', '/catalog', '/studio', '/book', '/contact', '/faq', '/privacy'] as const

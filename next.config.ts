@@ -91,6 +91,7 @@ const nextConfig: NextConfig = {
     { source: '/commissions', destination: '/catalog', permanent: true },
     { source: '/commissions/:slug', destination: '/catalog/:slug', permanent: true },
     { source: '/visit', destination: '/contact', permanent: true },
+    { source: '/the-bench', destination: '/studio', permanent: true },
   ],
   images: {
     localPatterns: [

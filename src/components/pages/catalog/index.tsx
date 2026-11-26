@@ -1,5 +1,6 @@
 import { PieceCard } from '@/components/home/commissions/PieceCard'
 import { Button } from '@/components/site/Button'
+import { links } from '@/components/site/nav'
 
 import { ConsultationBand } from '../ConsultationBand'
 import { pageMetadata } from '../metadata'
@@ -38,7 +39,7 @@ export default async function CatalogPage() {
               <Button className={styles.button} variant="primary" href="/book">
                 Book a free consultation
               </Button>
-              <Button className={styles.button} variant="secondary" href="/the-bench">
+              <Button className={styles.button} variant="secondary" href={links.studio}>
                 See how a piece is made
               </Button>
             </div>

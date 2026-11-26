@@ -31,11 +31,11 @@ export function PhoneMenu({ id, open, onNavigate }: PhoneMenuProps) {
       </Link>
       <Link
         className={styles.link}
-        href={links.bench}
-        aria-current={currentPage(pathname, links.bench)}
+        href={links.studio}
+        aria-current={currentPage(pathname, links.studio)}
         onClick={onNavigate}
       >
-        The Bench
+        Studio
       </Link>
       <div className={styles.small}>
         <Link

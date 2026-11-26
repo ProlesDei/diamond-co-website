@@ -90,13 +90,13 @@ export const SiteSettings: GlobalConfig = {
       fields: [
         { name: 'name', type: 'text' },
         { name: 'credential', label: 'Credential line', type: 'text' },
-        homeImage('portrait', 'Portrait', 'The designer’s portrait on the home page and The Bench.'),
+        homeImage('portrait', 'Portrait', 'The designer’s portrait on the home page and the Studio page.'),
         {
           name: 'team',
-          label: 'More people on The Bench',
+          label: 'More people on the Studio page',
           type: 'array',
           labels: { singular: 'Person', plural: 'People' },
-          admin: { description: 'Cards shown after the designer on The Bench, in this order.' },
+          admin: { description: 'Cards shown after the designer on the Studio page, in this order.' },
           fields: [
             homeImage('portrait', 'Portrait', 'Shown in a 4:5 frame, cropped from the centre.'),
             { name: 'name', type: 'text', required: true },
@@ -127,13 +127,13 @@ export const SiteSettings: GlobalConfig = {
         homeImage('heroImage', 'Hero image', 'The large photo beside the headline at the top of the home page.'),
         homeImage(
           'benchDaylightImage',
-          'Bench daylight image',
-          'The “Your idea, in daylight” photo, on the home page and The Bench.',
+          'Studio daylight image',
+          'The “Your idea, in daylight” photo, on the home page and the Studio page.',
         ),
         homeImage(
           'benchStudioImage',
-          'Bench studio image',
-          'The studio photo, on the home page and The Bench.',
+          'Studio image',
+          'The studio photo, on the home page and the Studio page.',
         ),
       ],
     },

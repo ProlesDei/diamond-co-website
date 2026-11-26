@@ -65,10 +65,10 @@ export function SiteHeader({ logo }: { logo: SiteLogo | null }) {
           </Link>
           <Link
             className={styles.link}
-            href={links.bench}
-            aria-current={currentPage(pathname, links.bench)}
+            href={links.studio}
+            aria-current={currentPage(pathname, links.studio)}
           >
-            The Bench
+            Studio
           </Link>
           <Link
             className={styles.link}

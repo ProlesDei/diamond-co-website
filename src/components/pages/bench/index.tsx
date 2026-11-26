@@ -11,7 +11,7 @@ import { pageMetadata } from '../metadata'
 import styles from './Bench.module.css'
 
 export function generateMetadata() {
-  return pageMetadata('The Bench')
+  return pageMetadata('Studio')
 }
 
 const metals: Metal[] = [
@@ -56,7 +56,7 @@ export default async function BenchPage() {
       <section className={styles.hero} aria-labelledby="bench-title">
         <div className={styles.hinge}>
           <div>
-            <p className={styles.eyebrow}>The Bench</p>
+            <p className={styles.eyebrow}>Studio</p>
             <h1 className={styles.title} id="bench-title">
               Start with <em>your idea.</em>
             </h1>

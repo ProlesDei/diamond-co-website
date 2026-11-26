@@ -82,17 +82,6 @@ const privacySections = ({ phone, email }: StudioContact): Section[] => [
     ),
   },
   {
-    id: 'p-news',
-    title: 'Email news (CASL)',
-    body: (
-      <p>
-        We send news only if you tick the box asking for it. The box is never ticked for you. Every
-        email says who we are and has a link to unsubscribe, which takes effect within 10 business
-        days. We keep a record of when you agreed.
-      </p>
-    ),
-  },
-  {
     id: 'p-where',
     title: 'Where it’s stored',
     body: (
