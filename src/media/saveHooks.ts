@@ -36,9 +36,16 @@ const deleteStagedUpload = async (req: PayloadRequest, pathname: string) => {
 }
 
 export const removeReplacedStagingFile: CollectionAfterOperationHook<'media'> = async ({ operation, result, req }) => {
-  if (req.context.skipCloudStorage || (operation !== 'create' && operation !== 'updateByID')) return result
+  if (req.context.skipCloudStorage) return result
   const staged = stagedUploads.get(req)
-  if (!staged || !result?.id) return result
+  if (!staged || !result) return result
+
+  // A by-ID save returns the doc. A filtered PATCH returns `docs`; clean up only when it
+  // saved exactly one, and leave the staged file when it changed several.
+  let id: number | string | undefined
+  if (operation === 'create' || operation === 'updateByID') id = result.id
+  else if (operation === 'update' && result.docs.length === 1) id = result.docs[0]?.id
+  if (id === undefined) return result
 
   // Read the saved docs instead of `result`, which holds only the fields the caller selected.
   // A retry with the same receipt shares the object key with an earlier save, and the staged
@@ -53,7 +60,7 @@ export const removeReplacedStagingFile: CollectionAfterOperationHook<'media'> = 
       where: { _objectKey: { equals: staged.objectKey } },
       req,
     })
-    const saved = docs.find((doc) => doc.id === result.id)
+    const saved = docs.find((doc) => doc.id === id)
     if (docs.length !== 1 || !saved?.filename || saved.filename === staged.filename) return result
 
     // Payload can skip the storage upload, for example when the caller selects only some
