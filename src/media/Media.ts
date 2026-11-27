@@ -61,6 +61,9 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
+    // prepareMediaImage converts only files sent with the request. Payload fetches a
+    // file from a URL after that hook, so a URL upload would skip the JPEG conversion.
+    pasteURL: false,
     mimeTypes: mediaMimeTypes,
     formatOptions: { format: 'jpeg', options: mediaJpegOptions },
     imageSizes: [

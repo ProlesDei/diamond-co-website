@@ -20,6 +20,13 @@ export const mediaSrc = (media: Pick<Media, 'sizes' | 'url' | 'width'>): string 
     return parsed.success ? [parsed.data] : []
   }).sort((a, b) => a.width - b.width)
 
+  // A photo too small for the zoom copy has only cropped or smaller copies, so the
+  // original is the widest full-frame file. Offer it for large displays.
+  const original = storedSize.safeParse(media)
+  const widest = sizes[sizes.length - 1]
+  if (original.success && !media.sizes?.zoom?.url && (!widest || original.data.width > widest.width)) {
+    sizes.push(original.data)
+  }
   if (sizes.length === 0) sizes.push(storedSize.parse(media))
 
   const card = storedSize.safeParse(media.sizes?.card)

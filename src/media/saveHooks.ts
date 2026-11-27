@@ -40,15 +40,27 @@ const deleteStagedUpload = async (req: PayloadRequest, pathname: string) => {
 export const removeReplacedStagingFile: CollectionAfterOperationHook<'media'> = async ({ operation, result, req }) => {
   if (req.context.skipCloudStorage || (operation !== 'create' && operation !== 'updateByID')) return result
   const staged = stagedUploads.get(req)
-  if (
-    staged &&
-    result &&
-    '_objectKey' in result &&
-    result._objectKey === staged.objectKey &&
-    result.filename &&
-    result.filename !== staged.filename
-  ) {
-    await deleteStagedUpload(req, staged.pathname)
+  if (!staged || !result?.id) return result
+
+  // Read the saved docs instead of `result`, which holds only the fields the caller selected.
+  // A retry with the same receipt shares the object key with an earlier save, so delete the
+  // staged file only when no saved doc under that key still uses its name.
+  try {
+    const { docs } = await req.payload.find({
+      collection: 'media',
+      depth: 0,
+      overrideAccess: true,
+      pagination: false,
+      select: { filename: true },
+      where: { _objectKey: { equals: staged.objectKey } },
+      req,
+    })
+    const renamed = docs.some((doc) => doc.id === result.id && doc.filename && doc.filename !== staged.filename)
+    if (renamed && docs.every((doc) => doc.filename !== staged.filename)) {
+      await deleteStagedUpload(req, staged.pathname)
+    }
+  } catch (err) {
+    req.payload.logger.error({ err, msg: 'Could not check whether a staged Media upload is in use' })
   }
   return result
 }
