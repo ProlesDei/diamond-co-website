@@ -32,7 +32,7 @@ With no `RESEND_API_KEY`, the app writes each email to `.outbox/<time>-<n>.json`
 
 From **Media**, use **Create New** for one image or **Bulk Upload** to add files and edit their fields. Choose **Source** for each photo before saving. If a save fails, read the message next to the field or file.
 
-Media accepts JPEG, PNG, WebP, AVIF, GIF and TIFF and stores JPEGs. Media uses the JPEG's EXIF orientation to match the crop to the preview. For an animated GIF or WebP or a multi-page TIFF, it uses the first frame or page. The Media collection sets no file-size or image-dimension limits. The site uses the sizes it can make from each photo, and uses the stored original JPEG for large displays when the photo is too small for the zoom copy. For HEIC or SVG, export a JPEG before uploading. Media takes files from your device only; pasting a URL is off.
+Media accepts JPEG, PNG, WebP, AVIF, GIF and TIFF and stores JPEGs. Media uses the JPEG's EXIF orientation to match the crop to the preview. For an animated GIF or WebP or a multi-page TIFF, it uses the first frame or page. Transparent areas turn white. The Media collection sets no file-size or image-dimension limits. The site uses the sizes it can make from each photo, and uses the stored original JPEG for large displays when the photo is too small for the zoom copy. For HEIC or SVG, export a JPEG before uploading. Media takes files from your device only; pasting a URL is off.
 
 ### Service limits
 
