@@ -7,17 +7,32 @@ export const mediaMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/a
 export const mediaJpegOptions = { quality: 95 }
 const cropFormats = ['png', 'webp', 'gif', 'tiff']
 
+const isMediaFormat = (format: string, compression?: string) =>
+  format === 'jpeg' || cropFormats.includes(format) || (format === 'heif' && compression === 'av1')
+
 export const prepareMediaImage: CollectionBeforeOperationHook = async ({ operation, overrideAccess, req }) => {
   const file = req.file
-  if ((operation !== 'create' && operation !== 'update') || !(req.user || overrideAccess) ||
-      !file || !mediaMimeTypes.includes(file.mimetype)) return
+  if ((operation !== 'create' && operation !== 'update') || !(req.user || overrideAccess) || !file) return
+
+  // Decide from the file's bytes, not the MIME type the client sent. Payload detects the real
+  // type later and accepts a PNG labelled application/octet-stream.
+  const image = sharp(file.tempFilePath || file.data)
+  let metadata: sharp.Metadata
+  try {
+    metadata = await image.metadata()
+  } catch (error) {
+    // Not an image Sharp can read. Leave refusing other types to Payload's MIME check.
+    if (!mediaMimeTypes.includes(file.mimetype)) return
+    req.payload.logger.error(error)
+    throw new FileUploadError(req.t)
+  }
+  const { format, compression, orientation, pages } = metadata
+  if (!isMediaFormat(format, compression)) return
 
   try {
-    const image = sharp(file.tempFilePath || file.data)
-    const { format, compression, orientation, pages } = await image.metadata()
     const edits = req.query?.uploadEdits
     const hasCrop = edits && typeof edits === 'object' && 'crop' in edits && Boolean(edits.crop)
-    const needsJpegCrop = hasCrop && (cropFormats.includes(format) || (format === 'heif' && compression === 'av1'))
+    const needsJpegCrop = hasCrop && format !== 'jpeg'
     const needsOrientation = format === 'jpeg' && orientation !== undefined && orientation > 1
     const needsFirstFrame = pages && pages > 1 && (format === 'gif' || format === 'webp' || format === 'tiff')
     const prepareJpeg = needsOrientation || needsJpegCrop
