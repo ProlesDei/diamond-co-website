@@ -6,7 +6,7 @@ export const blobTokenVariables = {
 } as const satisfies Record<BlobStore, string>
 
 export const blobTokenFallbackVariables: { readonly [store in BlobStore]?: string } = {
-  // FALLBACK (chief of staff, Nov 19, 2026): Vercel's inquiries store connection sets INQUIRY_READ_WRITE_TOKEN; delete this to read INQUIRY_BLOB_READ_WRITE_TOKEN only.
+  // FALLBACK (Nov 19, 2026): Vercel's inquiries store connection sets INQUIRY_READ_WRITE_TOKEN; delete this to read INQUIRY_BLOB_READ_WRITE_TOKEN only.
   'inquiry-uploads': 'INQUIRY_READ_WRITE_TOKEN',
 }
 

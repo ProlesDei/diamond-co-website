@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { type KeyboardEvent, type PointerEvent, useRef, useState } from 'react'
 
 import { useReducedMotion } from '@/components/site/useReducedMotion'
-import { mediaLoader } from '@/media/loader'
+import { mediaFullFrameLoader } from '@/media/loader'
 
 import type { PiecePhoto } from '../photos'
 import styles from './Zoom.module.css'
@@ -187,7 +187,7 @@ export function Zoom({ photos, start, opener, onClose }: ZoomProps) {
         <div ref={box} className={join(styles.box, photo.shot === 'daylight' && styles.day)}>
           <Image
             key={photo.src}
-            loader={mediaLoader}
+            loader={mediaFullFrameLoader}
             src={photo.src}
             alt={photo.alt}
             width={photo.width}

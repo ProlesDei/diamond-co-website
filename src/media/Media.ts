@@ -1,49 +1,12 @@
-import { del, list } from '@vercel/blob'
-import { APIError } from 'payload'
-import type { CollectionBeforeValidateHook, CollectionConfig, PayloadRequest } from 'payload'
-
-import { requireBlobToken } from '@/lib/blob'
+import type { CollectionConfig, SelectFieldSingleValidation } from 'payload'
+import { select } from 'payload/shared'
 
 import { giveNewUploadAFreeName } from './fileName'
+import { mediaJpegOptions, mediaMimeTypes, prepareMediaImage } from './imageFormats'
+import { removeReplacedStagingFile, showMediaSaveError, trackStagedUpload } from './saveHooks'
 
-const MINIMUM_LONG_EDGE = 2400
-
-const removeRefusedClientUpload = async (
-  req: PayloadRequest,
-  data: { _objectKey?: unknown; prefix?: unknown },
-  originalDoc: { _objectKey?: unknown } | undefined,
-) => {
-  const objectKey = data._objectKey
-  if (typeof objectKey !== 'string' || !objectKey || objectKey === originalDoc?._objectKey) return
-
-  const token = requireBlobToken('media')
-  const { totalDocs } = await req.payload.count({
-    collection: 'media',
-    where: { _objectKey: { equals: objectKey } },
-    req,
-  })
-  if (totalDocs > 0) return
-
-  const folder = [typeof data.prefix === 'string' ? data.prefix : '', objectKey].filter(Boolean).join('/')
-  const { blobs } = await list({ prefix: `${folder}/`, token })
-  if (blobs.length > 0) await del(blobs.map((blob) => blob.url), { token })
-}
-
-const requireMinimumSize: CollectionBeforeValidateHook = async ({ data, originalDoc, req }) => {
-  if (typeof data?.width !== 'number' || typeof data.height !== 'number') return data
-
-  const longEdge = Math.max(data.width, data.height)
-  if (longEdge < MINIMUM_LONG_EDGE) {
-    await removeRefusedClientUpload(req, data, originalDoc)
-    throw new APIError(
-      `The image is ${data.width}×${data.height}px. Its long edge must be at least ${MINIMUM_LONG_EDGE}px. Upload the original photo.`,
-      400,
-      null,
-      true,
-    )
-  }
-  return data
-}
+const validateSource: SelectFieldSingleValidation = (value, options) =>
+  value ? select(value, options) : 'Choose a Source.'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -51,10 +14,19 @@ export const Media: CollectionConfig = {
     read: () => true,
   },
   hooks: {
-    beforeOperation: [giveNewUploadAFreeName],
-    beforeValidate: [requireMinimumSize],
+    beforeOperation: [trackStagedUpload, prepareMediaImage, giveNewUploadAFreeName],
+    afterOperation: [removeReplacedStagingFile],
+    afterError: [showMediaSaveError],
   },
   fields: [
+    {
+      name: 'mediaSaveError',
+      type: 'ui',
+      admin: {
+        disableListColumn: true,
+        components: { Field: '/media/MediaSaveError#MediaSaveError' },
+      },
+    },
     {
       name: 'alt',
       type: 'text',
@@ -64,6 +36,13 @@ export const Media: CollectionConfig = {
       name: 'source',
       type: 'select',
       required: true,
+      admin: {
+        description: 'Choose a Source before saving.',
+        components: {
+          Error: { path: '/media/MediaSaveError#MediaSaveError', clientProps: { errorPath: 'source' } },
+        },
+      },
+      validate: validateSource,
       options: [
         { label: 'Client photo', value: 'client-photo' },
         { label: "Atmosphere (generated, never the client's work)", value: 'atmosphere' },
@@ -82,13 +61,16 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    mimeTypes: ['image/jpeg'],
-    formatOptions: { format: 'jpeg', options: { quality: 95 } },
+    // prepareMediaImage converts only files sent with the request. Payload fetches a
+    // file from a URL after that hook, so a URL upload would skip the JPEG conversion.
+    pasteURL: false,
+    mimeTypes: mediaMimeTypes,
+    formatOptions: { format: 'jpeg', options: mediaJpegOptions },
     imageSizes: [
-      { name: 'thumb', width: 400, height: 500, fit: 'cover' },
-      { name: 'card', width: 800, height: 1000, fit: 'cover' },
-      { name: 'detail', width: 1600, height: 1600, fit: 'inside' },
-      { name: 'zoom', width: 2400, height: 2400, fit: 'inside' },
+      { name: 'thumb', width: 400, height: 500, fit: 'cover', formatOptions: { format: 'jpeg' } },
+      { name: 'card', width: 800, height: 1000, fit: 'cover', formatOptions: { format: 'jpeg' } },
+      { name: 'detail', width: 1600, height: 1600, fit: 'inside', formatOptions: { format: 'jpeg' } },
+      { name: 'zoom', width: 2400, height: 2400, fit: 'inside', formatOptions: { format: 'jpeg' } },
     ],
   },
 }
