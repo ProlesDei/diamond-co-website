@@ -28,6 +28,7 @@ export const getMorePieces = unstable_cache(
       image: firstImage(piece),
     }))
   },
-  ['more-pieces'],
+  // v2: image src strings changed shape; skip entries cached before this deploy.
+  ['more-pieces', 'v2'],
   { tags: ['pieces'] },
 )

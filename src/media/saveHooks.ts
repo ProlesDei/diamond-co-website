@@ -1,5 +1,5 @@
 import { buildUploadStoragePathData } from '@payloadcms/plugin-cloud-storage/utilities'
-import { del } from '@vercel/blob'
+import { del, head } from '@vercel/blob'
 import { CLIENT_UPLOAD_CONTEXT_CONTEXT_KEY, FileUploadError } from 'payload'
 import type {
   CollectionAfterErrorHook,
@@ -10,7 +10,7 @@ import type {
 
 import { requireBlobToken } from '@/lib/blob'
 
-type StagedUpload = { objectKey: string; filename: string; pathname: string }
+type StagedUpload = { docPrefix: string; filename: string; objectKey: string; pathname: string }
 const stagedUploads = new WeakMap<PayloadRequest, StagedUpload>()
 
 export const trackStagedUpload: CollectionBeforeOperationHook = ({ operation, req }) => {
@@ -22,11 +22,9 @@ export const trackStagedUpload: CollectionBeforeOperationHook = ({ operation, re
   if (typeof objectKey !== 'string' || !objectKey) return
   const prefix = 'prefix' in context && typeof context.prefix === 'string' ? context.prefix : ''
   const filename = req.file.name
-  const { storageFilePath: pathname } = buildUploadStoragePathData({
-    docPrefix: [prefix, objectKey].filter(Boolean).join('/'),
-    filename,
-  })
-  stagedUploads.set(req, { filename, objectKey, pathname })
+  const docPrefix = [prefix, objectKey].filter(Boolean).join('/')
+  const { storageFilePath: pathname } = buildUploadStoragePathData({ docPrefix, filename })
+  stagedUploads.set(req, { docPrefix, filename, objectKey, pathname })
 }
 
 const deleteStagedUpload = async (req: PayloadRequest, pathname: string) => {
@@ -55,10 +53,15 @@ export const removeReplacedStagingFile: CollectionAfterOperationHook<'media'> = 
       where: { _objectKey: { equals: staged.objectKey } },
       req,
     })
-    const renamed = docs.some((doc) => doc.id === result.id && doc.filename && doc.filename !== staged.filename)
-    if (renamed && docs.every((doc) => doc.filename !== staged.filename)) {
-      await deleteStagedUpload(req, staged.pathname)
-    }
+    const saved = docs.find((doc) => doc.id === result.id)
+    if (!saved?.filename || saved.filename === staged.filename) return result
+    if (docs.some((doc) => doc.filename === staged.filename)) return result
+
+    // Payload can skip the storage upload, for example when the caller selects only some
+    // fields. Keep the staged file unless the saved file is in the store.
+    const { storageFilePath } = buildUploadStoragePathData({ docPrefix: staged.docPrefix, filename: saved.filename })
+    await head(storageFilePath, { token: requireBlobToken('media') })
+    await deleteStagedUpload(req, staged.pathname)
   } catch (err) {
     req.payload.logger.error({ err, msg: 'Could not check whether a staged Media upload is in use' })
   }
