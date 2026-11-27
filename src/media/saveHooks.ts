@@ -41,8 +41,8 @@ export const removeReplacedStagingFile: CollectionAfterOperationHook<'media'> = 
   if (!staged || !result?.id) return result
 
   // Read the saved docs instead of `result`, which holds only the fields the caller selected.
-  // A retry with the same receipt shares the object key with an earlier save, so delete the
-  // staged file only when no saved doc under that key still uses its name.
+  // A retry with the same receipt shares the object key with an earlier save, and the staged
+  // file may be the only full copy that save has, so keep it whenever another doc shares the key.
   try {
     const { docs } = await req.payload.find({
       collection: 'media',
@@ -54,8 +54,7 @@ export const removeReplacedStagingFile: CollectionAfterOperationHook<'media'> = 
       req,
     })
     const saved = docs.find((doc) => doc.id === result.id)
-    if (!saved?.filename || saved.filename === staged.filename) return result
-    if (docs.some((doc) => doc.filename === staged.filename)) return result
+    if (docs.length !== 1 || !saved?.filename || saved.filename === staged.filename) return result
 
     // Payload can skip the storage upload, for example when the caller selects only some
     // fields. Keep the staged file unless the saved file is in the store.
