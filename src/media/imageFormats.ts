@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 import { FileUploadError, type CollectionBeforeOperationHook } from 'payload'
-import sharp from 'sharp'
+import sharp, { type Metadata } from 'sharp'
 
 // These inputs use Payload's resize and JPEG conversion path.
 export const mediaMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif', 'image/tiff']
@@ -17,7 +17,7 @@ export const prepareMediaImage: CollectionBeforeOperationHook = async ({ operati
   // Decide from the file's bytes, not the MIME type the client sent. Payload detects the real
   // type later and accepts a PNG labelled application/octet-stream.
   const image = sharp(file.tempFilePath || file.data)
-  let metadata: sharp.Metadata
+  let metadata: Metadata
   try {
     metadata = await image.metadata()
   } catch (error) {
